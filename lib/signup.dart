@@ -176,14 +176,17 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  Future<void> _sendVerificationCode() async {  //랜덤한 6자리 인증 코드 생성해서 보냄
+  //랜덤한 6자리 인증 코드 생성해서 보냄
+  Future<void> _sendVerificationCode() async {
     final random = Random();
     final verificationCode = random.nextInt(999999).toString().padLeft(6, '0'); // 6자리 랜덤 숫자 생성
 
-    // SMTP 서버 설정 (Gmail 사용 예시)
-    final smtpServer = gmail('soyunamanda@gmail.com', 'ypkm qdvr pgki pbmw');
-    /*
     _verificationCode = verificationCode; // 인증 코드를 저장
+
+    // SMTP 서버 설정 (Gmail 사용 예시)
+    //final smtpServer = gmail('soyunamanda@gmail.com', 'ypkm qdvr pgki pbmw');
+    final SmtpServer smtpServer = gmail('soyunamanda@gmail.com', 'ypkm qdvr pgki pbmw');
+    /*
     final Email emailToSend = Email(
       body: '인증 코드: $verificationCode',
       subject: '회원가입 인증 코드',
@@ -203,7 +206,7 @@ class _SignupPageState extends State<SignupPage> {
       ..from = Address('soyunamanda.gmail.com')
       ..recipients.add(_emailController.text) // 사용자가 입력한 이메일 주소로 설정
       ..subject = 'Verification Code'
-      ..text = 'Your verification code is: $_verificationCode';
+      ..html = '<h1>Your verification code is: $_verificationCode</h1>'; // HTML 형식으로 본문 작성
 
     // 이메일 보내기
     try {
