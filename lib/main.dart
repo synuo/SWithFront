@@ -1,13 +1,25 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'login.dart';
 
-void main() {runApp(const MyApp());}
+void main() {
+  HttpOverrides.global = new ProxiedHttpOverrides("1.209.144.251:3000");
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {  //앱의 메인페이지 MyApp
   const MyApp({super.key});
+  // 전역으로 사용할 화면 크기를 저장하는 변수 선언
+  static Size? screenSize;
+
   @override
   Widget build(BuildContext context) {
+    // MediaQuery를 통해 현재 화면의 크기를 가져옴
+    final Size screenSize = MediaQuery.of(context).size;
+    final double screenWidth = screenSize.width;
+    final double screenHeight = screenSize.height;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       //home : const HomePage(),
@@ -69,4 +81,18 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
+class ProxiedHttpOverrides extends HttpOverrides{
+  String _proxy;
+  ProxiedHttpOverrides(this. _proxy);
+
+  @override
+  HttpClient createHttpClient(SecurityContext? context){
+    return super.createHttpClient(context)
+        ..findProxy = (uri){
+      return _proxy.isNotEmpty ? "PROXY $_proxy;" : 'DIRECT';
+    }
+    ..badCertificateCallback = (X509Certificate cert, String host, int port) => Platform.isAndroid;
+  }
+
+}
 

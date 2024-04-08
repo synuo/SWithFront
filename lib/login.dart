@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:practice/findpw.dart';
+import 'package:practice/newsignup2.dart';
 import 'package:practice/signup.dart';
 
 import 'home.dart';
