@@ -26,75 +26,64 @@ class _newSignupPageState2 extends State<newSignupPage2> {
   bool _codeSent = false;    // 인증코드 전송 여부
   bool _emailExists = false; //이미 존재하는 이메일 db인지 확인 용도
   bool _codesendagain = false;
-
-  //mysql 연결.... 이거 맞는건지 모르겠음.
-  Future<MySqlConnection> _getConnection() async {
-    final settings = ConnectionSettings(
-      host: 'http://localhost:3000',
-      port: 3306,
-      user: 'your_mysql_username',
-      password: 'your_mysql_password',
-      db: 'your_database_name',
-    );
-
-    return await MySqlConnection.connect(settings);
-  }
-
+  late String sessionId; // 세션 ID를 저장하는 변수
+  late String expectedCode;
   //인증코드 생성해서 메일로 보냄
   Future<void> _sendVerificationCode(String email) async {
-    print("인증코드 발송 함수 실행됨");
-    
-    final random = Random();
-    _verificationCode = random.nextInt(999999).toString().padLeft(6, '0'); // 6자리 랜덤 숫자 생성
+    print("인증 코드 발송 함수 실행됨");
 
-    // SMTP 서버 설정
-    final smtpServer = gmail('swithsookmyung@gmail.com', 'zeud katx bkqz ahhj');
-
-    // 이메일 제목 및 내용 설정
-    final message = Message()
-      ..from = Address('swithsookmyung@gmail.com')
-      ..recipients.add(email) // 사용자가 입력한 이메일 주소로 설정
-      ..subject = 'Verification Code'
-      ..text = 'Your verification code is: $_verificationCode';
-
-    String apiUrl = 'http://localhost:3000/signup';
-
-    // 이메일 보내기
-    try {
-      await send(message, smtpServer);
-      var response = await http.post(
-        apiUrl as Uri,
-        body: {'email': email},
-      );
-      if (response.statusCode == 200) {
-        print('인증 코드 전송 완료!');
-        setState(() {
-          _codeSent = true; // 이메일이 성공적으로 보내졌을 때에만 _codeSent를 true로 설정
-        });
-      } else {
-        print('인증 코드 전송 실패..');
-        _verificationCodeController.clear();  //입력 초기화
-      }
-    } catch (e) {
-      print('Error: $e');
+    final url = Uri.parse('http://localhost:3000/email/sendVerificationCode');   // Uri.parse() : 서버의 주소를 파싱하여 Uri 객체를 생성
+    print(url);
+    final response = await http.post( //POST 요청을 보냄
+      url, //첫 번째 인자는 요청을 보낼 URL임.
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({ //두 번째 인자는 요청 본문(body)
+        'email': email,
+      }),
+    );
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      print('인증 코드 전송 완료!');
+      expectedCode = jsonDecode(response.body)['code'];
+      setState(() {
+        _codeSent = true; // 이메일이 성공적으로 보내졌을 때에만 _codeSent를 true로 설정
+      });
+    } else {
+      print('인증 코드 전송 실패..');
     }
-
   }
 
   //인증코드 일치하는지 확인  + 인증 코드 재발송.입력?
-  Future<void> _verifyCode() async {
+  Future<void> _verifyCode(String enterCode) async {
     // 입력한 인증 코드
-    _enteredCode = _verificationCodeController.text;  //입력받은 최종 인증코드
-    if (_enteredCode == _verificationCode) {     // 인증 코드 일치하면
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('올바른 인증 코드입니다! :)')));
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => UserInfoPage()),     //회원정보 화면으로 이동
-      );
-    } else {    // 인증 코드 불일치
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('잘못된 인증 코드입니다. 다시 시도해주세요.')));
-      _verificationCodeController.clear();  // 인증 코드 입력 필드 초기화
+    print(enterCode);
+    final url = Uri.parse('http://localhost:3000/email/verifyCode');   // Uri.parse() : 서버의 주소를 파싱하여 Uri 객체를 생성
+    print(url);
+    final response = await http.post( //POST 요청을 보냄
+      url, //첫 번째 인자는 요청을 보낼 URL임.
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+
+      },
+      body: jsonEncode({ //두 번째 인자는 요청 본문(body)
+        'codeFromUser': enterCode,
+      }),
+    );
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      print('올바른 인증 코드!');
+      setState(() {
+        _codeSent = true; // 이메일이 성공적으로 보내졌을 때에만 _codeSent를 true로 설정
+      });
+    } else {
+      print('잘못된 인증 코드..');
+      _verificationCodeController.clear();  //입력 초기화
     }
+
   }
 
   // 이메일 중복 여부를 확인
@@ -180,8 +169,9 @@ class _newSignupPageState2 extends State<newSignupPage2> {
               ElevatedButton(
                 onPressed: () async {
                   _email = _emailController.text.trim();
+                  print(_email);
                   if (_email.endsWith('@sookmyung.ac.kr')) {    //숙명 이메일이라면
-                    await _checkEmailExists(_email);
+                    //await _checkEmailExists(_email);
                     if (!_emailExists) {   //새로운 이메일 주소면 인증코드 전송
                       await _sendVerificationCode(_email);
                       setState(() {
@@ -216,7 +206,11 @@ class _newSignupPageState2 extends State<newSignupPage2> {
                       ElevatedButton(
                         onPressed: () {
                           _enteredCode = _verificationCodeController.text.trim();
-                          _verifyCode();
+                          //_verifyCode(_enteredCode);
+                          if(expectedCode == _enteredCode) {
+                            print("성공!");
+                          }
+                          else print("실패...");
                         },
                         child: Text('확인'),
                       ),
