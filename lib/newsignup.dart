@@ -7,156 +7,143 @@ import 'package:practice/userinfo.dart';
 import 'login.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:practice/main.dart';
-import 'package:practice/userinfo.dart';
+import 'package:mysql1/mysql1.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server/gmail.dart';
 
-// Form 위젯에 대한 GlobalKey 선언
-final GlobalKey<FormState> emailFormKey = GlobalKey<FormState>();
-
-class newSignupPage extends StatefulWidget {
-  const newSignupPage({Key? key}) : super(key: key);
+class newSignupPage2 extends StatefulWidget {
+  const newSignupPage2({Key? key}) : super(key: key);
   @override
-  State<newSignupPage> createState() => _newSignupPageState();
+  State<newSignupPage2> createState() => _newSignupPageState2();
 }
 
-class _newSignupPageState extends State<newSignupPage> {
-  int _currentStep = 0;
-  late TextEditingController _emailController;
-  late TextEditingController _codeController;
-  late TextEditingController _passwordController;
-  late TextEditingController _confirmPasswordController;
-  late TextEditingController _nameController;
-  late TextEditingController _nicknameController;
-  late TextEditingController _introductionController;
+class _newSignupPageState2 extends State<newSignupPage2> {
+  final TextEditingController _emailController = TextEditingController(); //이메일 입력받음
+  final TextEditingController _verificationCodeController = TextEditingController(); //인증코드 입력받음
+  late String _email;             //사용자 이메일
+  late String _verificationCode;  //인증코드
+  late String _enteredCode;      //사용자가 입력한 코드
+  bool _codeSent = false;    // 인증코드 전송 여부
+  bool _emailExists = false; //이미 존재하는 이메일 db인지 확인 용도
+  bool _codesendagain = false;
 
-  Map<String, dynamic> userInputData = {};
+  //mysql 연결.... 이거 맞는건지 모르겠음.
+  Future<MySqlConnection> _getConnection() async {
+    final settings = ConnectionSettings(
+      host: 'http://localhost:3000',
+      port: 3306,
+      user: 'your_mysql_username',
+      password: 'your_mysql_password',
+      db: 'your_database_name',
+    );
 
-  @override
-  void initState(){
-    super.initState();
-    _emailController = TextEditingController();  //이메일
-    _codeController = TextEditingController();   //인증코드
-    _passwordController = TextEditingController(); //비밀번호
-    _confirmPasswordController = TextEditingController(); //비밀번호 재확인
-    _nameController = TextEditingController(); //이름
-    _nicknameController = TextEditingController(); //닉네임
-    _introductionController = TextEditingController(); //자기소개
+    return await MySqlConnection.connect(settings);
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _codeController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _nameController.dispose();
-    _nicknameController.dispose();
-    _introductionController.dispose();
-    super.dispose();
+  //인증코드 생성해서 메일로 보냄
+  Future<void> _sendVerificationCode(String email) async {
+    print("인증코드 발송 함수 실행됨");
+    
+    final random = Random();
+    _verificationCode = random.nextInt(999999).toString().padLeft(6, '0'); // 6자리 랜덤 숫자 생성
+
+    // SMTP 서버 설정
+    final smtpServer = gmail('swithsookmyung@gmail.com', 'zeud katx bkqz ahhj');
+
+    // 이메일 제목 및 내용 설정
+    final message = Message()
+      ..from = Address('swithsookmyung@gmail.com')
+      ..recipients.add(email) // 사용자가 입력한 이메일 주소로 설정
+      ..subject = 'Verification Code'
+      ..text = 'Your verification code is: $_verificationCode';
+
+    String apiUrl = 'http://localhost:3000/signup';
+
+    // 이메일 보내기
+    try {
+      await send(message, smtpServer);
+      var response = await http.post(
+        apiUrl as Uri,
+        body: {'email': email},
+      );
+      if (response.statusCode == 200) {
+        print('인증 코드 전송 완료!');
+        setState(() {
+          _codeSent = true; // 이메일이 성공적으로 보내졌을 때에만 _codeSent를 true로 설정
+        });
+      } else {
+        print('인증 코드 전송 실패..');
+        _verificationCodeController.clear();  //입력 초기화
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+
   }
 
-  List<Step> stepList = [
-    Step(
-        title: Text("이메일 입력"),
-        content: Form(
-          key: emailFormKey,
-          child: TextFormField(
-            controller: controllers['email'],
-            decoration: const InputDecoration(
-              hintText: "이메일을 입력해주세요 :)",
-              errorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.red),
-              ),
-              focusedErrorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.red, width: 2.0),
-              ),
-            ),
-            keyboardType: TextInputType.emailAddress,
-            onChanged: (value) => userInputData['email'] = value,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '이메일은 반드시 입력 해야 합니다!';
-              }
-              if (!EmailValidator.validate(value)) {
-                return '유효한 이메일을 입력해 주세요!';
-              }
-              if (!validation['email']!) {
-                return '이미 등록된 이메일 입니다!';
-              }
-              return null;
-            },
-          ),
-        ),
-      isActive: true,
-    ), //이메일 입력 단게
-    Step(
-      title: Text('인증코드 입력'),
-      content: Column(
-        children: [
-          TextFormField(
-            controller: _codeController,
-            decoration: InputDecoration(labelText: '인증코드'),
-          ),
-        ],
-      ),
-      isActive: false,
-    ), //인증코드 입력 단계
-    Step(
-      title: Text('비밀번호 입력'),
-      content: Column(
-        children: [
-          TextFormField(
-            controller: _passwordController,
-            decoration: InputDecoration(labelText: '비밀번호'),
-            obscureText: true,
-          ),
-          TextFormField(
-            controller: _confirmPasswordController,
-            decoration: InputDecoration(labelText: '비밀번호 확인'),
-            obscureText: true,
-          ),
-        ],
-      ),
-      isActive: false,
-    ), //비밀번호 입력 단계
-    Step(
-      title: Text('개인정보 입력'),
-      content: Column(
-        children: [
-          TextFormField(
-            controller: _nameController,
-            decoration: InputDecoration(labelText: '이름'),
-          ),
-          TextFormField(
-            controller: _nicknameController,
-            decoration: InputDecoration(labelText: '이름'),
-          ),
-        ],
-      ),
-      isActive: false,
-    ),
-    Step(
-      title: Text('자기소개 입력 (선택사항)'),
-      content: Column(
-        children: [
-          TextFormField(
-            controller: _introductionController,
-            decoration: InputDecoration(labelText: '자기소개'),
-            maxLines: 3,
-          ),
-        ],
-      ),
-      isActive: false,
-    ),
-  ];
+  //인증코드 일치하는지 확인  + 인증 코드 재발송.입력?
+  Future<void> _verifyCode() async {
+    // 입력한 인증 코드
+    _enteredCode = _verificationCodeController.text;  //입력받은 최종 인증코드
+    if (_enteredCode == _verificationCode) {     // 인증 코드 일치하면
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('올바른 인증 코드입니다! :)')));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => UserInfoPage()),     //회원정보 화면으로 이동
+      );
+    } else {    // 인증 코드 불일치
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('잘못된 인증 코드입니다. 다시 시도해주세요.')));
+      _verificationCodeController.clear();  // 인증 코드 입력 필드 초기화
+    }
+  }
+
+  // 이메일 중복 여부를 확인
+  Future<void> _checkEmailExists(String email) async {
+    print('이메일 중복 확인 함수 실행됨.');
+
+    // 이메일 존재 여부를 나타내는 변수 초기화
+    bool emailExists = false;
+
+    try {
+      // 로컬 호스트의 checkemail.js에 HTTP GET 요청 보내기
+      var response = await http.get(Uri.parse('http://localhost:3000/checkemail?email=$email'));
+
+      // 요청이 성공하면 응답 본문을 JSON으로 파싱하여 데이터 추출
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        // 데이터베이스에서 이메일 존재 여부 확인 후 emailExists 변수 업데이트
+        emailExists = data['exists'];
+      } else {
+        // HTTP 요청이 실패한 경우 오류 메시지 출력
+        print('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      // 오류가 발생한 경우 오류 메시지 출력
+      print('Error: $e');
+    }
+    // 결과를 _emailExists 변수에 저장
+    _emailExists = emailExists;
+
+
+  }
+
+  Future<void> _resendVerificationCode() async {
+    setState(() {
+      _codeSent = false;
+    });
+    _verificationCodeController.clear();
+    await _sendVerificationCode(_email);
+    setState(() {
+      _codeSent = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    MyApp.screenSize = MediaQuery.of(context) as Size?;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('회원가입', style: TextStyle(color: Colors.white, fontSize: 20.0),),
+        title: Text(
+          '회원가입', style: TextStyle(color: Colors.white, fontSize: 20.0),),
         elevation: 0.0,
         backgroundColor: Color(0xff19A7CE),
         centerTitle: true,
@@ -176,179 +163,76 @@ class _newSignupPageState extends State<newSignupPage> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: SafeArea(
-          child: SizedBox(
-            height: MyApp.screenSize?.height ?? 0,
-            width: MyApp.screenSize?.width ?? 0,
-            child: Stepper(
-              steps: stepList,              //화면에 보여줄 스텝 리스트
-              type: StepperType.vertical,  //step 을 수직으로 보여줌
-              elevation: 0,                //step 높이 설정
-              currentStep: _currentStep,   //현재 표시되는 스텝의 index 값
-              onStepTapped: (int index){
-                setState(() {
-                  _currentStep = index;
-                });
-              },  //스텝들을 탭 했을 때, 동작할 로직
-              onStepContinue: (){
-                switch (_currentStep) {
-                  case 0:
-                    emailValidCheck().then((value) {
-                      if (value) {
-                        setState(() {
-                          log(userInputData.toString());
-                          _currentStep += 1;
-                        });
-                      }
-                    });
-                    break;
-                  case 1:
-                    if (passwordValidCheck()) {
-                      if (passwordValidDoubleCheck()) {
-                        userInputData['password'] = controllers['password']!.text;
-                        setState(() {
-                          _currentStep += 1;
-                        });
-                      }
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: '숙명 이메일 @sookmyung.ac.kr 을 입력해주세요.',
+              ),
+            ),
+            SizedBox(height: 20.0),
+            if (!_codeSent)
+              //이메일 입력 & 중복 확인 , 인증코드 발송(발송 성공하면 _codeSent true)
+              ElevatedButton(
+                onPressed: () async {
+                  _email = _emailController.text.trim();
+                  if (_email.endsWith('@sookmyung.ac.kr')) {    //숙명 이메일이라면
+                    await _checkEmailExists(_email);
+                    if (!_emailExists) {   //새로운 이메일 주소면 인증코드 전송
+                      await _sendVerificationCode(_email);
+                      setState(() {
+                        _codeSent = true;   //성공했다 가정(나중에 삭제)
+                      });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(  //이미 존재하는 이메일인 경우
+                          SnackBar(content: Text('이미 등록된 이메일 주소입니다.'),));
                     }
-                    break;
-                  case 2:
-                    userIdValidCheck().then((value) {
-                      if (value) {
-                        userInputData['userId'] = controllers['userId']!.text;
-                        if (nameValidCheck() &&
-                            birthValidCheck() &&
-                            genderValidCheck()) {
-                          dbService.registerUser(User(
-                              email: userInputData['email'],
-                              birth: userInputData['birth'],
-                              userId: userInputData['userId'],
-                              nickname: userInputData['nickname'],
-                              password: userInputData['password']));
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) => LoginPage()),
-                                  (route) => false);
-                        } else {}
-                      }
-                    });
-                }
-              },         //다음 버튼을 탭 했을 때, 동작할 로직을 구현
-              onStepCancel: (){
-                if (_currentStep > 0) {
-                  setState(() {
-                    _currentStep -= 1;
-                  });
-                }
-              }, //취소 버튼을 탭 했을 때, 동작할 로직을 구현
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleFailureResponse(int statusCode, String responseBody) async {
-    // 서버 응답이 실패했을 때 사용자에게 알리는 다이얼로그 표시
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('회원가입 실패'),
-        content: Text('서버 응답 코드: $statusCode\n서버 응답: $responseBody'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text('확인'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _submit() async {
-    String email = _emailController.text;
-    String password = _passwordController.text;
-    String name = _nameController.text;
-    String nickname = _nicknameController.text;
-    String introduction = _introductionController.text;
-
-    // 서버에 전송할 데이터
-    Map<String, dynamic> userData = {
-      'email': email,
-      'password': password,
-      'name': name,
-      'nickname' : nickname,
-      'introduction': introduction,
-    };
-
-    // 서버 API 엔드포인트 URL
-    String apiUrl = 'http://localhost:3000/signup';
-    try {
-      // HTTP POST 요청 전송
-      var response = await http.post(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(userData),
-      );
-
-      // 서버 응답 확인
-      if (response.statusCode == 200) {
-        // 회원가입 성공 시 로그인 화면으로 이동
-        print('서버 응답: ${response.body}');  //서버 응답 출력
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
-        );
-      } else {
-        // 회원가입 실패 시 처리
-        print('서버 응답 코드: ${response.statusCode}');
-        print('서버 응답: ${response.body}');
-        // TODO : 실패에 대한 사용자에게 알리는 등의 처리를 추가
-        _handleFailureResponse(response.statusCode, response.body);
-      }
-    } catch (e) {
-      print('오류 발생: $e');  // 오류 발생 시 처리
-
-      showDialog(   // 사용자에게 오류를 알리는 다이얼로그 표시
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('오류'),
-          content: Text('회원가입 중 오류가 발생했습니다.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('확인'),
-            ),
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('@sookmyung.ac.kr 이메일 주소를 입력해주세요.'),
+                        ));
+                  }
+                },
+                child: Text('인증 코드 발송'),
+              ),
+            SizedBox(height: 20.0),
+            if (_codeSent)
+              //인증코드 입력 & 맞는지 확인. 틀리면 재입력 가능. 인증코드 재발송 가능.
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _verificationCodeController,
+                    decoration: InputDecoration(labelText: '인증 코드 6자리를 입력하세요.',),
+                  ),
+                  SizedBox(height: 20.0),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          _enteredCode = _verificationCodeController.text.trim();
+                          _verifyCode();
+                        },
+                        child: Text('확인'),
+                      ),
+                      SizedBox(height: 10.0),
+                      ElevatedButton(
+                        onPressed:(){ _resendVerificationCode();},
+                        child: Text('새로운 인증 코드 받기'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
           ],
         ),
-      );
-    }
-  }
-
-  Future <bool> emailValidCheck() async{
-    await emailDuplicateCheck();
-    return emailFormKey.currentState!.validate();
-  }
-
-  Future<void> userIdValidCheck() async {
-    // userId 유효성 검사 코드 추가
-  }
-
-  Future<void> emailDuplicateCheck() async {
-    // 서버에 이메일 중복 확인 요청을 보내고 응답을 처리하는 코드 추가
-  }
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Map<String, dynamic>>('userInputData', userInputData));
+      ),
+    );
   }
 
 }

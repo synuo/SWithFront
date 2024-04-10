@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:practice/home.dart';
 
 // 사용자 기본 정보 입력 (이름, 학번, 닉네임, 전공, 비번)
-// 자기소개는 선택사
+// 전공1, 전공2, 프로필이미지, 자기소개는 선택사항
 
 class UserInfoPage extends StatefulWidget {
   const UserInfoPage({super.key});
@@ -17,20 +17,20 @@ class UserInfoPage extends StatefulWidget {
 
 class _UserInfoPageState extends State<UserInfoPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // _formKey 정의
-
   List<String> _majors = [];  //전공 리스트
   String _introduction = '';  //자기소개
+  final _nameController = TextEditingController();
+  final _studentnumController = TextEditingController();
+  final _nicknameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();  //비밀번호 확인용
+  final _profileImageController = TextEditingController();    //프로필 이미지
+  late String _selectedMajor1;
+  late String _selectedMajor2;
+  late String _selectedMajor3;
 
-  Future<void> _fetchMajors() async {    //db로부터 전공 리스트 가져옴
-    final response =
-        await http.get(Uri.parse('http://localhost:3000/signup'));  //TODO
-    final List<dynamic> data = json.decode(response.body);
-    final List<String> majors =
-        data.map((item) => item['name'].toString()).toList();
-    setState(() {
-      _majors = majors;
-    });
-  }
+  late bool _isStudentIdAvailable;    //학번 중보 확인
+  late bool _isNicknameAvailable;     //닉네임 중복 확인
 
   @override
   void initState() {
@@ -38,15 +38,16 @@ class _UserInfoPageState extends State<UserInfoPage> {
     _fetchMajors();
   }
 
-  final _nameController = TextEditingController();
-  final _studentIdController = TextEditingController();
-  final _nicknameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();  //비밀번호 확인용
-  late String _selectedMajor;
-  bool _isStudentIdAvailable = true;    //학번 중보 확인
-  bool _isNicknameAvailable = true;     //닉네임 중복 확인
-
+  Future<void> _fetchMajors() async {    //db로부터 전공 리스트 가져옴
+    final response =
+        await http.get(Uri.parse('http://localhost:3000/signup'));
+    final List<dynamic> data = json.decode(response.body);
+    final List<String> majors =
+        data.map((item) => item['name'].toString()).toList();
+    setState(() {
+      _majors = majors;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,11 +74,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 },
               ),
               TextFormField(   // 학번 입력 폼 필드
-                controller: _studentIdController,
+                controller: _studentnumController,
                 keyboardType: TextInputType.number, // 숫자 입력 타입 지정
                 decoration: InputDecoration(
                     labelText: '학번',
-                    errorText: _isStudentIdAvailable ? null : '이미 사용 중인 학번입니다.'
+                    errorText: _isStudentIdAvailable
+                        ? null
+                        : '이미 사용 중인 학번입니다.'
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -143,10 +146,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 },
               ),
               DropdownButtonFormField<String>(
-                value: _selectedMajor,
-                onChanged: (String? newvalue) {
+                value: _selectedMajor1,
+                onChanged: (String? newValue) {
                   setState(() {
-                    _selectedMajor = newvalue!;
+                    _selectedMajor1 = newValue!;
                   });
                 },
                 decoration: InputDecoration(
@@ -164,6 +167,47 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   }
                   return null;
                 },
+              ),
+              DropdownButtonFormField<String>(
+                value: _selectedMajor2,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedMajor2 = newValue!;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: '전공 2 (선택)',
+                ),
+                items: _majors.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              DropdownButtonFormField<String>(
+                value: _selectedMajor3,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedMajor3 = newValue!;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: '전공 3 (선택)',
+                ),
+                items: _majors.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              TextFormField(
+                controller: _profileImageController, // 추가: 프로필 이미지
+                decoration: InputDecoration(
+                  labelText: '프로필 이미지 (선택)',
+                ),
+                //TODO : 사용자가 프로필 이미지 추가 (path 저장?)
               ),
               TextFormField(  // 자기소개 입력 폼 필드
                 decoration: InputDecoration(
@@ -184,7 +228,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     print('이름: ${_nameController.text}');
                     print('닉네임: ${_nicknameController.text}');
                     print('비밀번호: ${_passwordController.text}');
-                    print('전공: $_selectedMajor');
+                    print('전공: $_selectedMajor1');
                     print('자기소개: $_introduction');
                     _registerUser();  // 회원 정보 저장 (=가입)
                   }
@@ -207,7 +251,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     super.dispose();
   }
 
-  Future<bool> checkDuplicateNickname(String nickname) async {
+  Future <bool> checkDuplicateNickname(String nickname) async {
     final url = Uri.parse('http://localhost:3000/signup');
     final response = await http.post(
       url,
@@ -219,8 +263,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
     if (response.statusCode == 200) {
       print("중복된 닉네임!");
-      final jsonResponse = json.decode(response.body);
-      final bool _isNicknameAvailable = false;
+      _isNicknameAvailable = false;
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -242,19 +285,17 @@ class _UserInfoPageState extends State<UserInfoPage> {
     }
   }
 
-  Future<bool> checkDuplicateStudentId(String studentId) async {
+  Future <bool> checkDuplicateStudentId(String studentnum) async {
     final url = Uri.parse('http://localhost:3000/signup');
     final response = await http.post(
       url,
       body: jsonEncode({
-        'studentId': studentId,
+        'studentnum': studentnum,
       }),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
-      final bool _isStudentIdAvailable = false;
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -277,10 +318,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   void _registerUser() async {
-    final String name = _nameController.text;  // 닉네임 저장
+    final String name = _nameController.text;  // 이름 저장
     final String nickname = _nicknameController.text;  // 닉네임 저장
     final String password = _passwordController.text;  // 비밀번호 저장
-    final String major = _selectedMajor;               // 전공 저장
+    final String studentnum = _studentnumController.text;  //학번 저장
+    final String major = _selectedMajor1;               // 전공1 저장
+    final String major2 = _selectedMajor2;             // 전공2
+    final String major3 = _selectedMajor3;             //전공3
+    final String profileImage = _profileImageController.text; //프로필 이미지 저장
     final String introduction = _introduction;         // 자기소개 저장
 
 
@@ -291,13 +336,17 @@ class _UserInfoPageState extends State<UserInfoPage> {
           'name' :name,
           'nickname': nickname,
           'password': password,
-          'major': major,
+          'studentnum' : studentnum,
+          'major1': major,
+          'major2': major2,
+          'major3': major3,
           'introduction' : introduction,
+          'profile_image': profileImage,
         }),
         headers: {'Content-Type': 'application/json'},
       );
 
-      if (response.statusCode == 200) {  // 회원 가입 성공
+      if (response.statusCode == 201) {  // 회원 가입 성공
         print('회원 가입 성공');
         Navigator.push(
           context,

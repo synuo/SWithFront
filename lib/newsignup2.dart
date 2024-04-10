@@ -43,7 +43,7 @@ class _newSignupPageState2 extends State<newSignupPage2> {
     _verificationCode = random.nextInt(999999).toString().padLeft(6, '0'); // 6자리 랜덤 숫자 생성
 
     // SMTP 서버 설정
-    final smtpServer = gmail('soyunamanda@gmail.com', 'ypkm qdvr pgki pbmw');
+    final smtpServer = gmail('swithsookmyung@gmail.com', 'zeud katx bkqz ahhj');
 
     // 이메일 제목 및 내용 설정
     final message = Message()
