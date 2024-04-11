@@ -21,14 +21,15 @@ class _newSignupPageState2 extends State<newSignupPage2> {
   final TextEditingController _emailController = TextEditingController(); //이메일 입력받음
   final TextEditingController _verificationCodeController = TextEditingController(); //인증코드 입력받음
   late String _email;             //사용자 이메일
-  late String _verificationCode;  //인증코드
   late String _enteredCode;      //사용자가 입력한 코드
   bool _codeSent = false;    // 인증코드 전송 여부
   bool _emailExists = false; //이미 존재하는 이메일 db인지 확인 용도
   bool _codesendagain = false;
   late String sessionId; // 세션 ID를 저장하는 변수
-  late String expectedCode;
-  //인증코드 생성해서 메일로 보냄
+  late String expectedCode;  //인증코드를 저장하는 변수
+  late IconData _emailIcon = Icons.quick_contacts_mail_outlined;
+
+  //인증코드 보낼 메일 주소 전달
   Future<void> _sendVerificationCode(String email) async {
     print("인증 코드 발송 함수 실행됨");
 
@@ -56,7 +57,8 @@ class _newSignupPageState2 extends State<newSignupPage2> {
     }
   }
 
-  //인증코드 일치하는지 확인  + 인증 코드 재발송.입력?
+  //인증코드 일치하는지 확인
+  //04/10 수정 : 필요x
   Future<void> _verifyCode(String enterCode) async {
     // 입력한 인증 코드
     print(enterCode);
@@ -67,7 +69,6 @@ class _newSignupPageState2 extends State<newSignupPage2> {
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-
       },
       body: jsonEncode({ //두 번째 인자는 요청 본문(body)
         'codeFromUser': enterCode,
@@ -86,45 +87,37 @@ class _newSignupPageState2 extends State<newSignupPage2> {
 
   }
 
-  // 이메일 중복 여부를 확인
+  // 이메일 중복 여부 확인
   Future<void> _checkEmailExists(String email) async {
     print('이메일 중복 확인 함수 실행됨.');
+    setState(() {
+      _emailIcon = Icons.hourglass_bottom; // 로딩 아이콘 표시
+    });
 
-    // 이메일 존재 여부를 나타내는 변수 초기화
-    bool emailExists = false;
-
+    final url = Uri.parse('http://localhost:3000/checkemail?email=$email');
     try {
-      // 로컬 호스트의 checkemail.js에 HTTP GET 요청 보내기
-      var response = await http.get(Uri.parse('http://localhost:3000/checkemail?email=$email'));
-
-      // 요청이 성공하면 응답 본문을 JSON으로 파싱하여 데이터 추출
+      final response = await http.get(url);
       if (response.statusCode == 200) {
-        var data = json.decode(response.body);
-        // 데이터베이스에서 이메일 존재 여부 확인 후 emailExists 변수 업데이트
-        emailExists = data['exists'];
+        final data = json.decode(response.body);
+        _emailExists = data['exists'];
+        _emailIcon = _emailExists ? Icons.cancel : Icons.check_circle;
       } else {
-        // HTTP 요청이 실패한 경우 오류 메시지 출력
-        print('Failed to load data: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이메일 확인에 실패했습니다.')),
+        );
       }
     } catch (e) {
-      // 오류가 발생한 경우 오류 메시지 출력
-      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('네트워크 오류가 발생했습니다.')),
+      );
     }
-    // 결과를 _emailExists 변수에 저장
-    _emailExists = emailExists;
-
-
   }
 
-  Future<void> _resendVerificationCode() async {
-    setState(() {
-      _codeSent = false;
-    });
+  //코드 재발송
+  Future<void> _resendVerificationCode(String email) async {
+    print("코드 재발송 함수 실행됨");
     _verificationCodeController.clear();
-    await _sendVerificationCode(_email);
-    setState(() {
-      _codeSent = true;
-    });
+    await _sendVerificationCode(email);
   }
 
   @override
@@ -161,7 +154,15 @@ class _newSignupPageState2 extends State<newSignupPage2> {
               controller: _emailController,
               decoration: InputDecoration(
                 labelText: '숙명 이메일 @sookmyung.ac.kr 을 입력해주세요.',
+                suffixIcon: _emailIcon != null
+                    ? Icon(_emailIcon, color: _emailExists ? Colors.red : Colors.green)
+                    : null,
               ),
+              onChanged: (value) {
+                setState(() {
+                  _emailIcon = Icons.email; // 이메일이 변경되면 아이콘 초기화
+                });
+              },
             ),
             SizedBox(height: 20.0),
             if (!_codeSent)
@@ -171,12 +172,9 @@ class _newSignupPageState2 extends State<newSignupPage2> {
                   _email = _emailController.text.trim();
                   print(_email);
                   if (_email.endsWith('@sookmyung.ac.kr')) {    //숙명 이메일이라면
-                    //await _checkEmailExists(_email);
+                    await _checkEmailExists(_email);
                     if (!_emailExists) {   //새로운 이메일 주소면 인증코드 전송
                       await _sendVerificationCode(_email);
-                      setState(() {
-                        _codeSent = true;   //성공했다 가정(나중에 삭제)
-                      });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(  //이미 존재하는 이메일인 경우
                           SnackBar(content: Text('이미 등록된 이메일 주소입니다.'),));
@@ -207,16 +205,25 @@ class _newSignupPageState2 extends State<newSignupPage2> {
                         onPressed: () {
                           _enteredCode = _verificationCodeController.text.trim();
                           //_verifyCode(_enteredCode);
+
                           if(expectedCode == _enteredCode) {
                             print("성공!");
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => UserInfoPage()),
+                            );
+                            print('화면전환 : emailcheck -> userinfo');
                           }
-                          else print("실패...");
+                          else print("실패... 잘못된 인증코드");
+
                         },
                         child: Text('확인'),
                       ),
                       SizedBox(height: 10.0),
                       ElevatedButton(
-                        onPressed:(){ _resendVerificationCode();},
+                        onPressed:(){
+                          _resendVerificationCode(_email);
+                          },
                         child: Text('새로운 인증 코드 받기'),
                       ),
                     ],

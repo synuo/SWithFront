@@ -29,8 +29,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
   late String _selectedMajor2;
   late String _selectedMajor3;
 
-  late bool _isStudentIdAvailable;    //학번 중보 확인
-  late bool _isNicknameAvailable;     //닉네임 중복 확인
+  bool? _isStudentIdAvailable;    //학번 중복 확인
+  bool? _isNicknameAvailable;     //닉네임 중복 확인
 
   @override
   void initState() {
@@ -78,7 +78,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 keyboardType: TextInputType.number, // 숫자 입력 타입 지정
                 decoration: InputDecoration(
                     labelText: '학번',
-                    errorText: _isStudentIdAvailable
+                    errorText: _isStudentIdAvailable == null || _isStudentIdAvailable!
                         ? null
                         : '이미 사용 중인 학번입니다.'
                 ),
@@ -97,7 +97,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 controller: _nicknameController,
                 decoration: InputDecoration(
                   labelText: '닉네임',
-                  errorText: _isNicknameAvailable ? null : '이미 사용 중인 닉네임입니다.',
+                  errorText: _isNicknameAvailable == null || _isNicknameAvailable!
+                    ? null
+                    : '이미 사용 중인 닉네임입니다.'
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -323,15 +325,20 @@ class _UserInfoPageState extends State<UserInfoPage> {
     final String password = _passwordController.text;  // 비밀번호 저장
     final String studentnum = _studentnumController.text;  //학번 저장
     final String major = _selectedMajor1;               // 전공1 저장
-    final String major2 = _selectedMajor2;             // 전공2
-    final String major3 = _selectedMajor3;             //전공3
+    final String major2 = _selectedMajor2 ?? '';             // 전공2. null이면 빈 문자열로.
+    final String major3 = _selectedMajor3 ?? '';             //전공3
     final String profileImage = _profileImageController.text; //프로필 이미지 저장
     final String introduction = _introduction;         // 자기소개 저장
+
+    final Uri uri = Uri.parse('http://localhost:3000/signup');
 
 
     try {    // 회원 등록을 위한 API 호출 등의 로직 추가
       final response = await http.post(    // 서버로 회원 가입 요청을 보냄
-        Uri.parse('http://localhost:3000/signup'),   //TODO
+        uri,
+        headers:{
+          'Content-Type' : 'application/json',
+        },
         body: jsonEncode({
           'name' :name,
           'nickname': nickname,
@@ -340,14 +347,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
           'major1': major,
           'major2': major2,
           'major3': major3,
-          'introduction' : introduction,
           'profile_image': profileImage,
+          'introduction' : introduction,
         }),
-        headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 201) {  // 회원 가입 성공
-        print('회원 가입 성공');
+        print('회원 가입 성공!');
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => HomePage()), //홈 화면으로 이동
