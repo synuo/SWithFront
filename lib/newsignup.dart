@@ -101,6 +101,7 @@ class _newSignupPageState2 extends State<newSignupPage2> {
         final data = json.decode(response.body);
         _emailExists = data['exists'];
         _emailIcon = _emailExists ? Icons.cancel : Icons.check_circle;
+        SnackBar(content: Text('이미 존재하는 이메일입니다.'));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일 확인에 실패했습니다.')),

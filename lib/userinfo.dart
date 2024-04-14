@@ -38,7 +38,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
     _fetchMajors();
   }
 
-  Future<void> _fetchMajors() async {    //db로부터 전공 리스트 가져옴
+  //db로부터 전공 리스트 가져옴
+  Future<void> _fetchMajors() async {
     final response =
         await http.get(Uri.parse('http://localhost:3000/signup'));
     final List<dynamic> data = json.decode(response.body);
@@ -61,7 +62,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
           padding: EdgeInsets.all(16.0),
           child: ListView(
             children: <Widget>[
-              TextFormField(  // 이름 입력 폼 필드
+              // 이름 입력 폼 필드
+              TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: '이름',
@@ -73,7 +75,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
-              TextFormField(   // 학번 입력 폼 필드
+              // 학번 입력 폼 필드
+              TextFormField(
                 controller: _studentnumController,
                 keyboardType: TextInputType.number, // 숫자 입력 타입 지정
                 decoration: InputDecoration(
@@ -93,6 +96,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              // 닉네임 입력 폼 필드
               TextFormField(
                 controller: _nicknameController,
                 decoration: InputDecoration(
@@ -112,8 +116,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              // 비밀번호 입력 폼 필드
               TextFormField(
-                // 비밀번호 입력 폼 필드
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
@@ -130,8 +134,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              // 비밀번호 재확인 입력 폼 필드
               TextFormField(
-                // 비밀번호 재확인 입력 폼 필드
                 controller: _confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
@@ -147,6 +151,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;     // 비밀번호와 재확인이 일치하면 오류 없음
                 },
               ),
+              // 전공 선택 필드
               DropdownButtonFormField<String>(
                 value: _selectedMajor1,
                 onChanged: (String? newValue) {
@@ -204,6 +209,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   );
                 }).toList(),
               ),
+              // 프로필 이미지 등록 필드
               TextFormField(
                 controller: _profileImageController, // 추가: 프로필 이미지
                 decoration: InputDecoration(
@@ -211,7 +217,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 ),
                 //TODO : 사용자가 프로필 이미지 추가 (path 저장?)
               ),
-              TextFormField(  // 자기소개 입력 폼 필드
+              // 자기소개 입력 폼 필드
+              TextFormField(
                 decoration: InputDecoration(
                   labelText: '자기소개 (선택)',
                 ),
