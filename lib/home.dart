@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:practice/board.dart';
+import 'package:practice/chat.dart';
+import 'package:practice/mypage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,6 +14,13 @@ class _HomePageState extends State<HomePage> {
   TextEditingController _searchController = TextEditingController();
   String _searchQuery = ''; //검색 바에서 입력된 검색어를 저장하는 변수. 검색 쿼리
   bool _isAuth = false;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = 0; // 2. 초기화
+  }
 
   @override
   void didChangeDependencies() async{
@@ -25,7 +35,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Main Home'),
+        title: Text(
+          'Main Home', style: TextStyle(color: Colors.white, fontSize: 20.0),),
+        elevation: 0.0,
+        backgroundColor: Color(0xff19A7CE),
+        centerTitle: true,
         actions: [
           //IconButton(icon: Icon(Icons.menu), onPressed: () {}),
           //IconButton(icon: Icon(Icons.search), onPressed: () {}),
@@ -70,6 +84,27 @@ class _HomePageState extends State<HomePage> {
       ),
 
       bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex, // 현재 선택된 인덱스를 저장할 변수
+          onTap: (int index) {
+            setState(() {
+              _currentIndex = index; // 선택된 인덱스로 업데이트
+            });
+            // 해당 인덱스에 따라 페이지 이동
+            switch (index) {
+              case 0: // 홈 아이콘
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()),);
+                break;
+              case 1: // 게시판 아이콘
+                Navigator.push(context, MaterialPageRoute(builder: (context) => BoardScreen()),);
+                break;
+              case 2: // 채팅 아이콘
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()),);
+                break;
+              case 3: // 마이페이지 아이콘
+                Navigator.push(context, MaterialPageRoute(builder: (context) => MyPage()),);
+                break;
+            }
+          },
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -85,7 +120,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: '홈',
+            label: '마이페이지',
           ),
         ],
       ),

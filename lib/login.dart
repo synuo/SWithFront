@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:practice/findpw.dart';
-import 'package:practice/newsignup.dart';
 import 'package:practice/signup.dart';
 
 import 'home.dart';
@@ -97,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                                   onPressed: () {
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (context) => newSignupPage2()),
+                                      MaterialPageRoute(builder: (context) => SignupPage()),
                                     );
                                     print('화면전환 : login -> signup');
                                   },

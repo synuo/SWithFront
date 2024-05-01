@@ -9,7 +9,9 @@ import 'package:practice/home.dart';
 // 전공1, 전공2, 프로필이미지, 자기소개는 선택사항
 
 class UserInfoPage extends StatefulWidget {
-  const UserInfoPage({super.key});
+  final String email;
+
+  const UserInfoPage({Key? key, required this.email}) : super(key: key);
 
   @override
   State<UserInfoPage> createState() => _UserInfoPageState();
@@ -25,9 +27,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();  //비밀번호 확인용
   final _profileImageController = TextEditingController();    //프로필 이미지
-  late String _selectedMajor1;
-  late String _selectedMajor2;
-  late String _selectedMajor3;
+  String _selectedMajor1 = '';
+  String _selectedMajor2 = '';
+  String _selectedMajor3 = '';
 
   bool? _isStudentIdAvailable;    //학번 중복 확인
   bool? _isNicknameAvailable;     //닉네임 중복 확인
@@ -54,7 +56,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('회원가입 - 회원정보 입력'),
+        title: Text(
+          'User Information', style: TextStyle(color: Colors.white, fontSize: 20.0),),
+        elevation: 0.0,
+        backgroundColor: Color(0xff19A7CE),
+        centerTitle: true,
       ),
       body: Form(
         key: _formKey,
@@ -75,6 +81,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 10.0,),
               // 학번 입력 폼 필드
               TextFormField(
                 controller: _studentnumController,
@@ -96,6 +103,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 10.0,),
               // 닉네임 입력 폼 필드
               TextFormField(
                 controller: _nicknameController,
@@ -116,6 +124,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 10.0,),
               // 비밀번호 입력 폼 필드
               TextFormField(
                 controller: _passwordController,
@@ -134,6 +143,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 10.0,),
               // 비밀번호 재확인 입력 폼 필드
               TextFormField(
                 controller: _confirmPasswordController,
@@ -151,6 +161,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;     // 비밀번호와 재확인이 일치하면 오류 없음
                 },
               ),
+              SizedBox(height: 10.0,),
               // 전공 선택 필드
               DropdownButtonFormField<String>(
                 value: _selectedMajor1,
@@ -175,6 +186,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 10.0,),
               DropdownButtonFormField<String>(
                 value: _selectedMajor2,
                 onChanged: (String? newValue) {
@@ -192,6 +204,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   );
                 }).toList(),
               ),
+              SizedBox(height: 10.0,),
               DropdownButtonFormField<String>(
                 value: _selectedMajor3,
                 onChanged: (String? newValue) {
@@ -209,6 +222,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   );
                 }).toList(),
               ),
+              SizedBox(height: 10.0,),
               // 프로필 이미지 등록 필드
               TextFormField(
                 controller: _profileImageController, // 추가: 프로필 이미지
@@ -217,6 +231,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 ),
                 //TODO : 사용자가 프로필 이미지 추가 (path 저장?)
               ),
+              SizedBox(height: 10.0,),
               // 자기소개 입력 폼 필드
               TextFormField(
                 decoration: InputDecoration(
@@ -228,7 +243,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   _introduction = value;
                 },
               ),
-              SizedBox(height: 16.0),
+              SizedBox(height: 10.0),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState != null &&
@@ -327,11 +342,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   void _registerUser() async {
+    final String email = widget.email; // SignupPage에서 전달된 이메일 값
     final String name = _nameController.text;  // 이름 저장
     final String nickname = _nicknameController.text;  // 닉네임 저장
     final String password = _passwordController.text;  // 비밀번호 저장
     final String studentnum = _studentnumController.text;  //학번 저장
-    final String major = _selectedMajor1;               // 전공1 저장
+    final String major1 = _selectedMajor1;               // 전공1 저장
     final String major2 = _selectedMajor2 ?? '';             // 전공2. null이면 빈 문자열로.
     final String major3 = _selectedMajor3 ?? '';             //전공3
     final String profileImage = _profileImageController.text; //프로필 이미지 저장
@@ -347,11 +363,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
           'Content-Type' : 'application/json',
         },
         body: jsonEncode({
-          'name' :name,
+          'email' : email,
+          'name' : name,
           'nickname': nickname,
           'password': password,
           'studentnum' : studentnum,
-          'major1': major,
+          'major1': major1,
           'major2': major2,
           'major3': major3,
           'profile_image': profileImage,
