@@ -24,30 +24,29 @@ class _SignupPageState extends State<SignupPage> {
   late String _enteredCode;      //사용자가 입력한 코드
   bool _codeSent = false;    // 인증코드 전송 여부
   bool _emailExists = false; //이미 존재하는 이메일 db인지 확인 용도
-  late String sessionId; // 세션 ID를 저장하는 변수
+  //late String sessionId; // 세션 ID를 저장하는 변수
   late String expectedCode;  //인증코드를 저장하는 변수
   late IconData _emailIcon = Icons.ac_unit;
 
   //인증코드 보낼 메일 주소 전달
   Future<void> _sendVerificationCode(String email) async {
     print("인증 코드 발송 함수 실행됨");
-
     final url = Uri.parse('http://localhost:3000/email/sendVerificationCode');   // Uri.parse() : 서버의 주소를 파싱하여 Uri 객체를 생성
-    print(url);
+    //print(url);
     final response = await http.post( //POST 요청을 보냄
       url, //첫 번째 인자는 요청을 보낼 URL임.
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: jsonEncode({ //두 번째 인자는 요청 본문(body)
-        'email': email,
-      }),
+      //두 번째 인자는 요청 본문(body)
+      body: jsonEncode({'email': email,}),
     );
     print(response.statusCode);
     if (response.statusCode == 200) {
       print('인증 코드 전송 완료!');
       expectedCode = jsonDecode(response.body)['code'];
+      print(expectedCode);
       setState(() {
         _codeSent = true; // 이메일이 성공적으로 보내졌을 때에만 _codeSent를 true로 설정
       });
@@ -105,8 +104,8 @@ class _SignupPageState extends State<SignupPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('이메일 중복'),
-              content: Text('중복된 메일입니다. 다른 메일로 인증코드를 받으세요.'),
+              title: Text('이미 존재하는 이메일입니다.'),
+              content: Text('중복된 메일입니다. 다른 메일로 회원가입을 진행하세요.'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
@@ -118,14 +117,23 @@ class _SignupPageState extends State<SignupPage> {
             );
           },
         );
-
         _emailController.clear(); // 이메일 입력창 초기화
       } else {
         print('새로운 이메일');
+        _emailExists = true;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('새로운 이메일! 인증 코드 받기를 눌러주세요.')),
         );
       }
+      _emailIcon = _emailExists ? Icons.cancel : Icons.check_circle;
+      // 이메일이 이미 존재하는 경우에 대한 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: _emailExists
+              ? Text('이미 등록된 이메일 주소입니다.')
+              : Text('사용 가능한 이메일 주소입니다.'),
+        ),
+      );
     } catch (e) {
       print('네트워크 오류');
       // 네트워크 오류 발생 시 메시지 표시
@@ -133,15 +141,13 @@ class _SignupPageState extends State<SignupPage> {
         SnackBar(content: Text('네트워크 오류가 발생했습니다.')),
       );
     }
-    _emailIcon = _emailExists ? Icons.cancel : Icons.check_circle;
-    // 이메일이 이미 존재하는 경우에 대한 메시지 표시
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: _emailExists
-            ? Text('이미 등록된 이메일 주소입니다.')
-            : Text('사용 가능한 이메일 주소입니다.'),
-      ),
-    );
+  }
+
+  // 이메일 입력 필드 감지를 위한 함수 추가
+  void _emailFieldChanged() {
+    setState(() {
+      _codeSent = false; // 이메일 입력이 변경될 때마다 _codeSent 상태를 false로 설정
+    });
   }
 
   //코드 재발송
@@ -150,6 +156,8 @@ class _SignupPageState extends State<SignupPage> {
     _verificationCodeController.clear();
     await _sendVerificationCode(email);
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -186,17 +194,10 @@ class _SignupPageState extends State<SignupPage> {
                 Expanded(
                   child: TextField(
                     controller: _emailController,
+                    onChanged: (_) => _emailFieldChanged(), // 이메일 입력 필드 변경 감지
                     decoration: InputDecoration(
                       labelText: '숙명 이메일 @sookmyung.ac.kr 을 입력해주세요.',
-                      suffixIcon: _emailIcon != null
-                          ? Icon(_emailIcon, color: _emailExists ? Colors.red : Colors.green)
-                          : null,
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        _emailIcon = Icons.email; // 이메일이 변경되면 아이콘 초기화
-                      });
-                    },
                   ),
                 ),
                 SizedBox(width: 10.0),
@@ -205,7 +206,7 @@ class _SignupPageState extends State<SignupPage> {
                     _email = _emailController.text.trim();
                     print(_email);
                     if (_email.endsWith('@sookmyung.ac.kr')) {    //숙명 이메일이라면
-                      await _checkEmailExists(_email);
+                      await _checkEmailExists(_email);       // 중복 확인 버튼을 누른 경우에만 중복 확인 수행.. 괜찮?
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -247,7 +248,6 @@ class _SignupPageState extends State<SignupPage> {
                         onPressed: () {
                           _enteredCode = _verificationCodeController.text.trim();
                           //_verifyCode(_enteredCode);
-
                           if(expectedCode == _enteredCode) {
                             print("인증코드 확인 완료!");
                             Navigator.pushReplacement(

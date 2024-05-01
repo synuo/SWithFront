@@ -45,10 +45,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/major'));
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body)['majors'];
-        final List<String> majors = data.cast<String>();
+        final List<dynamic> data = json.decode(response.body);
+        final List<Map<String, dynamic>> majors = data.cast<Map<String, dynamic>>();
         setState(() {
-          _majors = majors;
+          _majors = majors.map((major) => major['name'] as String).toList();
         });
       } else {
         throw Exception('Failed to fetch majors');
@@ -353,9 +353,18 @@ class _UserInfoPageState extends State<UserInfoPage> {
     final String nickname = _nicknameController.text;  // 닉네임 저장
     final String password = _passwordController.text;  // 비밀번호 저장
     final String studentnum = _studentnumController.text;  //학번 저장
-    final String major1 = _selectedMajor1;               // 전공1 저장
-    final String major2 = _selectedMajor2 ?? '';             // 전공2. null이면 빈 문자열로.
-    final String major3 = _selectedMajor3 ?? '';             //전공3
+    //final String major1 = _selectedMajor1;               // 전공1 저장
+    //final String major2 = _selectedMajor2 ?? '';             // 전공2. null이면 빈 문자열로.
+    //final String major3 = _selectedMajor3 ?? '';             //전공3
+    final int majorId1 = _majors
+        .cast<Map<String, dynamic>>() // 각 요소를 맵으로 캐스팅
+        .firstWhere((element) => element['name'] == _selectedMajor1)['id'];
+    final int majorId2 = _majors
+        .cast<Map<String, dynamic>>() // 각 요소를 맵으로 캐스팅
+        .firstWhere((element) => element['name'] == _selectedMajor2)['id'];
+    final int majorId3 = _majors
+        .cast<Map<String, dynamic>>() // 각 요소를 맵으로 캐스팅
+        .firstWhere((element) => element['name'] == _selectedMajor3)['id'];
     final String profileImage = _profileImageController.text; //프로필 이미지 저장
     final String introduction = _introduction;         // 자기소개 저장
 
@@ -374,9 +383,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
           'nickname': nickname,
           'password': password,
           'studentnum' : studentnum,
-          'major1': major1,
-          'major2': major2,
-          'major3': major3,
+          'major1': majorId1,  //이름 대신 id 전달
+          'major2': majorId2,
+          'major3': majorId3,
           'profile_image': profileImage,
           'introduction' : introduction,
         }),
