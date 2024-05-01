@@ -37,19 +37,25 @@ class _UserInfoPageState extends State<UserInfoPage> {
   @override
   void initState() {
     super.initState();
-    _fetchMajors();
+    _fetchMajors();  //전공 데이터 가져옴
   }
 
   //db로부터 전공 리스트 가져옴
   Future<void> _fetchMajors() async {
-    final response =
-        await http.get(Uri.parse('http://localhost:3000/signup'));
-    final List<dynamic> data = json.decode(response.body);
-    final List<String> majors =
-        data.map((item) => item['name'].toString()).toList();
-    setState(() {
-      _majors = majors;
-    });
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/major'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body)['majors'];
+        final List<String> majors = data.cast<String>();
+        setState(() {
+          _majors = majors;
+        });
+      } else {
+        throw Exception('Failed to fetch majors');
+      }
+    } catch (e) {
+      print('Error fetching majors: $e');
+    }
   }
 
   @override

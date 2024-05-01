@@ -99,17 +99,36 @@ class _SignupPageState extends State<SignupPage> {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         print('이메일 중복!');
-        //final data = json.decode(response.body);
         _emailExists = true;
+        // 이메일 중복 팝업 표시
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('이메일 중복'),
+              content: Text('중복된 메일입니다. 다른 메일로 인증코드를 받으세요.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // 팝업 닫기
+                  },
+                  child: Text('확인'),
+                ),
+              ],
+            );
+          },
+        );
+
+        _emailController.clear(); // 이메일 입력창 초기화
       } else {
-        print('이미 존재하는 이메일');
-        // 네트워크 오류 발생 시 메시지 표시
+        print('새로운 이메일');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이미 존재하는 이메일')),
+          SnackBar(content: Text('새로운 이메일! 인증 코드 받기를 눌러주세요.')),
         );
       }
     } catch (e) {
       print('네트워크 오류');
+      // 네트워크 오류 발생 시 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('네트워크 오류가 발생했습니다.')),
       );
@@ -230,7 +249,7 @@ class _SignupPageState extends State<SignupPage> {
                           //_verifyCode(_enteredCode);
 
                           if(expectedCode == _enteredCode) {
-                            print("성공!");
+                            print("인증코드 확인 완료!");
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => UserInfoPage(email: _email)),
