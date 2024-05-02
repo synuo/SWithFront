@@ -120,7 +120,7 @@ class _SignupPageState extends State<SignupPage> {
         _emailController.clear(); // 이메일 입력창 초기화
       } else {
         print('새로운 이메일');
-        _emailExists = true;
+        _emailExists = false;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('새로운 이메일! 인증 코드 받기를 눌러주세요.')),
         );
