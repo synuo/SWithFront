@@ -16,7 +16,7 @@ class BoardScreen extends StatefulWidget {
 
 class _BoardScreenState extends State<BoardScreen> {
   int _currentIndex = 1;
-  late List<String> posts = []; // 게시물 목록 데이터
+  late List<Post> posts = []; // 게시물 목록 데이터
 
   @override
   void initState() {
@@ -26,7 +26,6 @@ class _BoardScreenState extends State<BoardScreen> {
 
   Future<void> fetchPosts() async {
     final url = Uri.parse('http://localhost:3000/getposts');
-    print(url);
     final response = await http.get(
       url,
       headers: <String, String>{
@@ -35,14 +34,26 @@ class _BoardScreenState extends State<BoardScreen> {
       },
     );
     if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body) as List<dynamic>;
+      final List<dynamic> jsonData = jsonDecode(response.body);
+      final List<Post> fetchedPosts = jsonData.map((data) {
+        return Post(
+          post_id: data['post_id'] as int,
+          title: data['title'] as String,
+          category: data['category'] as String,
+          view_count: data['view_count'] as int,
+          progress: data['progress'] as String,
+        );
+      }).toList();
+
       setState(() {
-        posts = jsonData.map((data) => data['title'] as String).toList(); // JSON 데이터를 파싱하여 게시물 제목만 가져옵니다.
+        posts = fetchedPosts;
       });
+
     } else {
       throw Exception('Failed to load posts');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -65,18 +76,49 @@ class _BoardScreenState extends State<BoardScreen> {
       )
           : ListView.builder(
         itemCount: posts.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(posts[index]),
+        itemBuilder: (BuildContext context, int index) {
+          final Post post = posts[index];
+          return GestureDetector(
             onTap: () {
-              // 각 게시물을 눌렀을 때의 동작을 추가
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PostDetailScreen(), //여기에 post_id를 가지고 넘어가는 내용도 추가해야함
+                  builder: (context) => PostDetailScreen(postId: post.post_id),
                 ),
               );
             },
+            child: Container(
+              height: 136,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE0E0E0)),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "${post.category} · ${post.progress} · ${post.view_count}",
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -105,4 +147,19 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
     );
   }
+}
+
+class Post {
+  final int post_id;
+  final String title;
+  final String category;
+  final int view_count;
+  final String progress;
+
+  Post(
+      {required this.post_id,
+        required this.title,
+        required this.category,
+        required this.view_count,
+        required this.progress});
 }
