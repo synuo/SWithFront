@@ -1,13 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'chat.dart';
-import 'common_widgets.dart';
-import 'home.dart';
-import 'mypage.dart';
 
 class PostDetailScreen extends StatefulWidget {
-  const PostDetailScreen({Key? key}) : super(key: key);
+  const PostDetailScreen({Key? key, required int postId}) : super(key: key);
 
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
