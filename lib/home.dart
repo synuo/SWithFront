@@ -4,6 +4,8 @@ import 'package:practice/chat.dart';
 import 'package:practice/mypage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'common_widgets.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
   @override
@@ -41,10 +43,9 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Color(0xff19A7CE),
         centerTitle: true,
         actions: [
-          //IconButton(icon: Icon(Icons.menu), onPressed: () {}),
-          //IconButton(icon: Icon(Icons.search), onPressed: () {}),
-          //IconButton(icon: Icon(Icons.notifications), onPressed: () {}),
-          _buildSearchButton(),
+          SearchButton(onPressed: () {
+
+          },),
           _buildNotificationButton(),
           _buildMenuButton(),
         ],
@@ -83,46 +84,27 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex, // 현재 선택된 인덱스를 저장할 변수
-          onTap: (int index) {
-            setState(() {
-              _currentIndex = index; // 선택된 인덱스로 업데이트
-            });
-            // 해당 인덱스에 따라 페이지 이동
-            switch (index) {
-              case 0: // 홈 아이콘
-                Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()),);
-                break;
-              case 1: // 게시판 아이콘
-                Navigator.push(context, MaterialPageRoute(builder: (context) => BoardScreen()),);
-                break;
-              case 2: // 채팅 아이콘
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()),);
-                break;
-              case 3: // 마이페이지 아이콘
-                Navigator.push(context, MaterialPageRoute(builder: (context) => MyPage()),);
-                break;
-            }
-          },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: '게시판',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
-            label: '채팅',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '마이페이지',
-          ),
-        ],
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (int index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          switch (index) {
+            case 0: // 홈 아이콘
+              // 현재 페이지
+              break;
+            case 1: // 게시판 아이콘
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BoardScreen()));
+              break;
+            case 2: // 채팅 아이콘
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatScreen()));
+              break;
+            case 3: // 마이페이지 아이콘
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyPage()));
+              break;
+          }
+        },
       ),
     );
   }
@@ -135,14 +117,7 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-  Widget _buildSearchButton() {
-    return IconButton(
-      icon: Icon(Icons.search),
-      onPressed: () {
-        print('Search button clicked');
-      },
-    );
-  }
+
   Widget _buildNotificationButton() {
     return IconButton(
       icon: Icon(Icons.notifications),
