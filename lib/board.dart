@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:practice/post_detail.dart';
+import 'addpost.dart';
 import 'chat.dart';
 import 'common_object.dart';
 import 'common_widgets.dart';
@@ -71,11 +72,23 @@ class _BoardScreenState extends State<BoardScreen> {
         backgroundColor: Color(0xff19A7CE),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(Icons.add), // 포스트 쓰기 아이콘
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddPostScreen(),
+                ),
+              );
+            },
+          ),
           SearchButton(onPressed: () {
             // 검색 버튼이 눌렸을 때 동작을 추가
           }),
         ],
       ),
+
       body: posts.isEmpty
           ? Center(
         child: CircularProgressIndicator(),
