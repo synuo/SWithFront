@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:practice/post_detail.dart';
 import 'chat.dart';
+import 'common_object.dart';
 import 'common_widgets.dart';
 import 'home.dart';
 import 'mypage.dart';
@@ -42,6 +43,11 @@ class _BoardScreenState extends State<BoardScreen> {
           category: data['category'] as String,
           view_count: data['view_count'] as int,
           progress: data['progress'] as String,
+          writer_id: data['writer_id'] as int,
+          create_at: DateTime.parse(data['create_at']),
+          update_at: DateTime.parse(data['update_at']),
+          study_name: data['study_name'] as String,
+          content: data['study_name'] as String,
         );
       }).toList();
 
@@ -72,7 +78,7 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
       body: posts.isEmpty
           ? Center(
-        child: CircularProgressIndicator(), // 또는 다른 로딩 상태 표시 위젯
+        child: CircularProgressIndicator(),
       )
           : ListView.builder(
         itemCount: posts.length,
@@ -83,7 +89,7 @@ class _BoardScreenState extends State<BoardScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PostDetailScreen(postId: post.post_id),
+                  builder: (context) => PostDetailScreen(post_id: post.post_id),
                 ),
               );
             },
@@ -149,17 +155,3 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 }
 
-class Post {
-  final int post_id;
-  final String title;
-  final String category;
-  final int view_count;
-  final String progress;
-
-  Post(
-      {required this.post_id,
-        required this.title,
-        required this.category,
-        required this.view_count,
-        required this.progress});
-}
