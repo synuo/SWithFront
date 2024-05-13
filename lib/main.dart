@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void navigateToLoginPage(){
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomePage()), // 로그인 페이지로 이동
+      MaterialPageRoute(builder: (context) => LoginPage()), // 로그인 페이지로 이동
     );
     print('화면전환 : splash -> login');
   }
