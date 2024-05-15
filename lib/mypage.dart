@@ -82,17 +82,17 @@ class _MyPageState extends State<MyPage> {
                         shape: BoxShape.rectangle,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.indigo, // 톱니바퀴 아이콘을 둘러싼 상자 모양 선의 색상 지정
-                          width: 1, // 톱니바퀴 아이콘을 둘러싼 상자 모양 선의 두께 지정
+                          color: Colors.indigo,
+                          width: 1,
                         ),
                       ),
                       child: IconButton(
                         onPressed: () {
                           // 프로필 수정으로 이동하는 기능 추가
                         },
-                        icon: Icon(Icons.settings),
-                        color: Colors.indigo, // 톱니바퀴 아이콘의 색상 지정
-                        iconSize: 35, // 톱니바퀴 아이콘의 크기 조정
+                        icon: Icon(Icons.edit),
+                        color: Colors.indigo,
+                        iconSize: 35,
                       ),
                     ),
                   ),
@@ -102,43 +102,44 @@ class _MyPageState extends State<MyPage> {
             SizedBox(height: 20),
             // 구분선
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             // 기능 목록
             buildMenuItem('나의 모집 현황', Icons.arrow_forward_ios, () {
               // 나의 모집 현황으로 이동하는 기능 추가
             }),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             buildMenuItem('나의 지원 현황', Icons.arrow_forward_ios, () {
               // 나의 지원 현황으로 이동하는 기능 추가
             }),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             // 구분선
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             buildMenuItem('스크랩', Icons.arrow_forward_ios, () {
               // 스크랩으로 이동하는 기능 추가
             }),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             // 구분선
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             buildMenuItem('피드백', Icons.arrow_forward_ios, () {
               // 피드백으로 이동하는 기능 추가
             }),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             buildMenuItem('설정', Icons.arrow_forward_ios, () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingPage()), // setting.dart로 이동합니다.
+                MaterialPageRoute(builder: (context) =>
+                    SettingPage()), // setting.dart로 이동합니다.
               );
             }),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 20),
+            SizedBox(height: 10),
           ],
         ),
       ),
@@ -146,24 +147,27 @@ class _MyPageState extends State<MyPage> {
   }
 
   Widget buildMenuItem(String title, IconData icon, VoidCallback onTap) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.indigo,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.indigo,
+              ),
             ),
-          ),
-          SizedBox(width: 5), // 텍스트와 아이콘이 겹치지 않게 간격 추가
-          Icon(
-            icon,
-            size: 16,
-            color: Colors.indigo,
-          ), // 화살표 아이콘 추가
-        ],
+            SizedBox(width: 5), // 텍스트와 아이콘이 겹치지 않게 간격 추가
+            Icon(
+              icon,
+              size: 16,
+              color: Colors.indigo,
+            ), // 화살표 아이콘 추가
+          ],
+        ),
       ),
     );
   }
