@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:practice/userinfo.dart';
-import 'login.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:practice/setting.dart';
 import 'package:practice/profile.dart'; // ProfileScreen을 import
 
 class MyPage extends StatefulWidget {
@@ -133,7 +131,10 @@ class _MyPageState extends State<MyPage> {
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 20),
             buildMenuItem('설정', Icons.arrow_forward_ios, () {
-              // 설정으로 이동하는 기능 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingPage()), // setting.dart로 이동합니다.
+              );
             }),
             SizedBox(height: 20),
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
