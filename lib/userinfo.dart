@@ -1,16 +1,19 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:practice/home.dart';
+import 'package:practice/login.dart';
+import 'package:image_picker/image_picker.dart'; //사진 업로드 위함
 
 // 사용자 기본 정보 입력 (이름, 학번, 닉네임, 전공, 비번)
 // 전공1, 전공2, 프로필이미지, 자기소개는 선택사항
 
 class UserInfoPage extends StatefulWidget {
   const UserInfoPage({super.key});
-
   @override
   State<UserInfoPage> createState() => _UserInfoPageState();
 }
@@ -47,6 +50,54 @@ class _UserInfoPageState extends State<UserInfoPage> {
     setState(() {
       _majors = majors;
     });
+  // 전공 이름과 ID를 매핑하는 맵
+  Map<String, int> _majorIdMap = {};
+
+  //db로부터 전공 리스트 가져옴
+  Future<void> _fetchMajors() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/major'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final List<Map<String, dynamic>> majors = data.cast<Map<String, dynamic>>();
+        _majors = majors.map((major) => major['major_name'] as String).toList();
+        _majors.insert(0, ''); // 맨 앞에 널값 추가
+        setState(() {
+          _selectedMajor1 = _majors.isNotEmpty ? _majors.first : ''; // 여기서 빈 문자열로 초기화
+          _selectedMajor2 = _majors.isNotEmpty ? _majors.first : '';
+          _selectedMajor3 = _majors.isNotEmpty ? _majors.first : '';
+        });
+        // _majors 리스트와 majors 데이터를 동일한 인덱스를 사용하여 전공 이름과 ID를 매핑
+        _majorIdMap = Map.fromIterable(majors,
+            key: (major) => major['major_name'] as String,
+            value: (major) => major['major_id'] as int);
+        print('_majors : $_majors');
+        print('_majoridMap : $_majorIdMap');
+      } else {
+        throw Exception('Failed to fetch majors');
+      }
+    } catch (e) {
+      print('Error fetching majors: $e');
+    }
+  }
+
+  // 갤러리에서 이미지 가져오는 함수
+  Future<void> _getImageFromGallery() async {
+    try {
+      final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _profileImageController.text = pickedFile.path;
+        });
+      }
+    } catch (e) {
+      print('이미지 선택 오류: $e');
+    }
+  }
+
+  // dropbox에서 선택된 전공 이름에 해당하는 ID를 찾는 함수
+  int? findMajorId(String majorName) {
+    return _majorIdMap[majorName];
   }
 
   @override
@@ -89,7 +140,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   if (value.length != 7) {
                     return '학번은 7자리여야 합니다.';
                   }
-                  checkDuplicateStudentId(value); // 학번 중복 체크
+                  //checkDuplicateStudentId(value); // 학번 중복 체크
                   return null;
                 },
               ),
@@ -108,7 +159,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   if (value.length > 10) {
                     return '닉네임은 10자 이하여야 합니다.';
                   }
-                  checkDuplicateNickname(value);
+                  //checkDuplicateNickname(value);
                   return null;
                 },
               ),
@@ -210,6 +261,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   labelText: '프로필 이미지 (선택)',
                 ),
                 //TODO : 사용자가 프로필 이미지 추가 (path 저장?)
+
               ),
               TextFormField(  // 자기소개 입력 폼 필드
                 decoration: InputDecoration(
@@ -242,6 +294,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
         ),
       ),
     );
+  }
   }
 
   @override
