@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'changePassword.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -142,13 +143,39 @@ class _SettingPageState extends State<SettingPage> {
               updateNotificationSettings();
             },
           ),
+          Container(
+            color: Colors.grey.shade200,
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: Text(
+              '회원정보 변경',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+              ),
+            ),
+          ),
+          ListTile(
+            title: Text('비밀번호 변경'),
+            onTap: () {
+              // 비밀번호 변경 페이지로 이동
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
   Widget _buildNotificationSettingItem(
-      String title, bool value, bool allowNotifications, ValueChanged<bool> onChanged) {
+      String title,
+      bool value,
+      bool allowNotifications,
+      ValueChanged<bool> onChanged,
+      ) {
     return ListTile(
       title: Text(title),
       trailing: allowNotifications
