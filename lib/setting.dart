@@ -28,14 +28,48 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Future<void> _loadSettings() async {
-    _prefs = await SharedPreferences.getInstance();
-    setState(() {
-      allowNotifications = _prefs.getBool('allowNotifications') ?? true;
-      chatroomNotification = _prefs.getBool('chatroomNotification') ?? true;
-      qnaNotification = _prefs.getBool('qnaNotification') ?? true;
-      supportResultNotification = _prefs.getBool('supportResultNotification') ?? true;
-      reviewNotification = _prefs.getBool('reviewNotification') ?? true;
-    });
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      setState(() {
+        allowNotifications = _prefs.getBool('allowNotifications') ?? true;
+        chatroomNotification = _prefs.getBool('chatroomNotification') ?? true;
+        qnaNotification = _prefs.getBool('qnaNotification') ?? true;
+        supportResultNotification = _prefs.getBool('supportResultNotification') ?? true;
+        reviewNotification = _prefs.getBool('reviewNotification') ?? true;
+      });
+    } catch (error) {
+      print('Error loading notification settings: $error');
+    }
+  }
+
+  Future<void> _updateSettings() async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/setnoti'), // 서버의 알림 설정 업데이트 엔드포인트 URL로 변경
+        body: json.encode({
+          'user_id': 1,
+          'all_noti': allowNotifications,
+          'chatroom_noti': chatroomNotification,
+          'qna_noti': qnaNotification,
+          'accept_noti': supportResultNotification,
+          'review_noti': reviewNotification,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        print('Notification settings updated successfully');
+        _prefs.setBool('allowNotifications', allowNotifications);
+        _prefs.setBool('chatroomNotification', chatroomNotification);
+        _prefs.setBool('qnaNotification', qnaNotification);
+        _prefs.setBool('supportResultNotification', supportResultNotification);
+        _prefs.setBool('reviewNotification', reviewNotification);
+      } else {
+        print('Failed to update notification settings');
+      }
+    } catch (error) {
+      print('Error updating notification settings: $error');
+    }
   }
 
   @override
@@ -64,7 +98,6 @@ class _SettingPageState extends State<SettingPage> {
             onChanged: (value) {
               setState(() {
                 allowNotifications = value;
-                _prefs.setBool('allowNotifications', value);
                 // 알림 허용이 변경되면 모든 세부 알림 설정도 함께 변경
                 if (!value) {
                   // 알림 허용이 꺼진 경우, 모든 세부 알림 설정을 false로 변경
@@ -72,24 +105,9 @@ class _SettingPageState extends State<SettingPage> {
                   qnaNotification = false;
                   supportResultNotification = false;
                   reviewNotification = false;
-                  _prefs.setBool('chatroomNotification', false);
-                  _prefs.setBool('qnaNotification', false);
-                  _prefs.setBool('supportResultNotification', false);
-                  _prefs.setBool('reviewNotification', false);
-                } else {
-                  // 알림 허용이 켜진 경우, 모든 세부 알림 설정을 알림 허용과 동일하게 변경
-                  chatroomNotification = value;
-                  qnaNotification = value;
-                  supportResultNotification = value;
-                  reviewNotification = value;
-                  _prefs.setBool('chatroomNotification', value);
-                  _prefs.setBool('qnaNotification', value);
-                  _prefs.setBool('supportResultNotification', value);
-                  _prefs.setBool('reviewNotification', value);
                 }
               });
-              // 업데이트 함수 호출
-              updateNotificationSettings();
+              _updateSettings(); // 알림 설정 업데이트 요청 보내기
             },
           ),
           Divider(),
@@ -104,7 +122,7 @@ class _SettingPageState extends State<SettingPage> {
                 chatroomNotification = value;
                 _prefs.setBool('chatroomNotification', value);
               });
-              updateNotificationSettings();
+              _updateSettings();
             },
           ),
           _buildNotificationSettingItem(
@@ -116,7 +134,7 @@ class _SettingPageState extends State<SettingPage> {
                 qnaNotification = value;
                 _prefs.setBool('qnaNotification', value);
               });
-              updateNotificationSettings();
+              _updateSettings();
             },
           ),
           _buildNotificationSettingItem(
@@ -128,7 +146,7 @@ class _SettingPageState extends State<SettingPage> {
                 supportResultNotification = value;
                 _prefs.setBool('supportResultNotification', value);
               });
-              updateNotificationSettings();
+              _updateSettings();
             },
           ),
           _buildNotificationSettingItem(
@@ -140,7 +158,7 @@ class _SettingPageState extends State<SettingPage> {
                 reviewNotification = value;
                 _prefs.setBool('reviewNotification', value);
               });
-              updateNotificationSettings();
+              _updateSettings();
             },
           ),
           Container(
@@ -179,18 +197,14 @@ class _SettingPageState extends State<SettingPage> {
     return ListTile(
       title: Text(title),
       trailing: allowNotifications
-          ? CupertinoSwitch(
+          ? Switch(
         value: value,
         onChanged: onChanged,
       )
-          : CupertinoSwitch(
+          : Switch(
         value: value,
         onChanged: null, // 알림 허용이 꺼져있을 때 스위치를 눌러도 변화 없음
       ),
     );
-  }
-
-  Future<void> updateNotificationSettings() async {
-    // 업데이트 함수의 내용은 그대로 유지됩니다.
   }
 }
