@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:practice/common_widgets.dart';
 
 class AddPostScreen extends StatefulWidget {
   @override
@@ -8,8 +9,9 @@ class AddPostScreen extends StatefulWidget {
 }
 
 class _AddPostScreenState extends State<AddPostScreen> {
+  String? _selectedCategory;
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _studyNameController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
 
   List<Widget> questionFields = []; // 동적으로 추가될 위젯 목록
@@ -19,6 +21,32 @@ class _AddPostScreenState extends State<AddPostScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Post'),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                // 폼 유효성 검사
+                if (_titleController.text.isEmpty ||
+                    _selectedCategory == null ||
+                    _studyNameController.text.isEmpty ||
+                    _contentController.text.isEmpty) {
+                  // 필수 필드가 비어있는 경우
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Please fill in all fields'),
+                    ),
+                  );
+                } else {
+                  // 게시글 생성 요청
+                  addPost();
+                }
+              },
+              child: Text('Create Post'),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -33,10 +61,17 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 ),
               ),
               SizedBox(height: 12),
+              Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8.0)),
+                  child: _dropDown(underline: Container())),
+              SizedBox(height: 12),
               TextField(
-                controller: _categoryController,
+                controller: _studyNameController,
                 decoration: InputDecoration(
-                  labelText: 'Category',
+                  labelText: 'Study Name',
                 ),
               ),
               SizedBox(height: 12),
@@ -46,26 +81,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 decoration: InputDecoration(
                   labelText: 'Content',
                 ),
-              ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  // 폼 유효성 검사
-                  if (_titleController.text.isEmpty ||
-                      _categoryController.text.isEmpty ||
-                      _contentController.text.isEmpty) {
-                    // 필수 필드가 비어있는 경우
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Please fill in all fields'),
-                      ),
-                    );
-                  } else {
-                    // 게시글 생성 요청
-                    addPost();
-                  }
-                },
-                child: Text('Create Post'),
               ),
               SizedBox(height: 24),
               ElevatedButton(
@@ -110,16 +125,47 @@ class _AddPostScreenState extends State<AddPostScreen> {
         'Accept': 'application/json',
       },
       body: jsonEncode({
+        'writer_id' : 1, // TODO: 실제 user id 넣게 수정해야함
         'title': _titleController.text,
-        'category': _categoryController.text,
+        'category': _selectedCategory,
+        'study_name': _studyNameController.text,
         'content': _contentController.text,
       }),
     );
     if (response.statusCode == 201) {
-      // 게시글이 성공적으로 생성되었을 때
-      Navigator.pop(context, true); // 현재 페이지를 닫고 이전 페이지로 돌아갑니다.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('게시글 등록 완료'),
+        ),
+      );
+      Navigator.pop(context, true);
     } else {
       throw Exception('Failed to create post');
     }
   }
+
+  Widget _dropDown({
+    Widget? underline,
+    Widget? icon,
+    TextStyle? style,
+    TextStyle? hintStyle,
+    Color? iconEnabledColor,
+  }) =>
+      DropdownButton<String>(
+          value: _selectedCategory,
+          underline: underline,
+          icon: icon,
+          dropdownColor: Colors.white,
+          style: style,
+          iconEnabledColor: iconEnabledColor,
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedCategory = newValue;
+            });
+          },
+          hint: Text("카테고리 선택", style: hintStyle),
+          items: ["스터디","공모전","기타"]
+              .map((fruit) =>
+              DropdownMenuItem<String>(value: fruit, child: Text(fruit)))
+              .toList());
 }

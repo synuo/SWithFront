@@ -103,7 +103,9 @@ class _BoardScreenState extends State<BoardScreen> {
                 MaterialPageRoute(
                   builder: (context) => AddPostScreen(),
                 ),
-              );
+              ).then((_) {
+                fetchPosts(); // fetchPosts 함수 실행
+              });
             },
           ),
           SearchButton(onPressed: () {
@@ -133,7 +135,6 @@ class _BoardScreenState extends State<BoardScreen> {
                     builder: (context) => PostDetailScreen(post_id: post.post_id),
                   ),
                 ).then((_) {
-                  // PostDetailScreen으로부터 Navigator.pop이 호출될 때 실행될 코드
                   fetchPosts(); // fetchPosts 함수 실행
                 });
               },

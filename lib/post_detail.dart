@@ -13,6 +13,9 @@ class PostDetailScreen extends StatefulWidget {
 }
 
 class _PostDetailScreenState extends State<PostDetailScreen> {
+  bool isScrapped = false;
+  //Todo user_id를 기반으로 isScrapped를 최초 초기화 하는 함수 필요
+
   @override
   void initState() {
     super.initState();
@@ -20,7 +23,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<Post> fetchPostDetails(int postId) async {
     final url = Uri.parse('http://localhost:3000/getposts/${postId}');
-    print(url);
     final response = await http.get(
       url,
       headers: <String, String>{
@@ -47,6 +49,50 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       throw Exception('Failed to load post detail');
     }
   }
+
+
+  Future<void> addScrap() async {
+    final url = Uri.parse('http://localhost:3000/addscrap');
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'user_id': 1, //TODO 실제 user id로 바꾸도록 코드 추가하기
+        'post_id': widget.post_id,
+      }),
+    );
+    if (response.statusCode == 201) {
+      print("scrap 완료");
+
+    } else {
+      throw Exception('Failed to add scrap');
+    }
+  }
+
+  Future<void> deleteScrap() async {
+    final url = Uri.parse('http://localhost:3000/deletescrap');
+    final response = await http.delete(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'user_id': 1, //TODO 실제 user id로 바꾸도록 코드 추가하기
+        'post_id': widget.post_id,
+      }),
+    );
+    if (response.statusCode == 200) {
+      print("scrap 취소 완료");
+
+    } else {
+      throw Exception('Failed to delete scrap');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +122,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               elevation: 0.0,
               backgroundColor: Color(0xff19A7CE),
               centerTitle: true,
-              actions: [],
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    isScrapped ? Icons.bookmark : Icons.bookmark_border,
+                    color: isScrapped ? Colors.orange : Colors.white, // 색상 변경
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      // 스크랩 상태 변경
+                      if (isScrapped) {
+                        deleteScrap();
+                      } else {
+                        addScrap();
+                      }
+                      isScrapped = !isScrapped;
+                    });
+                  },
+                ),
+              ],
             ),
             body: Padding(
               padding: const EdgeInsets.all(16.0),
