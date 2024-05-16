@@ -1,11 +1,13 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:practice/setting.dart';
-import 'package:practice/profile.dart'; // ProfileScreen을 import
+import 'setting.dart';
+import 'profile.dart';
+import 'chat.dart';
+import 'common_object.dart';
+import 'common_widgets.dart';
+import 'home.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({Key? key}) : super(key: key);
@@ -15,8 +17,35 @@ class MyPage extends StatefulWidget {
 }
 
 class _MyPageState extends State<MyPage> {
+  String? nickname;
+  String? name;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserInfo();
+  }
+
+  Future<void> fetchUserInfo() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/user/1'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body); // JSON 데이터를 파싱
+        setState(() {
+          nickname = data['nickname']; // 가져온 사용자 정보 중 닉네임을 저장
+          name = data['name']; // 가져온 사용자 정보 중 이름을 저장
+        });
+      } else {
+        throw Exception('Failed to load user information');
+      }
+    } catch (error) {
+      print('Error fetching user information: $error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    int _currentIndex = 0;
     return Scaffold(
       appBar: AppBar(
         title: Text('My Page'),
@@ -27,11 +56,11 @@ class _MyPageState extends State<MyPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 프로필 이미지와 사용자 정보
-            GestureDetector(
+            InkWell(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfileScreen()),
+                  MaterialPageRoute(builder: (context) => ProfileScreen()), // profile.dart로 이동합니다.
                 );
               },
               child: Row(
@@ -57,7 +86,7 @@ class _MyPageState extends State<MyPage> {
                       children: [
                         SizedBox(height: 20),
                         Text(
-                          '사용자 닉네임',
+                          nickname ?? '', // 닉네임 표시
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -66,7 +95,7 @@ class _MyPageState extends State<MyPage> {
                         ),
                         SizedBox(height: 10),
                         Text(
-                          '사용자 이름',
+                          name ?? '', // 이름 표시
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.black,
@@ -142,6 +171,28 @@ class _MyPageState extends State<MyPage> {
             SizedBox(height: 10),
           ],
         ),
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (int index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          switch (index) {
+            case 0: // 홈 아이콘
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+              break;
+            case 1: // 게시판 아이콘
+            // 현재 페이지
+              break;
+            case 2: // 채팅 아이콘
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatScreen()));
+              break;
+            case 3: // 마이페이지 아이콘
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyPage()));
+              break;
+          }
+        },
       ),
     );
   }
