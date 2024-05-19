@@ -1,16 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:practice/chat.dart';
-import 'package:practice/home.dart';
 import 'package:practice/newlogin.dart';
-import 'package:practice/newsignup.dart';
-import 'package:practice/userinfo.dart';
-import 'login.dart';
-import 'package:practice/get_user_info.dart';
-import 'package:practice/newhome.dart';
 
+//05.20 수정본
 void main() {
   HttpOverrides.global = new ProxiedHttpOverrides("1.209.144.251:3000");
   runApp(const MyApp());
