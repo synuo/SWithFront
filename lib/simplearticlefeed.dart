@@ -36,7 +36,7 @@ class NewsFeedPage2 extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text("${item.author} · ${item.postedOn}",
-                                style: Theme.of(context).textTheme.caption),
+                                style: Theme.of(context).textTheme.bodySmall),
                             const SizedBox(height: 8),
                             Row(
                               mainAxisSize: MainAxisSize.min,

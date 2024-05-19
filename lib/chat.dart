@@ -63,6 +63,7 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         },
       ),
+      /*
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (int index) {
@@ -84,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
               break;
           }
         },
-      ),
+      ),*/
     );
   }
 }
