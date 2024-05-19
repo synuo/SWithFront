@@ -177,7 +177,7 @@ class __FormContentState extends State<_FormContent> {
                 ),
                 onPressed: () async {
                   if (_formKey.currentState?.validate() ?? false) {
-                    print("로그인하기 버튼 클릭함");
+                    print("로그인 버튼 클릭함");
                     print(_emailController.text);
                     print(_passwordController.text);
                     await login(context);
@@ -244,13 +244,13 @@ class __FormContentState extends State<_FormContent> {
           backgroundColor: Colors.green,
         ),
       );
-      print('화면전환 : homepage ');
+      print('화면전환 : login -> homepage ');
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       ); // 로그인 성공 시 홈 페이지로 이동
     } else {
-      print('Logged in failed..');
+      print('Log in failed..');
       print(response.statusCode);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
