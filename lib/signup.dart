@@ -1,15 +1,9 @@
-import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:practice/userinfo.dart';
-import 'login.dart';
 import 'package:http/http.dart' as http;
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mysql1/mysql1.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server/gmail.dart';
+import 'package:practice/userinfo.dart';
+import 'dart:convert';
+import 'dart:async';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({Key? key}) : super(key: key);
@@ -18,15 +12,229 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
+
+    return Scaffold(
+        body: Center(
+            child: isSmallScreen ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                _Logo(),
+                _FormContent(),
+              ],
+            ) : Container(
+              padding: const EdgeInsets.all(32.0),
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Row(
+                children: const [
+                  Expanded(child: _Logo()),
+                  Expanded(
+                    child: Center(child: _FormContent()),
+                  ),
+                ],
+              ),
+            )));
+
+  }
+}
+
+//로고
+class _Logo extends StatelessWidget {
+  const _Logo({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FlutterLogo(size: isSmallScreen ? 100 : 200),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            "Welcome to SWith!",
+            textAlign: TextAlign.center,
+            style: isSmallScreen
+                ? Theme.of(context).textTheme.headlineSmall
+                : Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: Colors.black),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+//회원가입 위젯 : 이메일 중복확인 + 인증코드 입력
+class _FormContent extends StatefulWidget {
+  const _FormContent({Key? key}) : super(key: key);
+
+  @override
+  State<_FormContent> createState() => __FormContentState();
+}
+
+class __FormContentState extends State<_FormContent> {
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final TextEditingController _emailController = TextEditingController(); //이메일 입력받음
   final TextEditingController _verificationCodeController = TextEditingController(); //인증코드 입력받음
   late String _email;             //사용자 이메일
   late String _enteredCode;      //사용자가 입력한 코드
+  bool emailValid = false;
   bool _codeSent = false;    // 인증코드 전송 여부
   bool _emailExists = false; //이미 존재하는 이메일 db인지 확인 용도
   //late String sessionId; // 세션 ID를 저장하는 변수
   late String expectedCode;  //인증코드를 저장하는 변수
-  late IconData _emailIcon = Icons.ac_unit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 300),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextFormField(
+              controller: _emailController,
+              validator: (value) {
+                // add email validation
+                if (value == null || value.isEmpty) {
+                  return '이메일을 입력해주세요.';
+                }
+                emailValid = RegExp(
+                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@sookmyung\.ac\.kr$")
+                    .hasMatch(value);
+                if (!emailValid) {
+                  return '숙명 메일 @sookmyung.ac.kr를 입력해주세요.';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                hintText: '숙명 메일을 입력해주세요.',
+                prefixIcon: Icon(Icons.email_outlined),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            _gap(),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4)),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text(
+                    '이메일 확인하기',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                onPressed: () async {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    print("이메일 확인 버튼 클릭함");
+                    print(_emailController.text);
+                    await _checkEmailExists(_emailController.text);
+                  }
+                  if(emailValid && !_emailExists){
+                    _email = _emailController.text;
+                    await _sendVerificationCode(_email);
+                  }
+                },
+              ),
+            ),
+            _gap(),
+            if (_codeSent) ...[
+              Text(
+                '인증 코드 6자리가 메일로 전송되었습니다.',
+                style: TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.normal),
+              ),
+              TextFormField(
+                controller: _verificationCodeController,
+                decoration: InputDecoration(
+                  labelText: 'Verification Code',
+                  hintText: '인증코드 6자리를 입력해주세요.',
+                  prefixIcon: const Icon(Icons.verified_user_outlined),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              _gap(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Text('확인', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                  ),
+                  onPressed: () async {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      print("확인 버튼 클릭함");
+                      _enteredCode = _verificationCodeController.text.trim();
+                      if(expectedCode == _enteredCode) {
+                        print("인증코드 확인 완료!");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('인증코드 확인 완료!'),
+                          ),
+                        );
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => UserInfoPage(email: _email)),
+                        );
+                        print('화면전환 : emailcheck -> userinfo');
+                      } else {
+                        print("실패... 잘못된 인증코드");
+                        // 잘못된 인증 코드일 때 메시지 표시
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('잘못된 인증 코드입니다. 다시 입력해주세요.'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ),
+              _gap(),
+              ElevatedButton(
+                onPressed:(){
+                  _sendVerificationCode(_email);
+                  _enteredCode = _verificationCodeController.text.trim();
+                  if(_codeSent){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '인증 코드를 메일로 재발송했습니다.',
+                          style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                        )
+                      ),
+                    );
+                  }
+                },
+                child: Text('새로운 인증 코드 받기'),
+              ),
+            ]
+          ],
+        ),
+
+      ),
+    );
+  }
+
+  Widget _gap() => const SizedBox(height: 16);
 
   //인증코드 보낼 메일 주소 전달
   Future<void> _sendVerificationCode(String email) async {
@@ -59,38 +267,8 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  //인증코드 일치하는지 확인
-  //04/10 수정 : 필요x
-  Future<void> _verifyCode(String enterCode) async {
-    // 입력한 인증 코드
-    print(enterCode);
-    final url = Uri.parse('http://localhost:3000/email/verifyCode');   // Uri.parse() : 서버의 주소를 파싱하여 Uri 객체를 생성
-    print(url);
-    final response = await http.post( //POST 요청을 보냄
-      url, //첫 번째 인자는 요청을 보낼 URL임.
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode({ //두 번째 인자는 요청 본문(body)
-        'codeFromUser': enterCode,
-      }),
-    );
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      print('올바른 인증 코드!');
-      setState(() {
-        _codeSent = true; // 이메일이 성공적으로 보내졌을 때에만 _codeSent를 true로 설정
-      });
-    } else {
-      print('잘못된 인증 코드..');
-      _verificationCodeController.clear();  //입력 초기화
-    }
-
-  }
-
   // 이메일 중복 확인 함수
-  Future<void> _checkEmailExists(String email) async {
+  Future<bool> _checkEmailExists(String email) async {
     print('이메일 중복 확인 함수 실행됨.');
 
     final url = Uri.parse('http://localhost:3000/checkemail?email=$email');
@@ -117,23 +295,13 @@ class _SignupPageState extends State<SignupPage> {
             );
           },
         );
-        _emailController.clear(); // 이메일 입력창 초기화
       } else {
         print('새로운 이메일');
         _emailExists = false;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('새로운 이메일! 인증 코드 받기를 눌러주세요.')),
+          SnackBar(content: Text('새로운 이메일! 메일로 인증코드 전송 중 ...')),
         );
       }
-      _emailIcon = _emailExists ? Icons.cancel : Icons.check_circle;
-      // 이메일이 이미 존재하는 경우에 대한 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: _emailExists
-              ? Text('이미 등록된 이메일 주소입니다.')
-              : Text('사용 가능한 이메일 주소입니다.'),
-        ),
-      );
     } catch (e) {
       print('네트워크 오류');
       // 네트워크 오류 발생 시 메시지 표시
@@ -141,147 +309,7 @@ class _SignupPageState extends State<SignupPage> {
         SnackBar(content: Text('네트워크 오류가 발생했습니다.')),
       );
     }
+
+    return _emailExists;
   }
-
-  // 이메일 입력 필드 감지를 위한 함수 추가
-  void _emailFieldChanged() {
-    setState(() {
-      _codeSent = false; // 이메일 입력이 변경될 때마다 _codeSent 상태를 false로 설정
-    });
-  }
-
-  //코드 재발송
-  Future<void> _resendVerificationCode(String email) async {
-    print("코드 재발송 함수 실행됨");
-    _verificationCodeController.clear();
-    await _sendVerificationCode(email);
-  }
-
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          '회원가입', style: TextStyle(color: Colors.white, fontSize: 20.0),),
-        elevation: 0.0,
-        backgroundColor: Color(0xff19A7CE),
-        centerTitle: true,
-        leading: IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              //TODO
-            }
-        ),
-        actions: <Widget>[
-          IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {
-                //TODO
-              }
-          )
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    controller: _emailController,
-                    onChanged: (_) => _emailFieldChanged(), // 이메일 입력 필드 변경 감지
-                    decoration: InputDecoration(
-                      labelText: '숙명 이메일 @sookmyung.ac.kr 을 입력해주세요.',
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10.0),
-                ElevatedButton(
-                  onPressed: () async {
-                    _email = _emailController.text.trim();
-                    print(_email);
-                    if (_email.endsWith('@sookmyung.ac.kr')) {    //숙명 이메일이라면
-                      await _checkEmailExists(_email);       // 중복 확인 버튼을 누른 경우에만 중복 확인 수행.. 괜찮?
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('@sookmyung.ac.kr 이메일 주소를 입력해주세요.'),
-                          )
-                      );
-                    }
-                  },
-                  child: Text('중복 확인'),
-                ),
-              ],
-            ),
-            SizedBox(height: 20.0),
-            if (!_codeSent && !_emailExists)
-              //중복 확인 후 인증코드 발송(발송 성공하면 _codeSent true)
-              ElevatedButton(
-                onPressed: () async {
-                  if(!_emailExists)
-                    await _sendVerificationCode(_email);
-                  else
-                    print("중복된 메일입니다. 다른 메일로 인증코드를 받으세요");
-                },
-                child: Text('인증 코드 받기'),
-              ),
-            SizedBox(height: 20.0),
-            if (_codeSent)
-              //인증코드 입력 & 맞는지 확인. 틀리면 재입력 가능. 인증코드 재발송 가능.
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: _verificationCodeController,
-                    decoration: InputDecoration(labelText: '인증 코드 6자리를 입력하세요.',),
-                  ),
-                  SizedBox(height: 20.0),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          _enteredCode = _verificationCodeController.text.trim();
-                          //_verifyCode(_enteredCode);
-                          if(expectedCode == _enteredCode) {
-                            print("인증코드 확인 완료!");
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => UserInfoPage(email: _email)),
-                            );
-                            print('화면전환 : emailcheck -> userinfo');
-                          } else {
-                            print("실패... 잘못된 인증코드");
-                            // 잘못된 인증 코드일 때 메시지 표시
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('잘못된 인증 코드입니다. 다시 입력해주세요.'),
-                              ),
-                            );
-                          }
-                        },
-                        child: Text('확인'),
-                      ),
-                      SizedBox(height: 10.0),
-                      ElevatedButton(
-                        onPressed:(){
-                          _resendVerificationCode(_email);
-                          },
-                        child: Text('새로운 인증 코드 받기'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
 }
