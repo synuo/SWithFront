@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CircularButton extends StatelessWidget {
@@ -79,6 +80,59 @@ class SearchButton extends StatelessWidget {
     return IconButton(
       icon: Icon(Icons.search),
       onPressed: onPressed,
+    );
+  }
+}
+
+class ContainerDropDown extends StatefulWidget {
+  final List<String> items; // 선택할 수 있는 항목들의 목록
+  final String hint; // null 값 일시 띄워줄 값
+
+  const ContainerDropDown({
+    Key? key,
+    required this.items,
+    required this.hint,
+  }) : super(key: key);
+
+  @override
+  _ContainerDropDownState createState() => _ContainerDropDownState();
+}
+
+class _ContainerDropDownState extends State<ContainerDropDown> {
+  String? selectedValue; // 현재 선택된 항목의 값
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          width: 300,
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: DropdownButton<String>(
+            value: selectedValue,
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedValue = newValue;
+              });
+            },
+            items: [
+              DropdownMenuItem(
+                value: null,
+                child: Text(widget.hint),
+              ),
+              ...widget.items.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
