@@ -438,7 +438,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   Navigator.pop(context); // 팝업 닫기
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginPage()), //홈 화면으로 이동
+                    MaterialPageRoute(builder: (context) => LogInPage()), //홈 화면으로 이동
                   );
                 },
                 child: Text('확인'),
