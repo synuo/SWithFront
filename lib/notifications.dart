@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'board.dart';
 import 'chat.dart';
-import 'newhome.dart';
+import 'home.dart';
 import 'main.dart';
 
 class NotificationPage extends StatefulWidget {
