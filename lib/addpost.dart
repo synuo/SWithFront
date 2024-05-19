@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:practice/addadvancequestion.dart';
 import 'package:practice/common_widgets.dart';
 
 class AddPostScreen extends StatefulWidget {
@@ -13,8 +14,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _studyNameController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-
-  List<Widget> questionFields = []; // 동적으로 추가될 위젯 목록
+  final TextEditingController _tagController = TextEditingController();
+  List<String> _tags = [];
+  late int post_id;
+  int tagMaxLength = 20;
 
   @override
   Widget build(BuildContext context) {
@@ -35,15 +38,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   // 필수 필드가 비어있는 경우
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Please fill in all fields'),
+                      content: Text('모든 항목을 채워주세요.'),
                     ),
                   );
                 } else {
-                  // 게시글 생성 요청
                   addPost();
                 }
               },
-              child: Text('Create Post'),
+              child: Text('다음'),
             ),
           ),
         ],
@@ -83,36 +85,64 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 ),
               ),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  // '사전질문'과 텍스트 필드 추가
-                  setState(() {
-                    questionFields.add(
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text('사전질문 ${questionFields.length + 1}'),
-                          SizedBox(height: 12),
-                          TextField(
-                            decoration: InputDecoration(
-                              labelText: 'Answer',
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                        ],
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _tagController,
+                      decoration: InputDecoration(
+                        labelText: '태그 추가',
                       ),
-                    );
-                  });
-                },
-                child: Text('Add Question'),
+                      onFieldSubmitted: (value) {
+                        _addTag();
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: _addTag,
+                  ),
+                ],
               ),
-              SizedBox(height: 24),
-              // 동적으로 추가된 위젯들 표시
-              ...questionFields,
+              SizedBox(height: 10),
+              Wrap(
+                spacing: 8.0, //가로 간격
+                runSpacing: 8.0, //세로 간격
+                children: _tags.map((tag) => _buildTagItem(tag)).toList(),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _addTag() {
+    if (_tagController.text.length <= tagMaxLength) {
+      setState(() {
+        final newTag = _tagController.text.trim();
+        if (newTag.isNotEmpty) {
+          _tags.add(newTag);
+          _tagController.clear();
+        }
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('태그는 ${tagMaxLength}자 이하여야 합니다.'),
+        ),
+      );
+    }
+  }
+
+  Widget _buildTagItem(String tag) {
+    return Chip(
+      label: Text(tag),
+      onDeleted: () {
+        setState(() {
+          _tags.remove(tag);
+        });
+      },
     );
   }
 
@@ -133,12 +163,30 @@ class _AddPostScreenState extends State<AddPostScreen> {
       }),
     );
     if (response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('게시글 등록 완료'),
-        ),
-      );
-      Navigator.pop(context, true);
+        final responseData = jsonDecode(response.body);
+        post_id = responseData['postId'];
+        addPostTag();
+    } else {
+      throw Exception('Failed to create post');
+    }
+  }
+
+  Future<void> addPostTag() async {
+    final url = Uri.parse('http://localhost:3000/addposttag');
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'post_id': post_id,
+        'tags' : _tags
+      }),
+    );
+    if (response.statusCode == 201) {
+
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AddAQScreen(post_id: post_id)));
     } else {
       throw Exception('Failed to create post');
     }
