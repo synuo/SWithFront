@@ -11,6 +11,7 @@ import 'common_object.dart';
 import 'common_widgets.dart';
 import 'package:http/http.dart' as http;
 
+//05.20 수정본
 class HomePage2 extends StatefulWidget {
   final int userId;
   const HomePage2({Key? key, required this.userId}) : super(key: key);
