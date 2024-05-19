@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'findpw.dart';
 
+//05.20 수정본
 class LogInPage2 extends StatefulWidget {
   const LogInPage2({Key? key}) : super(key: key);
   @override
