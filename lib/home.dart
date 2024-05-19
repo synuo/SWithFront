@@ -1,111 +1,156 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:practice/board.dart';
-import 'package:practice/chat.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:practice/mypage.dart';
+import 'package:practice/notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'board.dart';
+import 'chat.dart';
+import 'common_object.dart';
 import 'common_widgets.dart';
+import 'package:http/http.dart' as http;
 
+//05.20 수정본
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final int userId;
+  const HomePage({Key? key, required this.userId}) : super(key: key);
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController _searchController = TextEditingController();
-  String _searchQuery = ''; //검색 바에서 입력된 검색어를 저장하는 변수. 검색 쿼리
-  bool _isAuth = false;
   int _currentIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = 0; // 2. 초기화
+  final List<Widget> _pages = [
+    MainhomeScreen(),
+    BoardScreen(),
+    ChatScreen(),
+    MyPage(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
   @override
-  void didChangeDependencies() async{
-    final token = await SharedPreferManager().getSharedPreferences();
-    if (token != "Not Auth"){
-      _isAuth = true;
-    }
-    super.didChangeDependencies();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_currentIndex],
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _currentIndex, // 현재 선택된 인덱스를 설정해 주세요
+        onTap: _onItemTapped,
+      ),
+      );
   }
+}
+
+class MainhomeScreen extends StatefulWidget {
+
+  const MainhomeScreen({Key? key,}) : super(key: key);
+
+  @override
+  State<MainhomeScreen> createState() => _MainhomeScreenState();
+}
+
+class _MainhomeScreenState extends State<MainhomeScreen> {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Main Home', style: TextStyle(color: Colors.white, fontSize: 20.0),),
+          'Main Home', style: TextStyle(color: Color(0xff19A7CE), fontSize: 20.0),),
         elevation: 0.0,
-        backgroundColor: Color(0xff19A7CE),
+        backgroundColor: Colors.white,
         centerTitle: true,
         actions: [
-          SearchButton(onPressed: () {
-
-          },),
           _buildNotificationButton(),
           _buildMenuButton(),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(100.0), // 검색 바를 위한 높이 조정
+          child: SearchButton(), // 검색 바 추가
+        ),
       ),
-      body: Column(
-        children: [
-          SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body : Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCircularButton(context, '스터디'),
-              _buildCircularButton(context, '공모전'),
-              _buildCircularButton(context, '기타'),
-            ],
-          ),
-          SizedBox(height: 20),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 20),
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '추천 글',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(height: 16.0),
+                  CircularButton(
+                    text: '스터디',
+                    onTap: () {
+                      //board 에서 카테고리가 스터디인 게시글만 보여줌
+                    },
+                  ),
+                  CircularButton(
+                    text: '공모전',
+                    onTap: () {
+                      //board 에서 카테고리가 공모전인 게시글만 보여줌
+                    },
+                  ),
+                  CircularButton(
+                    text: '기타',
+                    onTap: () {
+                      //board 에서 카테고리가 기타인 게시글만 보여줌
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '추천 글',  //우선 최신 게시물 5개?
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 10),
-                // 여기에 AI 기능을 통해 추천된 글을 나타내는 위젯 넣기
-              ],
-            ),
-          )
-        ],
-      ),
+              ),
+              SizedBox(height: 16.0),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 5, // Replace with your actual item count
+                  itemBuilder: (context, index) {
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 16.0),
+                      child: ListTile(
+                        title: Text('추천 글 제목 $index'),
+                        subtitle: Text('추천 글 내용 $index'),
+                        onTap: () {
+                          // Add your onTap functionality here
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
 
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          switch (index) {
-            case 0: // 홈 아이콘
-              // 현재 페이지
-              break;
-            case 1: // 게시판 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BoardScreen()));
-              break;
-            case 2: // 채팅 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatScreen()));
-              break;
-            case 3: // 마이페이지 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyPage()));
-              break;
-          }
-        },
-      ),
+          ),
+
+        ),
+      )
+
+    );
+  }
+
+  Widget _buildNotificationButton() {
+    return IconButton(
+      icon: Icon(Icons.notifications),
+      onPressed: () {
+        print('Notification button clicked');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => NotificationPage()), // NotificationPage는 알림 화면의 위젯입니다.
+        );
+      },
     );
   }
 
@@ -117,105 +162,4 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-  Widget _buildNotificationButton() {
-    return IconButton(
-      icon: Icon(Icons.notifications),
-      onPressed: () {
-        print('Notification button clicked');
-      },
-    );
-  }
-
-  Widget _buildCircularButton(BuildContext context, String text) {
-    return InkWell(
-      onTap: () {
-        // 각 버튼을 눌렀을 때의 동작을 추가할 수 있습니다.
-      },
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blue,
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-    );
-  }
-
 }
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "사용자 인증에 성공했습니다.",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-    );
-  }
-}
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "로그인을 진행해주세요.",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-    );
-  }
-}
-
-class SharedPreferManager{
-  static final SharedPreferManager _instance = SharedPreferManager._internal();
-  final Future <SharedPreferences> _manager = SharedPreferences.getInstance();
-
-  SharedPreferManager._internal(){}
-
-  factory SharedPreferManager(){
-    return _instance;
-  }
-
-  Future <void> setSharedPreference(String token) async{
-    final manager = await _manager;
-  }
-
-  Future <String> getSharedPreferences() async{
-    final manager = await _manager;
-    return manager.getString("auth")??"Not Auth";
-  }
-
-  getString(String s) {}
-
-}
-
-
