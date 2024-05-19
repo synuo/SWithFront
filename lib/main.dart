@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:practice/newlogin.dart';
+import 'login.dart';
 
 //05.20 수정본
 void main() {
@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void navigateToLoginPage(){
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LogInPage2()), // 로그인 페이지로 이동
+      MaterialPageRoute(builder: (context) => LogInPage()), // 로그인 페이지로 이동
     );
     print('화면전환 : splash -> login');
   }
