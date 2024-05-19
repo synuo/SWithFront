@@ -108,9 +108,7 @@ class _BoardScreenState extends State<BoardScreen> {
               });
             },
           ),
-          SearchButton(onPressed: () {
-            // 검색 버튼이 눌렸을 때 동작을 추가
-          }),
+          SearchButton(),
         ],
       ),
 
