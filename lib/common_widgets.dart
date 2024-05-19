@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+//원형 버튼
 class CircularButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
@@ -19,7 +19,7 @@ class CircularButton extends StatelessWidget {
         height: 100,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.blue,
+          color: Color(0xff94BDF2),
         ),
         child: Center(
           child: Text(
@@ -32,6 +32,7 @@ class CircularButton extends StatelessWidget {
   }
 }
 
+//하단 탭바
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
@@ -48,19 +49,23 @@ class CustomBottomNavigationBar extends StatelessWidget {
       onTap: onTap,
       items: [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home_rounded),
           label: '홈',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
+          icon: Icon(Icons.article_outlined),
+          activeIcon: Icon(Icons.article),
           label: '게시판',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.chat_bubble),
+          icon: Icon(Icons.chat_bubble_outline_rounded),
+          activeIcon: Icon(Icons.chat_bubble_rounded),
           label: '채팅',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person),
+          icon: Icon(Icons.person_outline_rounded),
+          activeIcon: Icon(Icons.person_rounded),
           label: '마이페이지',
         ),
       ],
@@ -68,71 +73,65 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 }
 
-class SearchButton extends StatelessWidget {
-  final VoidCallback onPressed;
 
-  const SearchButton({
-    required this.onPressed,
-  });
+//검색 바
+class SearchButton extends StatefulWidget {
+  //final VoidCallback onPressed;
+  //const SearchButton({required this.onPressed});
+
+  const SearchButton({Key? key}) : super(key: key);
+
+  @override
+  _SearchButtonState createState() => _SearchButtonState();
+}
+
+class _SearchButtonState extends State<SearchButton> {
+  String? inputText;
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.search),
-      onPressed: onPressed,
-    );
-  }
-}
-
-class ContainerDropDown extends StatefulWidget {
-  final List<String> items; // 선택할 수 있는 항목들의 목록
-  final String hint; // null 값 일시 띄워줄 값
-
-  const ContainerDropDown({
-    Key? key,
-    required this.items,
-    required this.hint,
-  }) : super(key: key);
-
-  @override
-  _ContainerDropDownState createState() => _ContainerDropDownState();
-}
-
-class _ContainerDropDownState extends State<ContainerDropDown> {
-  String? selectedValue; // 현재 선택된 항목의 값
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Container(
-          width: 300,
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: DropdownButton<String>(
-            value: selectedValue,
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedValue = newValue;
-              });
-            },
-            items: [
-              DropdownMenuItem(
-                value: null,
-                child: Text(widget.hint),
-              ),
-              ...widget.items.map((String item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SearchAnchor(
+              builder: (context, controller) {
+                return SearchBar(
+                  trailing: [Icon(Icons.search)],
+                  controller: controller,
+                  onTap: () => controller.openView(),
+                  onChanged: (_) => controller.openView(),
+                  onSubmitted: (value) {
+                    setState(() => inputText = value);
+                  },
                 );
-              }).toList(),
-            ],
+              },
+              suggestionsBuilder: (context, controller) {
+                return [
+                  ListTile(
+                    title: const Text("추천검색어1"),
+                    onTap: () {
+                      setState(() => controller.closeView("추천검색어1"));
+                    },
+                  ),
+                  ListTile(
+                    title: const Text("추천검색어2"),
+                    onTap: () {
+                      setState(() => controller.closeView("추천검색어2"));
+                    },
+                  ),
+                ];
+              },
+            ),
           ),
-        ),
+          Text("Input Text = $inputText", style: TextStyle(fontSize: 10))
+        ],
       ),
     );
   }
 }
+
+
+
