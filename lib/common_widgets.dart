@@ -1,5 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'common_object.dart';
 //원형 버튼
 class CircularButton extends StatelessWidget {
   final String text;
@@ -76,8 +80,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
 //검색 바
 class SearchButton extends StatefulWidget {
-  //final VoidCallback onPressed;
-  //const SearchButton({required this.onPressed});
 
   const SearchButton({Key? key}) : super(key: key);
 
@@ -99,12 +101,15 @@ class _SearchButtonState extends State<SearchButton> {
             child: SearchAnchor(
               builder: (context, controller) {
                 return SearchBar(
+                  hintText: '글 제목, 내용, 해시태그 등을 입력해보세요.',
                   trailing: [Icon(Icons.search)],
                   controller: controller,
                   onTap: () => controller.openView(),
                   onChanged: (_) => controller.openView(),
                   onSubmitted: (value) {
-                    setState(() => inputText = value);
+                    setState((){
+                      inputText = value;
+                    });
                   },
                 );
               },
@@ -126,10 +131,53 @@ class _SearchButtonState extends State<SearchButton> {
               },
             ),
           ),
-          Text("Input Text = $inputText", style: TextStyle(fontSize: 10))
+          Text("Input Text = $inputText", style: TextStyle(fontSize: 10)),
         ],
       ),
     );
+  }
+
+}
+
+class Search extends SearchDelegate{
+
+  //텍스트필드 우측 위젯
+  @override
+  List<Widget> buildActions(BuildContext context){
+    return <Widget>[   //x버튼 누르면 입력한 검색어 지움
+      IconButton(
+        icon: Icon(Icons.close),
+        onPressed: (){query = "";},
+      )
+    ];
+
+  }
+
+  //텍스트필트 좌측 위젯
+  @override
+  Widget buildLeading(BuildContext context){
+
+    return IconButton(   //뒤로가기 기능
+      icon: Icon(Icons.arrow_back),
+      onPressed : (){
+        Navigator.pop(context);
+      }
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context){
+    return Container(
+      child: Center(
+        //child: Text(_selectedResult),
+      ),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context){
+
+    throw UnimplementedError();
   }
 }
 

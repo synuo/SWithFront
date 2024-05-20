@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:practice/login.dart';
+import 'package:provider/provider.dart';
 import 'common_object.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -10,6 +11,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String? major;
+  /*
   String? nickname;
   String? name;
   int? studentId;
@@ -36,7 +39,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     });
 
-    /*
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/user/1'));
       if (response.statusCode == 200) {
@@ -58,9 +60,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (error) {
       print('Error fetching user information: $error');
-    }*/
+    }
 
-  }
+  }*/
 
   // 전공 정보를 가져오는 메서드
   Future<void> fetchMajorInfo(int? majorId) async {
@@ -81,16 +83,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? loggedInUser = Provider.of<UserProvider>(context).loggedInUser;
+    final majorId = loggedInUser?.major1;
+    fetchMajorInfo(majorId);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('프로필'),
       ),
       body: ProfileBody(
-        nickname: nickname,
-        name: name,
-        studentId: studentId,
+        nickname: loggedInUser?.nickname,
+        name: loggedInUser?.name,
+        studentId: loggedInUser?.student_id,
         major: major,
-        introduction: introduction,
+        introduction: loggedInUser?.introduction ?? '',
       ),
     );
   }
