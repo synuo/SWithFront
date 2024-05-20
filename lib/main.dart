@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'login.dart';
 
-//05.20 수정본
+//05.20 수정본 수정본
 void main() {
   HttpOverrides.global = new ProxiedHttpOverrides("1.209.144.251:3000");
   runApp(const MyApp());
