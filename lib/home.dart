@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:practice/mypage.dart';
 import 'package:practice/notifications.dart';
+import 'package:practice/post_detail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'board.dart';
 import 'chat.dart';
@@ -56,6 +57,51 @@ class MainhomeScreen extends StatefulWidget {
 }
 
 class _MainhomeScreenState extends State<MainhomeScreen> {
+  late List<Post> topPosts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTopPosts();
+  }
+
+  Future<void> fetchTopPosts() async {
+    final url = Uri.parse('http://localhost:3000/getposts');
+    final response = await http.get(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = jsonDecode(response.body);
+      final List<Post> fetchedPosts = jsonData.map((data) {
+        return Post(
+          post_id: data['post_id'] as int,
+          title: data['title'] as String,
+          category: data['category'] as String,
+          view_count: data['view_count'] as int,
+          progress: data['progress'] as String,
+          writer_id: data['writer_id'] as int,
+          create_at: DateTime.parse(data['create_at']),
+          update_at: DateTime.parse(data['update_at']),
+          study_name: data['study_name'] as String,
+          content: data['content'] as String,
+        );
+      }).toList();
+
+      // Sort the posts by view_count in descending order
+      fetchedPosts.sort((a, b) => b.view_count.compareTo(a.view_count));
+      // Get the top 5 posts
+      setState(() {
+        topPosts = fetchedPosts.take(5).toList();
+      });
+
+    } else {
+      throw Exception('Failed to load posts');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,19 +134,31 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   CircularButton(
                     text: '스터디',
                     onTap: () {
-                      //board 에서 카테고리가 스터디인 게시글만 보여줌
+                      //TODO : board 에서 카테고리가 스터디인 게시글만 보여줌
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                      );
                     },
                   ),
                   CircularButton(
                     text: '공모전',
                     onTap: () {
-                      //board 에서 카테고리가 공모전인 게시글만 보여줌
+                      //TODO : board 에서 카테고리가 공모전인 게시글만 보여줌
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                      );
                     },
                   ),
                   CircularButton(
                     text: '기타',
                     onTap: () {
-                      //board 에서 카테고리가 기타인 게시글만 보여줌
+                      //TODO : board 에서 카테고리가 기타인 게시글만 보여줌
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                      );
                     },
                   ),
                 ],
@@ -115,6 +173,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
               ),
               SizedBox(height: 16.0),
               Expanded(
+                /*
                 child: ListView.builder(
                   itemCount: 5, // Replace with your actual item count
                   itemBuilder: (context, index) {
@@ -126,6 +185,56 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         onTap: () {
                           // Add your onTap functionality here
                         },
+                      ),
+                    );
+                  },
+                ),*/
+                child: topPosts.isEmpty
+                    ? Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                  itemCount: topPosts.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final Post post = topPosts[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PostDetailScreen(post_id: post.post_id),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 100,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    post.title,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "${post.category} · ${post.progress} · ${post.view_count} views",
+                                    //style: Theme.of(context).textTheme.caption,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
