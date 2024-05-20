@@ -13,8 +13,8 @@ import 'package:http/http.dart' as http;
 
 //05.20 수정본
 class HomePage extends StatefulWidget {
-  final int userId;
-  const HomePage({Key? key, required this.userId}) : super(key: key);
+  final int user_id;
+  const HomePage({Key? key, required this.user_id}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -173,22 +173,6 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
               ),
               SizedBox(height: 16.0),
               Expanded(
-                /*
-                child: ListView.builder(
-                  itemCount: 5, // Replace with your actual item count
-                  itemBuilder: (context, index) {
-                    return Card(
-                      margin: EdgeInsets.symmetric(vertical: 16.0),
-                      child: ListTile(
-                        title: Text('추천 글 제목 $index'),
-                        subtitle: Text('추천 글 내용 $index'),
-                        onTap: () {
-                          // Add your onTap functionality here
-                        },
-                      ),
-                    );
-                  },
-                ),*/
                 child: topPosts.isEmpty
                     ? Center(child: CircularProgressIndicator())
                     : ListView.builder(

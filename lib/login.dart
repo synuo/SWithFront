@@ -6,6 +6,10 @@ import 'package:practice/signup.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'findpw.dart';
+import 'common_object.dart';
+import 'package:provider/provider.dart';
+
+late User loggedInUser;
 
 //05.20 수정본
 class LogInPage extends StatefulWidget {
@@ -242,8 +246,39 @@ class __FormContentState extends State<_FormContent> {
       print('Logged in!');
 
       final responseData = jsonDecode(response.body);
-      final userId = responseData['userId'];  // 유저 아이디 받아옴
-      print('User ID: $userId');
+      final user_id = responseData['user_id'];  // 유저 아이디 받아옴
+      print('User ID: $user_id');
+
+      // 서버에서 사용자 정보 가져오기
+      final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/user/$user_id'));
+      if (userInfoResponse.statusCode == 200) {
+        final userData = jsonDecode(userInfoResponse.body);
+        final loggedInUser = User.fromJson(userData);
+
+        Provider.of<UserProvider>(context, listen: false)
+            .setLoggedInUser(loggedInUser); // Provider로 loggedInUser 설정
+
+        print('User ID: ${loggedInUser.user_id}');
+        print('Email: ${loggedInUser.email}');
+        print('Password: ${loggedInUser.password}');
+        print('Name: ${loggedInUser.name}');
+        print('Student ID: ${loggedInUser.student_id}');
+        print('Nickname: ${loggedInUser.nickname}');
+        print('Profile Image: ${loggedInUser.user_image ?? '없음'}');
+        print('Major 1: ${loggedInUser.major1}');
+        print('Major 2: ${loggedInUser.major2 ?? '없음'}');
+        print('Major 3: ${loggedInUser.major3 ?? '없음'}');
+        print('Major1 Changed: ${loggedInUser.major1_change_log}');
+        print('Introduction: ${loggedInUser.introduction ?? '없음'}');
+        print('all_noti: ${loggedInUser.all_noti}');
+        print('chatroom_noti: ${loggedInUser.chatroom_noti}');
+        print('qna_noti: ${loggedInUser.qna_noti}');
+        print('accept_noti: ${loggedInUser.accept_noti}');
+        print('review_noti: ${loggedInUser.review_noti}');
+      } else {
+        // 사용자 정보를 가져오는 데 실패한 경우
+        print('Failed to fetch user information');
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -254,7 +289,7 @@ class __FormContentState extends State<_FormContent> {
       print('화면전환 : login -> homepage ');
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage(userId: userId,)),
+        MaterialPageRoute(builder: (context) => HomePage(user_id: user_id,)),
       ); // 로그인 성공 시 홈으로 이동. 유저아이디도 같이 전달.
     } else {
       print('Log in failed..');

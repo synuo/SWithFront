@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:practice/login.dart';
+import 'common_object.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -21,6 +23,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> fetchUserInfo() async {
+    setState(() {
+      nickname = loggedInUser.nickname; // 가져온 사용자 정보 중 닉네임을 저장
+      name = loggedInUser.name; // 가져온 사용자 정보 중 이름을 저장
+      studentId = loggedInUser.student_id; // 학번 저장
+      introduction = loggedInUser.introduction; // 자기 소개 저장
+
+      // 사용자의 전공 정보 가져오기
+      final majorId = loggedInUser.major1; // 사용자의 전공 ID
+      if (majorId != null) {
+        fetchMajorInfo(majorId); // 전공 ID를 이용하여 전공 정보를 가져옴
+      }
+    });
+
+    /*
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/user/1'));
       if (response.statusCode == 200) {
@@ -42,7 +58,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (error) {
       print('Error fetching user information: $error');
-    }
+    }*/
+
   }
 
   // 전공 정보를 가져오는 메서드
