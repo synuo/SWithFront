@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'login.dart';
 import 'setting.dart';
 import 'profile.dart';
 import 'chat.dart';
@@ -17,6 +19,7 @@ class MyPage extends StatefulWidget {
 }
 
 class _MyPageState extends State<MyPage> {
+  /*
   String? nickname;
   String? name;
 
@@ -27,6 +30,10 @@ class _MyPageState extends State<MyPage> {
   }
 
   Future<void> fetchUserInfo() async {
+    nickname = loggedInUser.nickname; // 가져온 사용자 정보 중 닉네임을 저장
+    name = loggedInUser.name; // 가져온 사용자 정보 중 이름을 저장
+
+
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/user/1'));
       if (response.statusCode == 200) {
@@ -42,9 +49,12 @@ class _MyPageState extends State<MyPage> {
       print('Error fetching user information: $error');
     }
   }
+   */
 
   @override
   Widget build(BuildContext context) {
+    User? loggedInUser = Provider.of<UserProvider>(context).loggedInUser;
+
     int _currentIndex = 0;
     return Scaffold(
       appBar: AppBar(
@@ -86,7 +96,7 @@ class _MyPageState extends State<MyPage> {
                       children: [
                         SizedBox(height: 20),
                         Text(
-                          nickname ?? '', // 닉네임 표시
+                          loggedInUser?.nickname ?? '', // 닉네임 표시
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -95,7 +105,7 @@ class _MyPageState extends State<MyPage> {
                         ),
                         SizedBox(height: 10),
                         Text(
-                          name ?? '', // 이름 표시
+                          loggedInUser?.name ?? '', // 이름 표시
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.black,

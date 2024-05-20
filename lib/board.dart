@@ -56,7 +56,6 @@ class _BoardScreenState extends State<BoardScreen> {
       setState(() {
         posts = fetchedPosts;
       });
-
     } else {
       throw Exception('Failed to load posts');
     }
@@ -85,6 +84,7 @@ class _BoardScreenState extends State<BoardScreen> {
       print('오류 발생: $e');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +116,7 @@ class _BoardScreenState extends State<BoardScreen> {
       body: RefreshIndicator(
         onRefresh: () => fetchPosts(),
         child: posts.isEmpty
-            ? Center(
+            ? const Center(
           child: CircularProgressIndicator(),
         )
             : ListView.builder(

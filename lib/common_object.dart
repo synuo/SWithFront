@@ -89,13 +89,18 @@ class User{
   }
 }
 
-class UserProvider extends ChangeNotifier {
+class UserProvider with ChangeNotifier {
   User? _loggedInUser;
 
   User? get loggedInUser => _loggedInUser;
 
   void setLoggedInUser(User user) {
     _loggedInUser = user;
+    notifyListeners();
+  }
+
+  void clearUser() {
+    _loggedInUser = null;
     notifyListeners();
   }
 }
