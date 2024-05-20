@@ -39,7 +39,8 @@ class _LoginPageState extends State<LogInPage> {
                   ),
                 ],
               ),
-            )));
+            ))
+    );
 
   }
 }

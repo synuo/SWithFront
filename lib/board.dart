@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:practice/post_detail.dart';
@@ -160,7 +161,7 @@ class _BoardScreenState extends State<BoardScreen> {
                           const SizedBox(height: 8),
                           Text(
                             "${post.category} · ${post.progress} · ${post.view_count}",
-                            style: Theme.of(context).textTheme.caption,
+                            //style: Theme.of(context).textTheme.caption,
                           ),
                         ],
                       ),
@@ -173,6 +174,7 @@ class _BoardScreenState extends State<BoardScreen> {
         ),
       ),
 
+      /*
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (int index) {
@@ -194,7 +196,7 @@ class _BoardScreenState extends State<BoardScreen> {
               break;
           }
         },
-      ),
+      ),*/
     );
   }
 }

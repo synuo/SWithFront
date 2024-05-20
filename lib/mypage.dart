@@ -172,6 +172,7 @@ class _MyPageState extends State<MyPage> {
           ],
         ),
       ),
+      /*
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (int index) {
@@ -193,7 +194,7 @@ class _MyPageState extends State<MyPage> {
               break;
           }
         },
-      ),
+      ),*/
     );
   }
 
