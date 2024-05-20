@@ -20,6 +20,7 @@ class BoardScreen extends StatefulWidget {
 class _BoardScreenState extends State<BoardScreen> {
   int _currentIndex = 1;
   late List<Post> posts = []; // 게시물 목록 데이터
+  late List<Post> topPosts = []; // 상위 5개의 게시물 데이터 (소윤추가)
 
   @override
   void initState() {
@@ -52,6 +53,12 @@ class _BoardScreenState extends State<BoardScreen> {
           content: data['study_name'] as String,
         );
       }).toList();
+
+      //소윤 추가
+      // Sort the posts by view_count in descending order
+      fetchedPosts.sort((a, b) => b.view_count.compareTo(a.view_count));
+      // Get the top 5 posts
+      final topPosts = fetchedPosts.take(5).toList();
 
       setState(() {
         posts = fetchedPosts;
