@@ -24,7 +24,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> fetchData() async {
     final response = await http.post(
-      Uri.parse('http://localhost:3000/viewchatroom'),
+      Uri.parse('http://localhost:3000/getchatrooms'),
       body: {'userId': '1'}, // 유저 아이디를 전송
     );
 
