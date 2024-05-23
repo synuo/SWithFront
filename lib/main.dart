@@ -1,20 +1,18 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:practice/chat.dart';
-import 'package:practice/home.dart';
-import 'package:practice/userinfo.dart';
 import 'login.dart';
 
+//05.20 수정본 수정본
 void main() {
   HttpOverrides.global = new ProxiedHttpOverrides("1.209.144.251:3000");
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {  //앱의 메인페이지 MyApp
+  static Size? screenSize; // 전역으로 사용할 화면 크기를 저장하는 변수 선언
   const MyApp({super.key});
-  // 전역으로 사용할 화면 크기를 저장하는 변수 선언
-  static Size? screenSize;
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +56,11 @@ class _SplashScreenState extends State<SplashScreen> {
   void navigateToLoginPage(){
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage()), // 로그인 페이지로 이동
+      MaterialPageRoute(builder: (context) => LogInPage()), // 로그인 페이지로 이동
     );
     print('화면전환 : splash -> login');
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -98,4 +97,5 @@ class ProxiedHttpOverrides extends HttpOverrides{
   }
 
 }
+
 

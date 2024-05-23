@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:practice/home.dart';
 import 'package:practice/login.dart';
+import 'package:image_picker/image_picker.dart';  //사진 업로드
 
 // 사용자 기본 정보 입력 (이름, 학번, 닉네임, 전공, 비번)
 // 전공1, 전공2, 프로필이미지, 자기소개는 선택사항
 
 class UserInfoPage extends StatefulWidget {
-  final String email;
+  final String email;  //앞 회원가입 페이지로부터 이메일 받아옴 (이 페이지에서 다른 정보와 함께 저장)
 
   const UserInfoPage({Key? key, required this.email}) : super(key: key);
 
@@ -79,224 +79,260 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'User Information', style: TextStyle(color: Colors.white, fontSize: 20.0),),
-        elevation: 0.0,
-        backgroundColor: Color(0xff19A7CE),
-        centerTitle: true,
-      ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: ListView(
-            children: <Widget>[
-              // 이름 입력 폼 필드
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: '이름',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '이름을 입력해주세요.';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10.0,),
-              // 학번 입력 폼 필드
-              TextFormField(
-                controller: _studentnumController,
-                keyboardType: TextInputType.number, // 숫자 입력 타입 지정
-                decoration: InputDecoration(
-                    labelText: '학번',
-                    errorText: _isStudentIdAvailable == null || _isStudentIdAvailable!
-                        ? null
-                        : '이미 사용 중인 학번입니다.'
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '학번을 입력해주세요.';
-                  }
-                  if (value.length != 7) {
-                    return '학번은 7자리여야 합니다.';
-                  }
-                  //checkDuplicateStudentId(value); // 학번 중복 체크
-                  return null;
-                },
-              ),
-              SizedBox(height: 10.0,),
-              // 닉네임 입력 폼 필드
-              TextFormField(
-                controller: _nicknameController,
-                decoration: InputDecoration(
-                  labelText: '닉네임',
-                  errorText: _isNicknameAvailable == null || _isNicknameAvailable!
-                    ? null
-                    : '이미 사용 중인 닉네임입니다.'
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '닉네임을 입력해주세요.';
-                  }
-                  if (value.length > 10) {
-                    return '닉네임은 10자 이하여야 합니다.';
-                  }
-                  //checkDuplicateNickname(value);
-                  return null;
-                },
-              ),
-              SizedBox(height: 10.0,),
-              // 비밀번호 입력 폼 필드
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: '비밀번호',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '비밀번호를 입력해주세요.';
-                  }
-                  if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$')
-                      .hasMatch(value)) {
-                    return '비밀번호는 영문자와 숫자를 포함하여 8자 이상이어야 합니다.';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10.0,),
-              // 비밀번호 재확인 입력 폼 필드
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: '비밀번호 확인',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '비밀번호를 입력해주세요.';
-                  }
-                  if (value != _passwordController.text) {
-                    return '비밀번호가 일치하지 않습니다.';
-                  }
-                  return null;     // 비밀번호와 재확인이 일치하면 오류 없음
-                },
-              ),
-              SizedBox(height: 10.0,),
-              // 전공 선택 필드
-              DropdownButtonFormField<String>(
-                  value: _selectedMajor1.isNotEmpty
-                      ? _selectedMajor1
-                      : _majors.isNotEmpty
-                      ? _majors.first
-                      : '', // 초기 값 설정 및 유효성 검사
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedMajor1 = newValue!;
-                    });
-                    print('전공1id : ${findMajorId(_selectedMajor1)}');
-                },
-                decoration: InputDecoration(
-                  labelText: '전공',
-                ),
-                items: _majors.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '전공을 선택해주세요.';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10.0,),
-              DropdownButtonFormField<String>(
-                value: _selectedMajor2,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedMajor2 = newValue!;
-                  });
-                },
-                decoration: InputDecoration(
-                  labelText: '전공 2 (선택)',
-                ),
-                items: _majors.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 10.0,),
-              DropdownButtonFormField<String>(
-                value: _selectedMajor3,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedMajor3 = newValue!;
-                  });
-                },
-                decoration: InputDecoration(
-                  labelText: '전공 3 (선택)',
-                ),
-                items: _majors.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 10.0,),
-              // 프로필 이미지 등록 필드
-              TextFormField(
-                controller: _profileImageController, // 추가: 프로필 이미지
-                decoration: InputDecoration(
-                  labelText: '프로필 이미지 (선택)',
-                ),
-                //TODO : 사용자가 프로필 이미지 추가 (path 저장?)
-              ),
-              SizedBox(height: 10.0,),
-              // 자기소개 입력 폼 필드
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: '자기소개 (선택)',
-                ),
-                maxLength: 300, // 최대 300자
-                maxLines: null, // 여러 줄 입력 가능하도록 설정
-                onChanged: (value) {
-                  _introduction = value;
-                },
-              ),
-              SizedBox(height: 10.0),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState != null &&
-                      _formKey.currentState!.validate()) {  //회원정보가 모두 성공적으로 입력된 경우
-                    // 입력된 데이터 출력 (확인용)
-                    print('이메일:${widget.email}');
-                    print('이름: ${_nameController.text}');
-                    print('학번 : ${_studentnumController.text}');
-                    print('닉네임: ${_nicknameController.text}');
-                    print('비밀번호: ${_passwordController.text}');
-                    print('전공1: $_selectedMajor1');
-                    print('전공2: $_selectedMajor2');
-                    print('전공3: $_selectedMajor3');
-                    print('프로필이미지: ${_profileImageController.text}');
-                    print('자기소개: $_introduction');
-                    _registerUser();  // 회원 정보 저장 (=가입)
-                  }
-                },
-                child: Text('가입하기'),
-              ),
-            ],
-          ),
+    final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 300),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'User Information', style: TextStyle(color: Color(0xff19A7CE), fontSize: 20.0, fontWeight: FontWeight.bold),),
+          elevation: 0.0,
+          backgroundColor: Colors.white30,
+          centerTitle: true,
         ),
+        body: Center(
+          child: Form(
+            key: _formKey,
+            child: Padding(
+              padding: EdgeInsets.all(80.0),
+              child: ListView(
+                children: <Widget>[
+                  // 이름 입력 폼 필드
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: '이름',
+                      hintText: '이름(성이름)을 입력해주세요.',
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '이름을 입력해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
+                  _gap(),
+                  // 학번 입력 폼 필드
+                  TextFormField(
+                    controller: _studentnumController,
+                    keyboardType: TextInputType.number, // 숫자 입력 타입 지정
+                    decoration: InputDecoration(
+                      labelText: '학번',
+                      hintText: '학번을 입력해주세요.(7자리)',
+                      border: OutlineInputBorder(),
+                      errorText: _isStudentIdAvailable == null || _isStudentIdAvailable!
+                          ? null
+                          : '이미 사용 중인 학번입니다.',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '학번을 입력해주세요.';
+                      }
+                      if (value.length != 7) {
+                        return '학번은 7자리여야 합니다.';
+                      }
+                      //checkDuplicateStudentId(value); // 학번 중복 체크
+                      return null;
+                    },
+                  ),
+                  _gap(),
+                  // 닉네임 입력 폼 필드
+                  TextFormField(
+                    controller: _nicknameController,
+                    decoration: InputDecoration(
+                        labelText: '닉네임',
+                        hintText: '닉네임을 입력해주세요.(10자 이하)',
+                        border: OutlineInputBorder(),
+                        errorText: _isNicknameAvailable == null || _isNicknameAvailable!
+                            ? null
+                            : '이미 사용 중인 닉네임입니다.'
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '닉네임을 입력해주세요.';
+                      }
+                      if (value.length > 10) {
+                        return '닉네임은 10자 이하여야 합니다.';
+                      }
+                      //checkDuplicateNickname(value);
+                      return null;
+                    },
+                  ),
+                  _gap(),
+                  // 비밀번호 입력 폼 필드
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: '비밀번호',
+                      hintText: '비밀번호를 입력해주세요.(영문, 숫자 포함 8자 이상)',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '비밀번호를 입력해주세요.';
+                      }
+                      if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$')
+                          .hasMatch(value)) {
+                        return '비밀번호는 영문자와 숫자를 포함하여 8자 이상이어야 합니다.';
+                      }
+                      return null;
+                    },
+                  ),
+                  _gap(),
+                  // 비밀번호 재확인 입력 폼 필드
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: '비밀번호 확인',
+                      hintText: '비밀번호를 다시 입력해주세요.',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '비밀번호를 재입력해주세요.';
+                      }
+                      if (value != _passwordController.text) {
+                        return '비밀번호가 일치하지 않습니다.';
+                      }
+                      return null;     // 비밀번호와 재확인이 일치하면 오류 없음
+                    },
+                  ),
+                  _gap(),
+                  // 전공 선택 필드
+                  DropdownButtonFormField<String>(
+                    value: _selectedMajor1.isNotEmpty
+                        ? _selectedMajor1
+                        : _majors.isNotEmpty
+                        ? _majors.first
+                        : '', // 초기 값 설정 및 유효성 검사
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedMajor1 = newValue!;
+                      });
+                      print('전공1id : ${findMajorId(_selectedMajor1)}');
+                    },
+                    decoration: InputDecoration(
+                      labelText: '전공',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _majors.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '전공을 선택해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
+                  _gap(),
+                  DropdownButtonFormField<String>(
+                    value: _selectedMajor2,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedMajor2 = newValue!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: '전공 2 (선택)',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _majors.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  _gap(),
+                  DropdownButtonFormField<String>(
+                    value: _selectedMajor3,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedMajor3 = newValue!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: '전공 3 (선택)',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _majors.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  _gap(),
+                  // 프로필 이미지 등록 필드
+                  TextFormField(
+                    controller: _profileImageController, // 추가: 프로필 이미지
+                    decoration: InputDecoration(
+                      labelText: '프로필 이미지 (선택)',
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.photo_library),
+                        onPressed: _getImageFromGallery,
+                      ),
+                    ),
+                    readOnly: true,
+                  ),
+                  _gap(),
+                  // 자기소개 입력 폼 필드
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: '자기소개 (선택)',
+                      hintText: '본인에 대해 간단히 소개해주세요. (300자 이하) ',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLength: 300, // 최대 300자
+                    maxLines: null, // 여러 줄 입력 가능하도록 설정
+                    onChanged: (value) {
+                      _introduction = value;
+                    },
+                  ),
+                  _gap(),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4)),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: Text(
+                        '가입하기',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState != null &&
+                          _formKey.currentState!.validate()) {  //회원정보가 모두 성공적으로 입력된 경우
+                        // 입력된 데이터 출력 (확인용)
+                        print('이메일:${widget.email}');
+                        print('이름: ${_nameController.text}');
+                        print('학번 : ${_studentnumController.text}');
+                        print('닉네임: ${_nicknameController.text}');
+                        print('비밀번호: ${_passwordController.text}');
+                        print('전공1: $_selectedMajor1');
+                        print('전공2: $_selectedMajor2');
+                        print('전공3: $_selectedMajor3');
+                        print('프로필이미지: ${_profileImageController.text}');
+                        print('자기소개: $_introduction');
+                        _registerUser();  // 회원 정보 저장 (=가입)
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        )
       ),
     );
   }
@@ -308,6 +344,17 @@ class _UserInfoPageState extends State<UserInfoPage> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _getImageFromGallery() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _profileImageController.text = image.path;
+      });
+    }
   }
 
   Future<bool> checkDuplicateNickname(String nickname) async {
@@ -438,7 +485,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   Navigator.pop(context); // 팝업 닫기
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginPage()), //홈 화면으로 이동
+                    MaterialPageRoute(builder: (context) => LogInPage()), //홈 화면으로 이동
                   );
                 },
                 child: Text('확인'),
@@ -469,5 +516,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
       print('오류 발생: $e');
     }
   }
+
+  Widget _gap() => const SizedBox(height: 14);
 }
 
