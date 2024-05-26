@@ -18,7 +18,6 @@ class BoardScreen extends StatefulWidget {
 }
 
 class _BoardScreenState extends State<BoardScreen> {
-  int _currentIndex = 1;
   late List<Post> posts = []; // 게시물 목록 데이터
 
   @override
@@ -173,30 +172,6 @@ class _BoardScreenState extends State<BoardScreen> {
           },
         ),
       ),
-
-      /*
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          switch (index) {
-            case 0: // 홈 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-              break;
-            case 1: // 게시판 아이콘
-              // 현재 페이지
-              break;
-            case 2: // 채팅 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatScreen()));
-              break;
-            case 3: // 마이페이지 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyPage()));
-              break;
-          }
-        },
-      ),*/
     );
   }
 }

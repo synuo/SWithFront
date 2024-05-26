@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: _pages[_currentIndex],
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex, // 현재 선택된 인덱스를 설정해 주세요
+        currentIndex: _currentIndex,
         onTap: _onItemTapped,
       ),
       );
