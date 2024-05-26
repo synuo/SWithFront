@@ -12,57 +12,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String? major;
-  /*
-  String? nickname;
-  String? name;
-  int? studentId;
-  String? major;
-  String? introduction;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUserInfo();
-  }
-
-  Future<void> fetchUserInfo() async {
-    setState(() {
-      nickname = loggedInUser.nickname; // 가져온 사용자 정보 중 닉네임을 저장
-      name = loggedInUser.name; // 가져온 사용자 정보 중 이름을 저장
-      studentId = loggedInUser.student_id; // 학번 저장
-      introduction = loggedInUser.introduction; // 자기 소개 저장
-
-      // 사용자의 전공 정보 가져오기
-      final majorId = loggedInUser.major1; // 사용자의 전공 ID
-      if (majorId != null) {
-        fetchMajorInfo(majorId); // 전공 ID를 이용하여 전공 정보를 가져옴
-      }
-    });
-
-    try {
-      final response = await http.get(Uri.parse('http://localhost:3000/user/1'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body); // JSON 데이터를 파싱
-        setState(() {
-          nickname = data['nickname']; // 가져온 사용자 정보 중 닉네임을 저장
-          name = data['name']; // 가져온 사용자 정보 중 이름을 저장
-          studentId = data['student_id']; // 학번 저장
-          introduction = data['introduction']; // 자기 소개 저장
-
-          // 사용자의 전공 정보 가져오기
-          final majorId = data['major1']; // 사용자의 전공 ID
-          if (majorId != null) {
-            fetchMajorInfo(majorId); // 전공 ID를 이용하여 전공 정보를 가져옴
-          }
-        });
-      } else {
-        throw Exception('Failed to load user information');
-      }
-    } catch (error) {
-      print('Error fetching user information: $error');
-    }
-
-  }*/
+  List<dynamic>? reviews;
 
   // 전공 정보를 가져오는 메서드
   Future<void> fetchMajorInfo(int? majorId) async {
@@ -81,11 +31,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // 리뷰를 가져오는 메서드
+  Future<void> fetchReviews() async {
+    User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+    final userId = loggedInUser?.user_id;
+    final url = 'http://localhost:3000/getreview/user/$userId/reviews';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body); // JSON 데이터를 파싱
+        setState(() {
+          reviews = data; // 리뷰 리스트를 저장
+        });
+      } else {
+        throw Exception('Failed to load reviews');
+      }
+    } catch (error) {
+      print('Error fetching reviews: $error');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+    final majorId = loggedInUser?.major1;
+    fetchMajorInfo(majorId);
+    fetchReviews();
+  }
+
   @override
   Widget build(BuildContext context) {
     User? loggedInUser = Provider.of<UserProvider>(context).loggedInUser;
-    final majorId = loggedInUser?.major1;
-    fetchMajorInfo(majorId);
 
     return Scaffold(
       appBar: AppBar(
@@ -97,6 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         studentId: loggedInUser?.student_id,
         major: major,
         introduction: loggedInUser?.introduction ?? '',
+        reviews: reviews
       ),
     );
   }
@@ -108,8 +86,9 @@ class ProfileBody extends StatelessWidget {
   final int? studentId;
   final String? major;
   final String? introduction;
+  final List<dynamic>? reviews;
 
-  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction});
+  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews});
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +97,7 @@ class ProfileBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 프로필 정보 표시
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -186,41 +166,57 @@ class ProfileBody extends StatelessWidget {
             ),
           ),
           SizedBox(height: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Divider(),
-                  Icon(Icons.star, size: 50, color: Colors.amber),
-                  Icon(Icons.star, size: 50, color: Colors.amber),
-                  Icon(Icons.star, size: 50, color: Colors.amber),
-                  Icon(Icons.star_half, size: 50, color: Colors.amber),
-                  Icon(Icons.star_border, size: 50, color: Colors.amber),
-                  SizedBox(width: 5),
-                  Text(
-                    '3.5',
-                    style: TextStyle(fontSize: 30),
-                  ),
-                  Text(
-                    '   (7)',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  Divider(),
-                ],
-              ),
-              SizedBox(height: 20),
+          // 별점 표시
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Divider(),
+              Icon(Icons.star, size: 50, color: Colors.amber),
+              Icon(Icons.star, size: 50, color: Colors.amber),
+              Icon(Icons.star, size: 50, color: Colors.amber),
+              Icon(Icons.star_half, size: 50, color: Colors.amber),
+              Icon(Icons.star_border, size: 50, color: Colors.amber),
+              SizedBox(width: 5),
               Text(
-                '  Reviews',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                '3.5',
+                style: TextStyle(fontSize: 30),
               ),
+              Text(
+                '   (7)',
+                style: TextStyle(fontSize: 20),
+              ),
+              Divider(),
             ],
           ),
+          SizedBox(height: 20),
+          // 리뷰 표시
+          if (reviews != null && reviews!.isNotEmpty)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Divider(),
+                Text(
+                  '리뷰',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 10),
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: reviews!.length,
+                  itemBuilder: (context, index) {
+                    final review = reviews![index];
+                    return ListTile(
+                      title: Text(review['content'] ?? ''),
+                      subtitle: Text('Rating: ${review['rating']}'),
+                    );
+                  },
+                ),
+              ],
+            ),
         ],
       ),
     );
