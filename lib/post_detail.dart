@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
+import 'advance_a.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final int post_id;
@@ -75,10 +76,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       setState(() {
-        if(responseData['isScrapped']==1){
+        if(responseData['isScrapped'] == 1){
           isScrapped = true;
-        }
-        else{
+        } else {
           isScrapped = false;
         }
       });
@@ -127,6 +127,70 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  Future<void> applyForPost() async {
+    final url = Uri.parse('http://localhost:3000/getadvance_q')
+        .replace(queryParameters: {
+      'post_id': widget.post_id.toString(),
+    });
+
+    final response = await http.get(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    print(response.statusCode);
+
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      if (responseData.length > 0) {
+        // Navigate to AdvanceA screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdvanceAScreen(post_id: widget.post_id),
+          ),
+        ).then((result) {
+          if (result == true) {
+            // Add application after completing AdvanceA
+            addApplication();
+          }
+        });
+      } else {
+        // Add application directly
+        addApplication();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('지원 완료')),
+        );
+      }
+    } else {
+      throw Exception('Failed to check advance_q status');
+    }
+  }
+
+  Future<void> addApplication() async {
+    final url = Uri.parse('http://localhost:3000/addapplication');
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'applicant_id': loggedInUser?.user_id,
+        'post_id': widget.post_id,
+      }),
+    );
+    if (response.statusCode == 201) {
+      print("Application added successfully");
+    } else {
+      throw Exception('Failed to add application');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Post>(
@@ -171,6 +235,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         }
                         isScrapped = !isScrapped;
                       });
+                    } else {
+                      // Handle not logged in state
+                      print("User is not logged in");
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.check_circle),
+                  onPressed: () {
+                    if (loggedInUser != null) {
+                      applyForPost();
                     } else {
                       // Handle not logged in state
                       print("User is not logged in");
