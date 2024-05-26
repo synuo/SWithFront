@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:provider/provider.dart';
 import 'board.dart';
+import 'common_object.dart';
 import 'common_widgets.dart';
 import 'home.dart';
 import 'mypage.dart';
+import 'chat_room_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   @override
@@ -14,25 +16,28 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  List<String> studyNames = [];
+  List<Map<String, dynamic>> chatRooms = [];
+  User? loggedInUser;
 
   @override
   void initState() {
     super.initState();
+    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     fetchData();
   }
 
   Future<void> fetchData() async {
     final response = await http.post(
-      Uri.parse('http://localhost:3000/viewchatroom'),
-      body: {'userId': '1'}, // 유저 아이디를 전송
+      Uri.parse('http://localhost:3000/getchatrooms'),
+      body: {'userId': loggedInUser?.user_id.toString()},
+      // 유저 아이디를 전송
     );
 
     if (response.statusCode == 200) {
       // 정상적으로 응답을 받았을 때
       final data = jsonDecode(response.body);
       setState(() {
-        studyNames = List<String>.from(data['data'].map((item) => item['study_name'])); // 응답에서 study_name들을 추출합니다
+        chatRooms = List<Map<String, dynamic>>.from(data['data']);//room_id, study_name
       });
     } else {
       // 오류가 발생했을 때
@@ -42,22 +47,29 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int _currentIndex = 2;
+    //int _currentIndex = 2;
     return Scaffold(
       appBar: AppBar(
         title: Text('채팅'),
       ),
-      body: studyNames.isEmpty
+      body: chatRooms.isEmpty
           ? Center(child: Text('현재 가입한 스터디가 없습니다.'))
           : ListView.builder(
-        itemCount: studyNames.length,
+        itemCount: chatRooms.length,
         itemBuilder: (context, index) {
           return Card(
             child: ListTile(
-              title: Text(studyNames[index]),
+              title: Text(chatRooms[index]['study_name']),
               onTap: () {
-                // 채팅방으로 이동하는 코드 추가
-                //Navigator.push(context, MaterialPageRoute(builder: (context) => ChatRoomScreen(studyName: studyNames[index])));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatRoomScreen(
+                      roomId: chatRooms[index]['room_id'].toString(),
+                      studyName: chatRooms[index]['study_name'],
+                    ),
+                  ),
+                );
               },
             ),
           );
