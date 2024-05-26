@@ -11,6 +11,7 @@ import 'home.dart';
 import 'mypage.dart';
 
 class BoardScreen extends StatefulWidget {
+  final String category; // 카테고리 파라미터 추가 (소윤)
   const BoardScreen({Key? key}) : super(key: key);
 
   @override
@@ -54,7 +55,8 @@ class _BoardScreenState extends State<BoardScreen> {
       }).toList();
 
       setState(() {
-        posts = fetchedPosts;
+        //posts = fetchedPosts;
+        posts = fetchedPosts.where((post) => post.category == widget.category).toList();  //추가 (소윤)
       });
     } else {
       throw Exception('Failed to load posts');
