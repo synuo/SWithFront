@@ -2,6 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:practice/board.dart';
+import 'package:provider/provider.dart';
+
+import 'common_object.dart';
+import 'home.dart';
 
 class AddAQScreen extends StatefulWidget {
   final int post_id;
@@ -16,6 +20,9 @@ class _AddAQScreenState extends State<AddAQScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? loggedInUser = Provider.of<UserProvider>(context).loggedInUser;
+    final user_id = loggedInUser?.user_id;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('사전 질문 추가'),
@@ -29,7 +36,7 @@ class _AddAQScreenState extends State<AddAQScreen> {
                 if (_controllers != null){
                   addAdvanceQ();
                 }
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BoardScreen()));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user_id: user_id!)));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('게시글 등록 완료'),
