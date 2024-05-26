@@ -103,6 +103,30 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     }
   }
 
+  Future<void> increaseViewCount(int post_id) async {
+    final url = Uri.parse('http://localhost:3000/view_count/${post_id}');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('조회수가 성공적으로 증가되었습니다.');
+      } else if (response.statusCode == 404) {
+        print('해당 post_id를 가진 포스트를 찾을 수 없습니다.');
+      } else {
+        throw Exception('서버 오류: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('오류 발생: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,13 +204,18 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   itemBuilder: (BuildContext context, int index) {
                     final Post post = topPosts[index];
                     return GestureDetector(
-                      onTap: () {
+                      onTap: () async {
+                        //조회수 증가
+                        await increaseViewCount(post.post_id);
+                        //해당 게시글로 이동
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PostDetailScreen(post_id: post.post_id),
                           ),
-                        );
+                        ).then((_) {
+                          fetchTopPosts(); // fetchPosts 함수 실행
+                        });;
                       },
                       child: Container(
                         height: 100,
