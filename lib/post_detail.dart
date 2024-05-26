@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:practice/updatepost.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 import 'advance_a.dart';
@@ -22,7 +23,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+      loggedInUser =
+          Provider.of<UserProvider>(context, listen: false).loggedInUser;
       if (loggedInUser != null) {
         getScrap();
       }
@@ -59,8 +61,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Future<void> getScrap() async {
-    final url = Uri.parse('http://localhost:3000/getscrap')
-        .replace(queryParameters: {
+    final url =
+        Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
       'user_id': loggedInUser?.user_id.toString(),
       'post_id': widget.post_id.toString(),
     });
@@ -76,7 +78,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       setState(() {
-        if(responseData['isScrapped'] == 1){
+        if (responseData['isScrapped'] == 1) {
           isScrapped = true;
         } else {
           isScrapped = false;
@@ -140,18 +142,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'Accept': 'application/json',
       },
     );
-
-    print(response.statusCode);
-
-
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       if (responseData.length > 0) {
-        // Navigate to AdvanceA screen
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AdvanceAScreen(post_id: widget.post_id),
+            builder: (context) => AdvanceAScreen(post_id: widget.post_id, advance_q: responseData),
           ),
         ).then((result) {
           if (result == true) {
@@ -213,6 +210,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           );
         } else {
           final post = snapshot.data!;
+          bool isWriter =
+              loggedInUser != null && post.writer_id == loggedInUser!.user_id;
+
           return Scaffold(
             appBar: AppBar(
               title: Text(post.title),
@@ -220,38 +220,57 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               backgroundColor: Color(0xff19A7CE),
               centerTitle: true,
               actions: [
-                IconButton(
-                  icon: Icon(
-                    isScrapped ? Icons.bookmark : Icons.bookmark_border,
-                    color: isScrapped ? Colors.orange : Colors.white,
+                if (isWriter)
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UpdatePostScreen(post: post)),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    if (loggedInUser != null) {
-                      setState(() {
-                        if (isScrapped) {
-                          deleteScrap();
-                        } else {
-                          addScrap();
-                        }
-                        isScrapped = !isScrapped;
-                      });
-                    } else {
-                      // Handle not logged in state
-                      print("User is not logged in");
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.check_circle),
-                  onPressed: () {
-                    if (loggedInUser != null) {
-                      applyForPost();
-                    } else {
-                      // Handle not logged in state
-                      print("User is not logged in");
-                    }
-                  },
-                ),
+                if (!isWriter)
+                  IconButton(
+                    icon: Icon(
+                      isScrapped ? Icons.bookmark : Icons.bookmark_border,
+                      color: isScrapped ? Colors.orange : Colors.white,
+                    ),
+                    onPressed: () {
+                      if (loggedInUser != null) {
+                        setState(() {
+                          if (isScrapped) {
+                            deleteScrap();
+                          } else {
+                            addScrap();
+                          }
+                          isScrapped = !isScrapped;
+                        });
+                      } else {
+                        // Handle not logged in state
+                        print("User is not logged in");
+                      }
+                    },
+                  ),
+                if (!isWriter)
+                  //Todo : 중복지원 안되게 수정해야함 지금은 지원한 곳에 또 지원 가능
+                  TextButton(
+                    onPressed: () {
+                      if (loggedInUser != null) {
+                        applyForPost();
+                      } else {
+                        // Handle not logged in state
+                        print("User is not logged in");
+                      }
+                    },
+                    child: Text(
+                      '지원하기',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
               ],
             ),
             body: Padding(
@@ -261,7 +280,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 children: [
                   Text(
                     post.title,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
                   ),
                   SizedBox(height: 10),
                   Text('Category: ${post.category}'),
