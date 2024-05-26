@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     MainhomeScreen(),
-    BoardScreen(),
+    BoardScreen(category: '전체'),  // 기본값을 전체로 설정
     ChatScreen(),
     MyPage(),
   ];
@@ -103,6 +103,30 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     }
   }
 
+  Future<void> increaseViewCount(int post_id) async {
+    final url = Uri.parse('http://localhost:3000/view_count/${post_id}');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('조회수가 성공적으로 증가되었습니다.');
+      } else if (response.statusCode == 404) {
+        print('해당 post_id를 가진 포스트를 찾을 수 없습니다.');
+      } else {
+        throw Exception('서버 오류: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('오류 발생: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,7 +161,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       //TODO : board 에서 카테고리가 스터디인 게시글만 보여줌
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                        MaterialPageRoute(builder: (context) => BoardScreen(category: '스터디',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
                     },
                   ),
@@ -147,7 +171,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       //TODO : board 에서 카테고리가 공모전인 게시글만 보여줌
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                        MaterialPageRoute(builder: (context) => BoardScreen(category: '공모전',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
                     },
                   ),
@@ -157,7 +181,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       //TODO : board 에서 카테고리가 기타인 게시글만 보여줌
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                        MaterialPageRoute(builder: (context) => BoardScreen(category: '기타',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
                     },
                   ),
@@ -180,13 +204,18 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   itemBuilder: (BuildContext context, int index) {
                     final Post post = topPosts[index];
                     return GestureDetector(
-                      onTap: () {
+                      onTap: () async {
+                        //조회수 증가
+                        await increaseViewCount(post.post_id);
+                        //해당 게시글로 이동
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PostDetailScreen(post_id: post.post_id),
                           ),
-                        );
+                        ).then((_) {
+                          fetchTopPosts(); // fetchPosts 함수 실행
+                        });;
                       },
                       child: Container(
                         height: 100,
