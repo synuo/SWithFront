@@ -11,14 +11,14 @@ import 'home.dart';
 import 'mypage.dart';
 
 class BoardScreen extends StatefulWidget {
-  const BoardScreen({Key? key}) : super(key: key);
+  final String? category; // 카테고리 파라미터 추가 (소윤)
+  const BoardScreen({Key? key, this.category}) : super(key: key);
 
   @override
   State<BoardScreen> createState() => _BoardScreenState();
 }
 
 class _BoardScreenState extends State<BoardScreen> {
-  int _currentIndex = 1;
   late List<Post> posts = []; // 게시물 목록 데이터
 
   @override
@@ -55,6 +55,11 @@ class _BoardScreenState extends State<BoardScreen> {
 
       setState(() {
         posts = fetchedPosts;
+
+        // 카테고리가 '전체'가 아닌 경우 해당 카테고리의 게시물만 필터링  //추가 (소윤)
+        if (widget.category != '전체') {
+          fetchedPosts.retainWhere((post) => post.category == widget.category);
+        }
       });
     } else {
       throw Exception('Failed to load posts');
@@ -173,30 +178,6 @@ class _BoardScreenState extends State<BoardScreen> {
           },
         ),
       ),
-
-      /*
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          switch (index) {
-            case 0: // 홈 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-              break;
-            case 1: // 게시판 아이콘
-              // 현재 페이지
-              break;
-            case 2: // 채팅 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatScreen()));
-              break;
-            case 3: // 마이페이지 아이콘
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyPage()));
-              break;
-          }
-        },
-      ),*/
     );
   }
 }

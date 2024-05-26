@@ -10,6 +10,7 @@ import 'chat.dart';
 import 'common_object.dart';
 import 'common_widgets.dart';
 import 'home.dart';
+import 'MyPostsPage.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({Key? key}) : super(key: key);
@@ -143,13 +144,17 @@ class _MyPageState extends State<MyPage> {
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
             // 기능 목록
-            buildMenuItem('나의 모집 현황', Icons.arrow_forward_ios, () {
-              // 나의 모집 현황으로 이동하는 기능 추가
+            buildMenuItem('나의 모집 내역', Icons.arrow_forward_ios, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyPostsPage()),
+              );
             }),
+
             SizedBox(height: 10),
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
-            buildMenuItem('나의 지원 현황', Icons.arrow_forward_ios, () {
+            buildMenuItem('나의 지원 내역', Icons.arrow_forward_ios, () {
               // 나의 지원 현황으로 이동하는 기능 추가
             }),
             SizedBox(height: 10),

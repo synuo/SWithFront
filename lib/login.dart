@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 
 late User loggedInUser;
 
-//05.20 수정본
 class LogInPage extends StatefulWidget {
   const LogInPage({Key? key}) : super(key: key);
   @override
