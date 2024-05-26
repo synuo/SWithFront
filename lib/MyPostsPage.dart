@@ -45,7 +45,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 모집 현황'),
+        title: Text('나의 모집 내역'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -53,7 +53,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 모집 현황',
+              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 모집 내역',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
