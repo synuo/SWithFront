@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:provider/provider.dart';
 import 'board.dart';
+import 'common_object.dart';
 import 'common_widgets.dart';
 import 'home.dart';
 import 'mypage.dart';
@@ -16,17 +17,20 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, dynamic>> chatRooms = [];
+  User? loggedInUser;
 
   @override
   void initState() {
     super.initState();
+    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     fetchData();
   }
 
   Future<void> fetchData() async {
     final response = await http.post(
       Uri.parse('http://localhost:3000/getchatrooms'),
-      body: {'userId': '1'}, // 유저 아이디를 전송
+      body: {'userId': loggedInUser?.user_id.toString()},
+      // 유저 아이디를 전송
     );
 
     if (response.statusCode == 200) {
@@ -43,7 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int _currentIndex = 2;
+    //int _currentIndex = 2;
     return Scaffold(
       appBar: AppBar(
         title: Text('채팅'),
@@ -61,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChatRoomScreen(
-                      roomId: chatRooms[index]['room_id'],
+                      roomId: chatRooms[index]['room_id'].toString(),
                       studyName: chatRooms[index]['study_name'],
                     ),
                   ),

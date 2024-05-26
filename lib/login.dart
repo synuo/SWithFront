@@ -250,7 +250,7 @@ class __FormContentState extends State<_FormContent> {
       print('User ID: $user_id');
 
       // 서버에서 사용자 정보 가져오기
-      final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/userid/$user_id'));
+      final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/user/$user_id'));
       if (userInfoResponse.statusCode == 200) {
         final userData = jsonDecode(userInfoResponse.body);
         final loggedInUser = User.fromJson(userData);
