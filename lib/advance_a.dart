@@ -4,38 +4,39 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 
-// Question class definition
-class Question {
-  final int id;
+class AdvanceQuestion {
+  final int aq_id;
   final int post_id;
-  final String question;
+  final String aq_content;
 
-  Question({
-    required this.id,
+  AdvanceQuestion({
+    required this.aq_id,
     required this.post_id,
-    required this.question,
+    required this.aq_content,
   });
 
-  factory Question.fromJson(Map<String, dynamic> json) {
-    return Question(
-      id: json['id'],
+  factory AdvanceQuestion.fromJson(Map<String, dynamic> json) {
+    return AdvanceQuestion(
+      aq_id: json['aq_id'],
       post_id: json['post_id'],
-      question: json['question'],
+      aq_content: json['aq_content'],
     );
   }
 }
 
 class AdvanceAScreen extends StatefulWidget {
   final int post_id;
+  final List<dynamic> advance_q;
 
-  const AdvanceAScreen({Key? key, required this.post_id}) : super(key: key);
+  const AdvanceAScreen({Key? key, required this.post_id, required this.advance_q})
+      : super(key: key);
 
   @override
   _AdvanceAScreenState createState() => _AdvanceAScreenState();
 }
 
 class _AdvanceAScreenState extends State<AdvanceAScreen> {
-  List<Question> questions = [];
+  List<AdvanceQuestion> questions = [];
   List<String> answers = [];
   User? loggedInUser;
 
@@ -43,26 +44,16 @@ class _AdvanceAScreenState extends State<AdvanceAScreen> {
   void initState() {
     super.initState();
     loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
-    fetchQuestions();
+    // Map advance_q to AdvanceQuestion objects
+    questions = widget.advance_q
+        .map((question) => AdvanceQuestion.fromJson(question))
+        .toList();
+    // Initialize answers list with empty strings
+    answers = List<String>.filled(questions.length, '');
   }
 
-  Future<void> fetchQuestions() async {
-    final url = Uri.parse('http://localhost:3000/getadvanceq/${widget.post_id}');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonData = jsonDecode(response.body);
-      setState(() {
-        questions = jsonData.map((data) => Question.fromJson(data)).toList();
-        answers = List<String>.filled(questions.length, '');
-      });
-    } else {
-      throw Exception('Failed to load advance questions');
-    }
-  }
-
-  Future<void> submitAnswers() async {
-    final url = Uri.parse('http://localhost:3000/addadvancea');
+  Future<void> addAdvanceA() async {
+    final url = Uri.parse('http://localhost:3000/addadvance_a');
     final response = await http.post(
       url,
       headers: <String, String>{
@@ -70,9 +61,10 @@ class _AdvanceAScreenState extends State<AdvanceAScreen> {
         'Accept': 'application/json',
       },
       body: jsonEncode({
-        'user_id': loggedInUser?.user_id,
         'post_id': widget.post_id,
-        'answers': answers,
+        'aq_id': questions.map((question) => question.aq_id).toList(),
+        'applicant_id': loggedInUser?.user_id,
+        'aqa_content': answers,
       }),
     );
 
@@ -95,32 +87,46 @@ class _AdvanceAScreenState extends State<AdvanceAScreen> {
         backgroundColor: Color(0xff19A7CE),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: questions.length,
-          itemBuilder: (context, index) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  questions[index].question,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
-                ),
-                TextField(
-                  onChanged: (value) {
-                    answers[index] = value;
-                  },
-                ),
-                SizedBox(height: 10),
-              ],
-            );
-          },
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: questions.length,
+            itemBuilder: (context, index) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '사전질문 ${questions[index].aq_id}:',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                      ),
+                      SizedBox(width: 8), // Add spacing between AQ ID and content
+                      Expanded(
+                        child: Text(
+                          questions[index].aq_content,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextField(
+                    onChanged: (value) {
+                      answers[index] = value;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                ],
+              );
+            },
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: submitAnswers,
-        child: Icon(Icons.check),
+        onPressed: addAdvanceA,
+        child: Text('제출'),
         backgroundColor: Color(0xff19A7CE),
       ),
     );
