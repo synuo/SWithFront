@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     MainhomeScreen(),
-    BoardScreen(),
+    BoardScreen(category: '전체'),  // 기본값을 전체로 설정
     ChatScreen(),
     MyPage(),
   ];
@@ -137,7 +137,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       //TODO : board 에서 카테고리가 스터디인 게시글만 보여줌
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                        MaterialPageRoute(builder: (context) => BoardScreen(category: '스터디',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
                     },
                   ),
@@ -147,7 +147,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       //TODO : board 에서 카테고리가 공모전인 게시글만 보여줌
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                        MaterialPageRoute(builder: (context) => BoardScreen(category: '공모전',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
                     },
                   ),
@@ -157,7 +157,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       //TODO : board 에서 카테고리가 기타인 게시글만 보여줌
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => BoardScreen()), // NotificationPage는 알림 화면의 위젯입니다.
+                        MaterialPageRoute(builder: (context) => BoardScreen(category: '기타',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
                     },
                   ),

@@ -11,8 +11,8 @@ import 'home.dart';
 import 'mypage.dart';
 
 class BoardScreen extends StatefulWidget {
-  final String category; // 카테고리 파라미터 추가 (소윤)
-  const BoardScreen({Key? key}) : super(key: key);
+  final String? category; // 카테고리 파라미터 추가 (소윤)
+  const BoardScreen({Key? key, this.category}) : super(key: key);
 
   @override
   State<BoardScreen> createState() => _BoardScreenState();
@@ -55,8 +55,13 @@ class _BoardScreenState extends State<BoardScreen> {
       }).toList();
 
       setState(() {
-        //posts = fetchedPosts;
-        posts = fetchedPosts.where((post) => post.category == widget.category).toList();  //추가 (소윤)
+        posts = fetchedPosts;
+
+        // 카테고리가 '전체'가 아닌 경우 해당 카테고리의 게시물만 필터링  //추가 (소윤)
+        if (widget.category != '전체') {
+          fetchedPosts.retainWhere((post) => post.category == widget.category);
+        }
+
       });
     } else {
       throw Exception('Failed to load posts');
