@@ -11,6 +11,8 @@ import 'common_object.dart';
 import 'common_widgets.dart';
 import 'home.dart';
 import 'MyPostsPage.dart';
+import 'MyApplicationsPage.dart';
+
 
 class MyPage extends StatefulWidget {
   const MyPage({Key? key}) : super(key: key);
@@ -155,7 +157,10 @@ class _MyPageState extends State<MyPage> {
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
             buildMenuItem('나의 지원 현황', Icons.arrow_forward_ios, () {
-              // 나의 지원 현황으로 이동하는 기능 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyApplicationsPage()),
+              );
             }),
             SizedBox(height: 10),
             // 구분선
