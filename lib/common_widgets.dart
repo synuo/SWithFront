@@ -1,9 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'common_object.dart';
+import 'home.dart';
+
 //원형 버튼
 class CircularButton extends StatelessWidget {
   final String text;
@@ -79,75 +79,82 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
 
 //검색 바
-class SearchButton extends StatefulWidget {
+class Search extends StatefulWidget {
 
-  const SearchButton({Key? key}) : super(key: key);
+  const Search({Key? key}) : super(key: key);
 
   @override
-  _SearchButtonState createState() => _SearchButtonState();
+  _SearchState createState() => _SearchState();
 }
 
-class _SearchButtonState extends State<SearchButton> {
+class _SearchState extends State<Search> {
   String? inputText;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SearchAnchor(
-              builder: (context, controller) {
-                return SearchBar(
-                  hintText: '글 제목, 내용, 해시태그 등을 입력해보세요.',
-                  trailing: [Icon(Icons.search)],
-                  controller: controller,
-                  onTap: () => controller.openView(),
-                  onChanged: (_) => controller.openView(),
-                  onSubmitted: (value) {
-                    setState((){
-                      inputText = value;
-                    });
+      child: SizedBox(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SearchAnchor(
+                  builder: (context, controller) {
+                    return SearchBar(
+                      hintText: '글 제목, 내용, 해시태그 등을 입력해보세요.',
+                      trailing: [Icon(Icons.search_outlined)],
+                      controller: controller,
+                      onTap: () => controller.openView(),
+                      onChanged: (_) => controller.openView(),
+                      onSubmitted: (value) {
+                        setState(() {
+                          inputText = value;
+                        });
+                      },
+                    );
                   },
-                );
-              },
-              suggestionsBuilder: (context, controller) {
-                return [
-                  ListTile(
-                    title: const Text("추천검색어1"),
-                    onTap: () {
-                      setState(() => controller.closeView("추천검색어1"));
-                    },
-                  ),
-                  ListTile(
-                    title: const Text("추천검색어2"),
-                    onTap: () {
-                      setState(() => controller.closeView("추천검색어2"));
-                    },
-                  ),
-                ];
-              },
-            ),
+                  suggestionsBuilder: (context, controller) {
+                    return [
+                      ListTile(
+                        title: const Text("추천검색어1"),
+                        onTap: () {
+                          setState(() => controller.closeView("추천검색어1"));
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("추천검색어2"),
+                        onTap: () {
+                          setState(() => controller.closeView("추천검색어2"));
+                        },
+                      ),
+                    ];
+                  },
+                ),
+              ),
+              Text("Input Text = $inputText", style: TextStyle(fontSize: 10)),
+            ],
           ),
-          Text("Input Text = $inputText", style: TextStyle(fontSize: 10)),
-        ],
+        ),
       ),
     );
   }
-
 }
 
-class Search extends SearchDelegate{
+
+class SearchField extends SearchDelegate{
+
+  List <String> listof = ['스터디', '눈송', '공모전', '22학번', '모집중'];
 
   //텍스트필드 우측 위젯
   @override
   List<Widget> buildActions(BuildContext context){
-    return <Widget>[   //x버튼 누르면 입력한 검색어 지움
+    return [   //x버튼 누르면 입력한 검색어 지움
       IconButton(
-        icon: Icon(Icons.close),
-        onPressed: (){query = "";},
+        icon: Icon(Icons.clear),
+        onPressed: (){query = '';},
       )
     ];
 
@@ -156,28 +163,51 @@ class Search extends SearchDelegate{
   //텍스트필트 좌측 위젯
   @override
   Widget buildLeading(BuildContext context){
-
     return IconButton(   //뒤로가기 기능
       icon: Icon(Icons.arrow_back),
       onPressed : (){
-        Navigator.pop(context);
+        //Navigator.pop(context);
+        close(context, null);
       }
     );
   }
 
   @override
   Widget buildResults(BuildContext context){
-    return Container(
-      child: Center(
-        //child: Text(_selectedResult),
-      ),
+    List<String> matchQuery = [];
+    for (var fruit in listof){
+      if (fruit.toLowerCase().contains(query.toLowerCase())) {
+        matchQuery.add(fruit);
+      }
+    }
+    return ListView.builder(
+      itemCount: matchQuery.length,
+        itemBuilder: (context, index){
+          var result = matchQuery[index];
+          return ListTile(
+            title : Text(result),
+          );
+        },
     );
   }
 
   @override
   Widget buildSuggestions(BuildContext context){
-
-    throw UnimplementedError();
+    List<String> matchQuery = [];
+    for (var fruit in listof) {
+      if (fruit.toLowerCase().contains(query.toLowerCase())) {
+        matchQuery.add(fruit);
+      }
+    }
+    return ListView.builder(
+      itemCount: matchQuery.length,
+      itemBuilder: (context, index) {
+        var result = matchQuery[index];
+        return ListTile(
+          title: Text(result),
+        );
+      },
+    );
   }
 }
 

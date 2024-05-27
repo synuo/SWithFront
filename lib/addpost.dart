@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:practice/addadvancequestion.dart';
 import 'package:practice/common_widgets.dart';
+import 'package:provider/provider.dart';
+
+import 'common_object.dart';
 
 class AddPostScreen extends StatefulWidget {
   @override
@@ -18,6 +21,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
   List<String> _tags = [];
   late int post_id;
   int tagMaxLength = 20;
+  User? loggedInUser;
+
+  @override
+  void initState() {
+    super.initState();
+    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +165,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         'Accept': 'application/json',
       },
       body: jsonEncode({
-        'writer_id' : 1, // TODO: 실제 user id 넣게 수정해야함
+        'writer_id' : loggedInUser?.user_id,
         'title': _titleController.text,
         'category': _selectedCategory,
         'study_name': _studyNameController.text,

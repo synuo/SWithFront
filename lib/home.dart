@@ -11,7 +11,7 @@ import 'common_object.dart';
 import 'common_widgets.dart';
 import 'package:http/http.dart' as http;
 
-//05.20 수정본
+//05.26 수정본
 class HomePage extends StatefulWidget {
   final int user_id;
   const HomePage({Key? key, required this.user_id}) : super(key: key);
@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: _pages[_currentIndex],
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex, // 현재 선택된 인덱스를 설정해 주세요
+        currentIndex: _currentIndex,
         onTap: _onItemTapped,
       ),
       );
@@ -141,8 +141,12 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
           _buildMenuButton(),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(100.0), // 검색 바를 위한 높이 조정
-          child: SearchButton(), // 검색 바 추가
+          preferredSize: Size.fromHeight(100.0),
+          //preferredSize: Size.fromHeight(kToolbarHeight), // 검색 바를 위한 높이 조정 (AppBar의 높이를 따르도록 설정)
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Search(),
+          ),
         ),
       ),
       body : Padding(
@@ -158,7 +162,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   CircularButton(
                     text: '스터디',
                     onTap: () {
-                      //TODO : board 에서 카테고리가 스터디인 게시글만 보여줌
+                      //board 에서 카테고리가 스터디인 게시글만 보여줌
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '스터디',)), // NotificationPage는 알림 화면의 위젯입니다.
@@ -168,7 +172,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   CircularButton(
                     text: '공모전',
                     onTap: () {
-                      //TODO : board 에서 카테고리가 공모전인 게시글만 보여줌
+                      //board 에서 카테고리가 공모전인 게시글만 보여줌
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '공모전',)), // NotificationPage는 알림 화면의 위젯입니다.
@@ -178,7 +182,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   CircularButton(
                     text: '기타',
                     onTap: () {
-                      //TODO : board 에서 카테고리가 기타인 게시글만 보여줌
+                      //board 에서 카테고리가 기타인 게시글만 보여줌
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '기타',)), // NotificationPage는 알림 화면의 위젯입니다.
@@ -191,7 +195,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '추천 글',  //우선 최신 게시물 5개?
+                  '추천 글',  //조회수가 높은 게시물 5개
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -214,7 +218,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                             builder: (context) => PostDetailScreen(post_id: post.post_id),
                           ),
                         ).then((_) {
-                          fetchTopPosts(); // fetchPosts 함수 실행
+                          fetchTopPosts(); // fetchPosts 함수 실행  //이거까지 해야 조회수가 반영됨 (왜지)
                         });;
                       },
                       child: Container(
