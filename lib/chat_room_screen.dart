@@ -86,8 +86,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      // 현재 시간을 한국 시간으로 변환하여 ISO 형식으로 저장
-      final now = DateTime.now().toUtc().add(Duration(hours: 9)).toIso8601String();
+
+      final now = DateTime.now().toIso8601String();
       final message = {
         'roomId': widget.roomId,
         'sender_id': loggedInUser?.user_id,
@@ -106,14 +106,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   String _formatTimestamp(String timestamp) {
-    // 한국 시간대로 변환하여 표시
-    final dateTime = DateTime.parse(timestamp).toUtc().add(Duration(hours: 9));
+
+    final dateTime = DateTime.parse(timestamp).toLocal();
     return DateFormat('HH:mm').format(dateTime);
   }
 
   String _formatDate(String timestamp) {
-    // 한국 시간대로 변환하여 표시
-    final dateTime = DateTime.parse(timestamp).toUtc().add(Duration(hours: 9));
+
+    final dateTime = DateTime.parse(timestamp).toLocal();
     return DateFormat('yyyy-MM-dd').format(dateTime);
   }
 
