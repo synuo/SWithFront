@@ -117,4 +117,10 @@ class UserProvider with ChangeNotifier {
     _loggedInUser = null;
     notifyListeners();
   }
+
+  void updateUser(User user) {
+    _loggedInUser = user;
+    notifyListeners();
+  }
 }
+
