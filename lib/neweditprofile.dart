@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:practice/login.dart';
 import 'package:provider/provider.dart';
 import 'mypage.dart';
 import 'common_object.dart'; // User 클래스가 정의된 파일을 임포트
@@ -31,6 +31,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _selectedMajor2;
   String? _selectedMajor3;
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchMajors(); // _fetchMajors()를 initState() 내에서 호출
+    _fetchSelectedMajors(); // _selectedMajor1, _selectedMajor2, _selectedMajor3을 초기화하기 위해 호출
+  }
+
+  Future<void> _fetchSelectedMajors() async {
+    final user = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+    _selectedMajor1 = await fetchMajorInfo(user!.major1);
+    _selectedMajor2 = await fetchMajorInfo(user.major2);
+    _selectedMajor3 = await fetchMajorInfo(user.major3);
+  }
 
   @override
   void dispose() {
@@ -40,52 +53,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _major3Controller.dispose();
     _introductionController.dispose();
     super.dispose();
-  }
-
-  void _saveChanges(User user) {
-    // 닉네임 중복 확인 및 전공1 변경횟수 증가 등의 로직 추가 필요
-    final updatedUser = User(
-      user_id: user.user_id,
-      email: user.email,
-      password: user.password,
-      name: user.name,
-      student_id: user.student_id,
-      nickname: _nicknameController.text.isEmpty ? user.nickname : _nicknameController.text,
-      user_image: user.user_image,
-      major1: _major1Controller.text.isEmpty ? user.major1 : int.parse(_major1Controller.text),
-      major2: _major2Controller.text.isEmpty ? user.major2 : int.parse(_major2Controller.text),
-      major3: _major3Controller.text.isEmpty ? user.major3 : int.parse(_major3Controller.text),
-      major1_change_log: user.major1_change_log + (_isMajor1Editing ? 1 : 0),
-      introduction: _introductionController.text.isEmpty ? user.introduction : _introductionController.text,
-      all_noti: user.all_noti,
-      chatroom_noti: user.chatroom_noti,
-      qna_noti: user.qna_noti,
-      accept_noti: user.accept_noti,
-      review_noti: user.review_noti,
-    );
-    Provider.of<UserProvider>(context, listen: false).updateUser(updatedUser);
-    print('변경 완료!');
-    print('User ID: ${updatedUser.user_id}');
-    print('Email: ${updatedUser.email}');
-    print('Password: ${updatedUser.password}');
-    print('Name: ${updatedUser.name}');
-    print('Student ID: ${updatedUser.student_id}');
-    print('Nickname: ${updatedUser.nickname}');
-    print('Profile Image: ${updatedUser.user_image ?? '없음'}');
-    print('Major 1: ${updatedUser.major1}');
-    print('Major 2: ${updatedUser.major2 ?? '없음'}');
-    print('Major 3: ${updatedUser.major3 ?? '없음'}');
-    print('Major1 Changed: ${updatedUser.major1_change_log}');
-    print('Introduction: ${updatedUser.introduction ?? '없음'}');
-    print('all_noti: ${updatedUser.all_noti}');
-    print('chatroom_noti: ${updatedUser.chatroom_noti}');
-    print('qna_noti: ${updatedUser.qna_noti}');
-    print('accept_noti: ${updatedUser.accept_noti}');
-    print('review_noti: ${updatedUser.review_noti}');
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => MyPage()), //마이페이지 화면으로 이동
-    );
   }
 
   @override
@@ -129,28 +96,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   _isNicknameEditing = !_isNicknameEditing;
                 });
               }),
-              /*
-              _buildEditableRow('전공1', user.major1.toString(), _major1Controller, _isMajor1Editing, () {
-                setState(() {
-                  _isMajor1Editing = !_isMajor1Editing;
-                });
-              }),
-
-               */
               _buildDropdownRow('전공1', _selectedMajor1, _isMajor1Editing, (String? value) {
                 setState(() {
                   _selectedMajor1 = value;
                   print('전공1 선택: $_selectedMajor1'); // 전공1 선택 시 출력
                 });
               }),
-              _buildEditableRow('전공2', user.major2?.toString() ?? '', _major2Controller, _isMajor2Editing, () {
+              _buildDropdownRow('전공2', _selectedMajor2, _isMajor2Editing, (String? value) {
                 setState(() {
-                  _isMajor2Editing = !_isMajor2Editing;
+                  _selectedMajor2 = value;
+                  print('전공2 선택: $_selectedMajor2'); // 전공2 선택 시 출력
                 });
               }),
-              _buildEditableRow('전공3', user.major3?.toString() ?? '', _major3Controller, _isMajor3Editing, () {
+              _buildDropdownRow('전공3', _selectedMajor3, _isMajor3Editing, (String? value) {
                 setState(() {
-                  _isMajor3Editing = !_isMajor3Editing;
+                  _selectedMajor3 = value;
+                  print('전공3 선택: $_selectedMajor3'); // 전공3 선택 시 출력
                 });
               }),
               _buildEditableRow('자기소개', user.introduction ?? '', _introductionController, _isIntroductionEditing, () {
@@ -158,13 +119,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   _isIntroductionEditing = !_isIntroductionEditing;
                 });
               }, maxLines: 5),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // 비밀번호 변경 화면으로 이동
-                },
-                child: Text('비밀번호 변경하기'),
-              ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
@@ -177,6 +131,69 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _saveChanges(User user) async {
+    // 닉네임 중복 확인 및 전공1 변경횟수 증가 등의 로직 추가 필요
+    final updatedUser = User(
+      user_id: user.user_id,
+      email: user.email,
+      password: user.password,
+      name: user.name,
+      student_id: user.student_id,
+      nickname: _nicknameController.text.isEmpty ? user.nickname : _nicknameController.text,
+      user_image: user.user_image,
+      major1: _selectedMajor1 != null && _selectedMajor1!.isNotEmpty ? findMajorId(_selectedMajor1!)! : user.major1,
+      major2: _selectedMajor2 != null && _selectedMajor2!.isNotEmpty ? findMajorId(_selectedMajor2!) : user.major2,
+      major3: _selectedMajor3 != null && _selectedMajor3!.isNotEmpty ? findMajorId(_selectedMajor3!) : user.major3,
+      major1_change_log: user.major1_change_log + (_isMajor1Editing ? 1 : 0),
+      introduction: _introductionController.text.isEmpty ? user.introduction : _introductionController.text,
+      all_noti: user.all_noti,
+      chatroom_noti: user.chatroom_noti,
+      qna_noti: user.qna_noti,
+      accept_noti: user.accept_noti,
+      review_noti: user.review_noti,
+    );
+    try{
+      final response = await http.put(
+        Uri.parse('http://localhost:3000/user/${user.user_id}'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(updatedUser.toJson()), // toJson 메서드를 이용하여 JSON으로 변환
+      );
+      if (response.statusCode == 200) {
+        Provider.of<UserProvider>(context, listen: false).updateUser(updatedUser);
+        print('변경 완료!');
+        print('User ID: ${updatedUser.user_id}');
+        print('Email: ${updatedUser.email}');
+        print('Password: ${updatedUser.password}');
+        print('Name: ${updatedUser.name}');
+        print('Student ID: ${updatedUser.student_id}');
+        print('Nickname: ${updatedUser.nickname}');
+        print('Profile Image: ${updatedUser.user_image ?? '없음'}');
+        print('Major 1: ${updatedUser.major1}');
+        print('Major 2: ${updatedUser.major2 ?? '없음'}');
+        print('Major 3: ${updatedUser.major3 ?? '없음'}');
+        print('Major1 Changed: ${updatedUser.major1_change_log}');
+        print('Introduction: ${updatedUser.introduction ?? '없음'}');
+        print('all_noti: ${updatedUser.all_noti}');
+        print('chatroom_noti: ${updatedUser.chatroom_noti}');
+        print('qna_noti: ${updatedUser.qna_noti}');
+        print('accept_noti: ${updatedUser.accept_noti}');
+        print('review_noti: ${updatedUser.review_noti}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyPage()), // 마이페이지 화면으로 이동
+        );
+      } else {
+        print('Failed to update user. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Failed to update user');
+      }
+    }catch(e){
+      print('Error updating user: $e');
+    }
   }
 
   Widget _buildInfoRow(String label, String value) {
@@ -237,8 +254,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         )
             : DropdownButtonHideUnderline(
           child: DropdownButton<String>(
-            value: value,
+            value: value != null ? value : (_majors.isNotEmpty ? _majors.first : null), // 기존 전공 이름이 선택되도록 설정
             onChanged: (newValue) {
+              if(label == '전공1') {
+                _selectedMajor1 = newValue;
+              } else if(label == '전공2') {
+                _selectedMajor2 = newValue;
+              } else if(label == '전공3') {
+                _selectedMajor3 = newValue;
+              }
               onChanged(newValue);
             },
             items: _majors.map((String major) {
@@ -267,11 +291,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final List<Map<String, dynamic>> majors = data.cast<Map<String, dynamic>>();
         _majors = majors.map((major) => major['major_name'] as String).toList();
         _majors.insert(0, ''); // 맨 앞에 널값 추가
+
+
         setState(() {
-          _selectedMajor1 = _majors.isNotEmpty ? _majors.first : ''; // 여기서 빈 문자열로 초기화
-          _selectedMajor2 = _majors.isNotEmpty ? _majors.first : '';
-          _selectedMajor3 = _majors.isNotEmpty ? _majors.first : '';
+          _selectedMajor1; // 여기서 빈 문자열로 초기화
+          _selectedMajor2;
+          _selectedMajor3; // = _majors.isNotEmpty ? _majors.first : '';
         });
+
         // _majors 리스트와 majors 데이터를 동일한 인덱스를 사용하여 전공 이름과 ID를 매핑
         _majorIdMap = Map.fromIterable(majors,
             key: (major) => major['major_name'] as String,
@@ -284,15 +311,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  // 전공 정보를 가져오는 메서드
+  Future<String?> fetchMajorInfo(int? majorId) async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/majorDetail/$majorId'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body); // JSON 데이터를 파싱
+        return data['major_name'];
+      } else {
+        throw Exception('Failed to load major information');
+      }
+    } catch (error) {
+      print('Error fetching major information: $error');
+    }
+  }
+
   // dropbox에서 선택된 전공 이름에 해당하는 ID를 찾는 함수
   int? findMajorId(String majorName) {
     return _majorIdMap[majorName];
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchMajors();
-  }
+
 }
 
