@@ -103,6 +103,48 @@ class User {
   }
 }
 
+class Application {
+  final int applicationId;
+  final int applicantId;
+  final int postId;
+  final String status;
+  final DateTime applicationTime;
+  String? category;
+  String? title;
+  String? studyName;
+  String? progress;
+
+  Application({
+    required this.applicationId,
+    required this.applicantId,
+    required this.postId,
+    required this.status,
+    required this.applicationTime,
+    this.category,
+    this.title,
+    this.studyName,
+    this.progress,
+  });
+
+  factory Application.fromJson(Map<String, dynamic> json) {
+    return Application(
+      applicationId: json['application_id'],
+      applicantId: json['applicant_id'],
+      postId: json['post_id'],
+      status: json['status'],
+      applicationTime: DateTime.parse(json['application_time']),
+    );
+  }
+
+  void updatePostInfo(Map<String, dynamic> postInfo) {
+    category = postInfo['category'];
+    title = postInfo['title'];
+    studyName = postInfo['study_name'];
+    progress = postInfo['progress'];
+  }
+}
+
+
 class UserProvider with ChangeNotifier {
   User? _loggedInUser;
 
