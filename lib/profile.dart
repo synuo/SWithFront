@@ -13,6 +13,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String? major;
   List<dynamic>? reviews;
+  double? averageRating;
 
   // 전공 정보를 가져오는 메서드
   Future<void> fetchMajorInfo(int? majorId) async {
@@ -60,10 +61,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     fetchReviews();
   }
 
+  double calculateAverageRating(List<dynamic>? reviews) {
+    if (reviews == null || reviews.isEmpty) return 0.0;
+
+    double totalRating = 0.0;
+    for (var review in reviews) {
+      totalRating += review['rating'];
+    }
+    return totalRating / reviews.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     User? loggedInUser = Provider.of<UserProvider>(context).loggedInUser;
-
+    averageRating = calculateAverageRating(reviews);
     return Scaffold(
       appBar: AppBar(
         title: Text('프로필'),
@@ -74,7 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         studentId: loggedInUser?.student_id,
         major: major,
         introduction: loggedInUser?.introduction ?? '',
-        reviews: reviews
+        reviews: reviews,
+        averageRating: averageRating,
       ),
     );
   }
@@ -87,8 +99,9 @@ class ProfileBody extends StatelessWidget {
   final String? major;
   final String? introduction;
   final List<dynamic>? reviews;
+  final double? averageRating;
 
-  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews});
+  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews, this.averageRating});
 
   @override
   Widget build(BuildContext context) {
@@ -100,10 +113,6 @@ class ProfileBody extends StatelessWidget {
           // 프로필 정보 표시
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
-              );
             },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,24 +179,26 @@ class ProfileBody extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Divider(),
-              Icon(Icons.star, size: 50, color: Colors.amber),
-              Icon(Icons.star, size: 50, color: Colors.amber),
-              Icon(Icons.star, size: 50, color: Colors.amber),
-              Icon(Icons.star_half, size: 50, color: Colors.amber),
-              Icon(Icons.star_border, size: 50, color: Colors.amber),
+              for (int i = 0; i < 5; i++)
+                Icon(
+                  i < averageRating! ? Icons.star : i - averageRating! + 0.5 < 0 ? Icons.star_border : Icons.star_half,
+                  size: 50,
+                  color: Colors.amber,
+                ),
               SizedBox(width: 5),
-              Text(
-                '3.5',
-                style: TextStyle(fontSize: 30),
-              ),
-              Text(
-                '   (7)',
-                style: TextStyle(fontSize: 20),
-              ),
-              Divider(),
+              if (averageRating != null)
+                Text(
+                  averageRating!.toStringAsFixed(1), // 평균 별점을 소수점 첫째 자리까지 표시
+                  style: TextStyle(fontSize: 30),
+                ),
+              if (reviews != null)
+                Text(
+                  '   (${reviews!.length})',
+                  style: TextStyle(fontSize: 20),
+                )
             ],
           ),
+
           SizedBox(height: 20),
           // 리뷰 표시
           if (reviews != null && reviews!.isNotEmpty)
