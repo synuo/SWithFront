@@ -1,8 +1,8 @@
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'common_object.dart';
-import 'home.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 //원형 버튼
 class CircularButton extends StatelessWidget {
@@ -211,5 +211,174 @@ class SearchField extends SearchDelegate{
   }
 }
 
+class UploadImage extends StatefulWidget {
+  const UploadImage({super.key});
+
+  @override
+  State<UploadImage> createState() => _UploadImageState();
+}
+
+class _UploadImageState extends State<UploadImage> {
+  String? _pickedFile;
+
+  @override
+  Widget build(BuildContext context) {
+    final _imageSize = MediaQuery.of(context).size.width / 4;
+
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Example1'),
+        ),
+        body: Column(
+          children: [
+            const SizedBox(height: 20,),
+            if (_pickedFile == null)
+              Container(
+                constraints: BoxConstraints(
+                  minHeight: _imageSize,
+                  minWidth: _imageSize,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    _showBottomSheet();
+                  },
+                  child: Center(
+                    child: Icon(
+                      Icons.account_circle,
+                      size: _imageSize,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Center(
+                child: Container(
+                  width: _imageSize,
+                  height: _imageSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        width: 2, color: Theme.of(context).colorScheme.primary),
+                    image: DecorationImage(
+                        image: FileImage(File(_pickedFile!)),
+                        fit: BoxFit.cover),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _showBottomSheet() {
+    return showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(25),
+        ),
+      ),
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+              onPressed: () => _getCameraImage(),
+              child: const Text('사진찍기'),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Divider(
+              thickness: 3,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            ElevatedButton(
+              onPressed: () => _getPhotoLibraryImage(),
+              child: const Text('라이브러리에서 불러오기'),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _getCameraImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      await cropImage(pickedFile);
+    } else {
+      if (kDebugMode) {
+        print('이미지 선택안함');
+      }
+    }
+  }
+
+  _getPhotoLibraryImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _pickedFile = _pickedFile;
+      });
+    } else {
+      if (kDebugMode) {
+        print('이미지 선택안함');
+      }
+    }
+  }
+
+  Future<void> cropImage(XFile? filePath) async {
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: filePath!.path,
+      maxWidth: 1080,
+      maxHeight: 1080,
+      aspectRatioPresets: Platform.isAndroid
+          ? [
+        CropAspectRatioPreset.square,
+        CropAspectRatioPreset.ratio3x2,
+        CropAspectRatioPreset.original,
+        CropAspectRatioPreset.ratio4x3,
+        CropAspectRatioPreset.ratio16x9
+      ]
+          : [
+        CropAspectRatioPreset.original,
+        CropAspectRatioPreset.square,
+        CropAspectRatioPreset.ratio3x2,
+        CropAspectRatioPreset.ratio4x3,
+        CropAspectRatioPreset.ratio5x3,
+        CropAspectRatioPreset.ratio5x4,
+        CropAspectRatioPreset.ratio7x5,
+        CropAspectRatioPreset.ratio16x9
+      ],
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        IOSUiSettings(
+          title: 'Cropper',
+        )
+      ],
+    );
+    if (croppedFile != null) {
+      setState(() {
+        _pickedFile = croppedFile.path;
+      });
+    }
+  }
+
+}
 
 
