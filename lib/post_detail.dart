@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:practice/updatepost.dart';
 import 'package:provider/provider.dart';
+import 'Applicants.dart';
 import 'common_object.dart';
 import 'advance_a.dart';
 
@@ -62,7 +63,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> getScrap() async {
     final url =
-        Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
+    Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
       'user_id': loggedInUser?.user_id.toString(),
       'post_id': widget.post_id.toString(),
     });
@@ -188,6 +189,90 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  Future<void> patchProgress(String progress) async {
+    final url = Uri.parse('http://localhost:3000/patchpostprogress');
+    final response = await http.patch(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'post_id': widget.post_id,
+        'progress': progress,
+      }),
+    );
+    if (response.statusCode == 200) {
+      print("Progress updated successfully");
+      setState(() {}); // Update the state to reflect changes
+    } else {
+      throw Exception('Failed to update progress');
+    }
+  }
+
+  void _showProgressDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('모집 상태 변경'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text('모집 종료'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmProgressChange('모집 종료');
+                },
+              ),
+              ListTile(
+                title: Text('추가 모집'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmProgressChange('추가 모집');
+                },
+              ),
+              ListTile(
+                title: Text('스터디 종료'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmProgressChange('스터디 종료');
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _confirmProgressChange(String progress) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('정말 $progress 하시겠습니까?'),
+          actions: [
+            TextButton(
+              child: Text('아니오'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('예'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                patchProgress(progress);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Post>(
@@ -221,15 +306,45 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               centerTitle: true,
               actions: [
                 if (isWriter)
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => UpdatePostScreen(post: post)),
-                      );
+                  PopupMenuButton<String>(
+                    onSelected: (String result) {
+                      switch (result) {
+                        case 'update':
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    UpdatePostScreen(post: post)),
+                          );
+                          break;
+                        case 'change_progress':
+                          _showProgressDialog();
+                          break;
+                        case 'check_applicants':
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    ApplicantsScreen(post_id: widget.post_id)),
+                          );
+                          break;
+                      }
                     },
+                    itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'update',
+                        child: Text('게시글 수정'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'change_progress',
+                        child: Text('모집 상태 변경'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'check_applicants',
+                        child: Text('지원자 확인'),
+                      ),
+                    ],
                   ),
                 if (!isWriter)
                   IconButton(
@@ -254,7 +369,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     },
                   ),
                 if (!isWriter)
-                  //Todo : 중복지원 안되게 수정해야함 지금은 지원한 곳에 또 지원 가능
+                //Todo : 중복지원 안되게 수정해야함 지금은 지원한 곳에 또 지원 가능
                   TextButton(
                     onPressed: () {
                       if (loggedInUser != null) {
@@ -281,7 +396,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   Text(
                     post.title,
                     style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+                    TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
                   ),
                   SizedBox(height: 10),
                   Text('Category: ${post.category}'),
