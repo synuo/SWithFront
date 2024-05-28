@@ -35,6 +35,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
   bool? _isStudentIdAvailable;    //학번 중복 확인
   bool? _isNicknameAvailable;     //닉네임 중복 확인
 
+  String _studentIdErrorText = ''; // 학번 중복 확인 에러 메시지
+  String _nicknameErrorText = '';  // 닉네임 중복 확인 에러 메시지
+
   @override
   void initState() {
     super.initState();
@@ -121,9 +124,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       labelText: '학번',
                       hintText: '학번을 입력해주세요.(7자리)',
                       border: OutlineInputBorder(),
-                      errorText: _isStudentIdAvailable == null || _isStudentIdAvailable!
-                          ? null
-                          : '이미 사용 중인 학번입니다.',
+                      //errorText: _isStudentIdAvailable == null || _isStudentIdAvailable! ? null : '이미 사용 중인 학번입니다.',
+                      errorText: _isStudentIdAvailable == false ? '이미 사용 중인 학번입니다.' : null,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -141,12 +143,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   TextFormField(
                     controller: _nicknameController,
                     decoration: InputDecoration(
-                        labelText: '닉네임',
-                        hintText: '닉네임을 입력해주세요.(10자 이하)',
-                        border: OutlineInputBorder(),
-                        errorText: _isNicknameAvailable == null || _isNicknameAvailable!
-                            ? null
-                            : '이미 사용 중인 닉네임입니다.'
+                      labelText: '닉네임',
+                      hintText: '닉네임을 입력해주세요.(10자 이하)',
+                      border: OutlineInputBorder(),
+                      errorText: _isNicknameAvailable == false ? '이미 사용 중인 닉네임입니다.' : null,
+                        //errorText: _isNicknameAvailable == null || _isNicknameAvailable! ? null : '이미 사용 중인 닉네임입니다.'
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -494,7 +495,22 @@ class _UserInfoPageState extends State<UserInfoPage> {
           ),
         );
         print('화면전환 : userinfo -> login');
-      } else if (response.statusCode == 400) {
+      } else if (response.statusCode == 409) {
+        // 중복된 필드 오류 처리
+        final Map<String, dynamic> responseBody = jsonDecode(response.body);
+        final field = responseBody['field'];
+        if (field == 'student_id') {
+          setState(() {
+            _isStudentIdAvailable = false;
+          });
+        } else if (field == 'nickname') {
+          setState(() {
+            _isNicknameAvailable = false;
+          });
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(responseBody['message'])));
+      }
+      /*else if (response.statusCode == 400) {
         final Map<String, dynamic> responseData = json.decode(response.body);
         if (responseData.containsKey('error')) {
           final String error = responseData['error'];
@@ -509,11 +525,15 @@ class _UserInfoPageState extends State<UserInfoPage> {
             });
           }
         }
-      } else {  // 회원 가입 실패
+      }
+
+       */
+       else {  // 회원 가입 실패
         print('회원 가입 실패: ${response.body}');
       }
     } catch (e) {  // 오류 발생
       print('오류 발생: $e');
+
     }
   }
 
