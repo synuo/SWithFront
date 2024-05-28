@@ -90,13 +90,14 @@ class _BoardScreenState extends State<BoardScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Board', style: TextStyle(color: Colors.white, fontSize: 20.0),),
+          'Board',
+          style: TextStyle(color: Colors.white, fontSize: 20.0),
+        ),
         elevation: 0.0,
         backgroundColor: Color(0xff19A7CE),
         centerTitle: true,
@@ -117,68 +118,69 @@ class _BoardScreenState extends State<BoardScreen> {
           Search(),
         ],
       ),
-
       body: RefreshIndicator(
         onRefresh: () => fetchPosts(),
         child: posts.isEmpty
             ? const Center(
-          child: CircularProgressIndicator(),
-        )
+                child: CircularProgressIndicator(),
+              )
             : ListView.builder(
-          itemCount: posts.length,
-          itemBuilder: (BuildContext context, int index) {
-            final Post post = posts[index];
-            return GestureDetector(
-              onTap: () async {
-                //조회수 증가
-                await increaseViewCount(post.post_id);
-                //화면 이동
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PostDetailScreen(post_id: post.post_id),
-                  ),
-                ).then((_) {
-                  fetchPosts(); // fetchPosts 함수 실행
-                });
-              },
-              child: Container(
-                height: 136,
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE0E0E0)),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                itemCount: posts.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final Post post = posts[index];
+                  return GestureDetector(
+                    onTap: () async {
+                      //조회수 증가
+                      await increaseViewCount(post.post_id);
+                      //화면 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PostDetailScreen(post_id: post.post_id),
+                        ),
+                      ).then((_) {
+                        fetchPosts();
+                      });
+                    },
+                    child: Container(
+                      height: 136,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFE0E0E0)),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
                         children: [
-                          Text(
-                            post.title,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "${post.category} · ${post.progress} · ${post.view_count}",
-                            //style: Theme.of(context).textTheme.caption,
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  post.title,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "${post.category} · ${post.progress} · ${post.view_count}",
+                                  //style: Theme.of(context).textTheme.caption,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }
 }
-

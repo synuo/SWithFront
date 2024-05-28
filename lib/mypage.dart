@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:practice/editprofile.dart';
 import 'package:practice/neweditprofile.dart';
 import 'package:provider/provider.dart';
+import 'MyScrapsPage.dart';
 import 'login.dart';
 import 'setting.dart';
 import 'profile.dart';
@@ -142,7 +143,10 @@ class _MyPageState extends State<MyPage> {
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
             buildMenuItem('스크랩', Icons.arrow_forward_ios, () {
-              // 스크랩으로 이동하는 기능 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyScrapsPage()),
+              );
             }),
             SizedBox(height: 10),
             // 구분선
