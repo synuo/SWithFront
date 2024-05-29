@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import 'otherprofile.dart';
 
 class ApplicantsScreen extends StatefulWidget {
   final int post_id;
@@ -21,7 +24,8 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   }
 
   Future<void> fetchApplicants() async {
-    final url = Uri.parse('http://localhost:3000/getapplicants/${widget.post_id}');
+    final url =
+        Uri.parse('http://localhost:3000/getapplicants/${widget.post_id}');
     try {
       final response = await http.get(
         url,
@@ -33,7 +37,8 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
       if (response.statusCode == 200) {
         setState(() {
-          applicants = List<Map<String, dynamic>>.from(json.decode(response.body)['data']);
+          applicants = List<Map<String, dynamic>>.from(
+              json.decode(response.body)['data']);
         });
       } else {
         throw Exception('Failed to load applicants');
@@ -74,7 +79,19 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AdvanceAnswersScreen(postId: postId, applicantId: applicantId),
+        builder: (context) =>
+            AdvanceAnswersScreen(postId: postId, applicantId: applicantId),
+      ),
+    );
+  }
+
+  void navigateToProfile(int senderId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserProfileScreen(
+          senderId: senderId,
+        ),
       ),
     );
   }
@@ -95,70 +112,106 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 itemCount: applicants.length,
                 itemBuilder: (context, index) {
                   final applicant = applicants[index];
-                  return Container(
-                    padding: EdgeInsets.all(10),
-                    margin: EdgeInsets.symmetric(vertical: 5),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundImage: applicant['user_image'] != null && applicant['user_image'].isNotEmpty
-                                  ? NetworkImage(applicant['user_image'])
-                                  : null,
-                              child: applicant['user_image'] == null || applicant['user_image'].isEmpty
-                                  ? Icon(Icons.person, size: 30)
-                                  : null,
-                            ),
-                            SizedBox(width: 15),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  applicant['nickname'],
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                  return GestureDetector(
+                    onTap: () {
+                      navigateToProfile(applicant['applicant_id']);
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      margin: EdgeInsets.symmetric(vertical: 5),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundImage:
+                                    applicant['user_image'] != null &&
+                                            applicant['user_image'].isNotEmpty
+                                        ? NetworkImage(applicant['user_image'])
+                                        : null,
+                                child: applicant['user_image'] == null ||
+                                        applicant['user_image'].isEmpty
+                                    ? Icon(Icons.person, size: 30)
+                                    : null,
+                              ),
+                              SizedBox(width: 15),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    applicant['nickname'],
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                Text('${applicant['student_id']} 학번'),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        Text('전공: ${applicant['major1']}, ${applicant['major2'] ?? '-'}, ${applicant['major3'] ?? '-'}'),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            TextButton(
-                              onPressed: () {
-                                navigateToAdvanceQuestions(widget.post_id, applicant['applicant_id']);
-                              },
-                              child: Text('사전질문 답변확인'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                updateApplicationStatus(applicant['applicant_id'], '수락');
-                              },
-                              child: Text('수락'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                updateApplicationStatus(applicant['applicant_id'], '거절');
-                              },
-                              child: Text('거절'),
-                            ),
-                          ],
-                        ),
-                      ],
+                                  Text(
+                                    '${applicant['student_id']} 학번  |  ${applicant['major1']}, ${applicant['major2'] ?? '-'}, ${applicant['major3'] ?? '-'}',
+                                    style: TextStyle(fontSize: 12, color: CupertinoColors.inactiveGray),
+                                    overflow: TextOverflow.fade,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  navigateToAdvanceQuestions(widget.post_id,
+                                      applicant['applicant_id']);
+                                },
+                                child: Text('사전질문 답변확인'),
+                              ),
+                              TextButton(
+                                onPressed: applicant['status'] == null
+                                    ? null
+                                    : () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: Text('상태 변경'),
+                                            content: Text('지원자의 상태를 변경하시겠습니까?'),
+                                            actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                    updateApplicationStatus(
+                                                        applicant[
+                                                            'applicant_id'],
+                                                        '수락');
+                                                  },
+                                                  child: Text('수락'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                    updateApplicationStatus(
+                                                        applicant[
+                                                            'applicant_id'],
+                                                        '거절');
+                                                  },
+                                                  child: Text('거절'),
+                                                ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                child: Text(applicant['status'] ??
+                                    ''), // Null check added here
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -175,7 +228,9 @@ class AdvanceAnswersScreen extends StatelessWidget {
   final int postId;
   final int applicantId;
 
-  const AdvanceAnswersScreen({Key? key, required this.postId, required this.applicantId}) : super(key: key);
+  const AdvanceAnswersScreen(
+      {Key? key, required this.postId, required this.applicantId})
+      : super(key: key);
 
   Future<List<Map<String, dynamic>>> fetchAdvanceAnswers() async {
     final url = Uri.parse('http://localhost:3000/getadvanceanswer');
@@ -193,7 +248,8 @@ class AdvanceAnswersScreen extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(json.decode(response.body)['data']);
+        return List<Map<String, dynamic>>.from(
+            json.decode(response.body)['data']);
       } else {
         throw Exception('Failed to load advance questions');
       }
