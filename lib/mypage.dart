@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:practice/editprofile.dart';
 import 'package:practice/neweditprofile.dart';
+import 'package:practice/study_members.dart';
 import 'package:provider/provider.dart';
 import 'MyScrapsPage.dart';
 import 'login.dart';
@@ -153,7 +154,10 @@ class _MyPageState extends State<MyPage> {
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
             buildMenuItem('나와 함께한 사람들', Icons.arrow_forward_ios, () {
-              // 피드백으로 이동하는 기능 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => StudyMembersScreen()),
+              );
             }),
             SizedBox(height: 10),
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
