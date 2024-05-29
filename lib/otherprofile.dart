@@ -1,9 +1,59 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'common_object.dart';
+import 'profile.dart';
 
-class UserProfileScreen extends StatelessWidget {
-  final String nickname;
+class UserProfileScreen extends StatefulWidget {
+  final int senderId;
 
-  UserProfileScreen({required this.nickname});
+  UserProfileScreen({required this.senderId});
+
+  @override
+  _UserProfileScreenState createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  late Future<Map<String, dynamic>> _userFuture;
+  String? major; // 추가된 전공 변수
+  Map<String, dynamic>? userData; // 사용자 데이터
+
+  @override
+  void initState() {
+    super.initState();
+    _userFuture = _fetchUserData();
+  }
+
+  Future<Map<String, dynamic>> _fetchUserData() async {
+    final response = await http.get(Uri.parse('http://localhost:3000/user/${widget.senderId}'));
+    if (response.statusCode == 200) {
+      final decodedData = jsonDecode(response.body);
+      userData = Map<String, dynamic>.from(decodedData); // 사용자 데이터 저장
+      fetchMajorInfo(); // 사용자의 전공 정보를 가져옴
+      return userData!;
+    } else {
+      print('Failed to load user data: ${response.statusCode}');
+      return {};
+    }
+  }
+
+  // 사용자의 전공 정보를 가져오는 메서드
+  Future<void> fetchMajorInfo() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/majorDetail/${userData!['major1']}'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body); // JSON 데이터를 파싱
+        setState(() {
+          major = data['major_name']; // 전공 이름을 저장
+        });
+      } else {
+        throw Exception('Failed to load major information');
+      }
+    } catch (error) {
+      print('Error fetching major information: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,24 +61,28 @@ class UserProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('User Profile'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              // 여기에 프로필 이미지 URL을 설정할 수 있습니다.
-              // 이미지가 없는 경우 기본 이미지를 사용하거나 빈 상태로 유지할 수 있습니다.
-              backgroundImage: AssetImage('assets/default_profile_image.png'),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Nickname: $nickname',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            // 여기에 사용자의 다른 정보를 표시할 수 있습니다.
-          ],
-        ),
+      body: FutureBuilder(
+        future: _userFuture,
+        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final userData = snapshot.data!;
+            // ProfileBody 위젯으로 사용자 정보를 전달하여 표시
+            return ProfileBody(
+              nickname: userData['nickname'] ?? '',
+              name: userData['name'] ?? '',
+              studentId: userData['student_id'] ?? 0,
+              major: major ?? '',
+              introduction: userData['introduction'] ?? '',
+              reviews: userData['reviews'] ?? [],
+              averageRating: userData['average_rating'] ?? 0.0,
+            );
+
+          }
+        },
       ),
     );
   }
