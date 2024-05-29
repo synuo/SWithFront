@@ -214,7 +214,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => UserProfileScreen(nickname: messages[index]['nickname']),
+                                              builder: (context) => UserProfileScreen(senderId: messages[index]['sender_id']),
                                             ),
                                           );
                                         },
