@@ -17,8 +17,11 @@ class UserProfileScreen extends StatefulWidget {
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
   late Future<Map<String, dynamic>> _userFuture;
-  String? major; // 추가된 전공 변수
-  Map<String, dynamic>? userData; // 사용자 데이터
+  String? major;
+  Map<String, dynamic>? userData;
+  bool canWriteReview = true;
+  double averageRating = 0.0; // 기본값 설정
+  List<dynamic> reviews = []; // 기본값 설정
 
   @override
   void initState() {
@@ -30,8 +33,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final response = await http.get(Uri.parse('http://localhost:3000/user/${widget.senderId}'));
     if (response.statusCode == 200) {
       final decodedData = jsonDecode(response.body);
-      userData = Map<String, dynamic>.from(decodedData); // 사용자 데이터 저장
-      fetchMajorInfo(); // 사용자의 전공 정보를 가져옴
+      userData = Map<String, dynamic>.from(decodedData);
+      await fetchMajorInfo();
+      await checkReviewStatus();
+      await fetchReviews();
       return userData!;
     } else {
       print('Failed to load user data: ${response.statusCode}');
@@ -39,20 +44,68 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
-  // 사용자의 전공 정보를 가져오는 메서드
   Future<void> fetchMajorInfo() async {
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/majorDetail/${userData!['major1']}'));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body); // JSON 데이터를 파싱
+        final data = json.decode(response.body);
         setState(() {
-          major = data['major_name']; // 전공 이름을 저장
+          major = data['major_name'];
         });
       } else {
         throw Exception('Failed to load major information');
       }
     } catch (error) {
       print('Error fetching major information: $error');
+    }
+  }
+
+  double calculateAverageRating(List<dynamic> reviews) {
+    if (reviews.isEmpty) return 0.0;
+
+    double totalRating = 0.0;
+    for (var review in reviews) {
+      totalRating += review['rating'];
+    }
+    return totalRating / reviews.length;
+  }
+
+  Future<void> checkReviewStatus() async {
+    User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+    final user_id = loggedInUser?.user_id;
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/checkreview/${widget.senderId}/$user_id'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          canWriteReview = data.isEmpty;
+          print(canWriteReview);
+        });
+      } else {
+        throw Exception('Failed to check review status');
+      }
+    } catch (error) {
+      print('Error checking review status: $error');
+    }
+  }
+
+
+  Future<void> fetchReviews() async {
+    User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+    final url = 'http://localhost:3000/getreview/user/${userData!['user_id']}/reviews';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          reviews = data;
+          averageRating = calculateAverageRating(reviews);
+        });
+      } else {
+        throw Exception('Failed to load reviews');
+      }
+    } catch (error) {
+      print('Error fetching reviews: $error');
     }
   }
 
@@ -71,7 +124,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
             final userData = snapshot.data!;
-            // ProfileBody 위젯으로 사용자 정보를 전달하여 표시
+
             return Column(
               children: [
                 Expanded(
@@ -81,22 +134,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     studentId: userData['student_id'] ?? 0,
                     major: major ?? '',
                     introduction: userData['introduction'] ?? '',
-                    reviews: userData['reviews'] ?? [],
-                    averageRating: userData['average_rating'] ?? 0.0,
+                    reviews: reviews,
+                    averageRating: averageRating,
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(
-                    onPressed: () {
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 15.0),
+                      minimumSize: Size(200,10),
+                    ),
+                    onPressed: canWriteReview
+                        ? () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => WriteReviewScreen(userId: widget.senderId),
                         ),
                       );
-                    },
-                    child: Text('Write a Review'),
+                    }
+                        : null,
+                    child: Text(
+                      '리뷰 작성',
+                      style: TextStyle(fontSize: 25),
+                    ),
                   ),
                 ),
               ],
