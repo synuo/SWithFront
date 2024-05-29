@@ -174,7 +174,14 @@ class ProfileBody extends StatelessWidget {
             ),
           ),
           SizedBox(height: 20),
-          // 별점 표시
+          Text(
+            '리뷰',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
           if (reviews != null && reviews!.isNotEmpty)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -199,11 +206,16 @@ class ProfileBody extends StatelessWidget {
               ],
             ),
           if (reviews == null || reviews!.isEmpty)
-            SizedBox(height: 40),
             Center(
-              child: Text(
-                '등록된 리뷰가 없습니다',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 40),
+                  Text(
+                    '등록된 리뷰가 없습니다',
+                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  ),
+                ],
               ),
             ),
           SizedBox(height: 20),
@@ -213,14 +225,6 @@ class ProfileBody extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Divider(),
-                Text(
-                  '리뷰',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
                 SizedBox(height: 10),
                 ListView.builder(
                   shrinkWrap: true,
@@ -228,8 +232,26 @@ class ProfileBody extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final review = reviews![index];
                     return ListTile(
-                      title: Text(review['content'] ?? ''),
-                      subtitle: Text('Rating: ${review['rating']}'),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      title: Text(review['reviewer_id']?.toString() ?? ''),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: List.generate(5, (i) {
+                              return Icon(
+                                i < review['rating'] ? Icons.star : Icons.star_border,
+                                color: Colors.amber,
+                              );
+                            }),
+                          ),
+                          SizedBox(height: 5),
+                          Text(review['content'] ?? ''),
+                        ],
+                      ),
                     );
                   },
                 ),

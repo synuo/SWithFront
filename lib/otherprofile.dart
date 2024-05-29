@@ -147,7 +147,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                     onPressed: canWriteReview
                         ? () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (context) => WriteReviewScreen(userId: widget.senderId),
@@ -157,7 +157,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         : null,
                     child: Text(
                       '리뷰 작성',
-                      style: TextStyle(fontSize: 25),
+                      style: TextStyle(fontSize: 22),
                     ),
                   ),
                 ),
