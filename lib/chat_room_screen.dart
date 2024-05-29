@@ -3,6 +3,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 import 'package:intl/intl.dart';
+import 'otherprofile.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final String roomId;
@@ -206,11 +207,23 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        messages[index]['nickname'],
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.bold,
+                                      GestureDetector(
+                                        onTap: () {
+                                          // 클릭한 닉네임에 해당하는 사용자 정보를 가져오는 로직을 구현해야 합니다.
+                                          // 사용자 정보를 가져왔다고 가정하고, 프로필 화면으로 이동하는 예시 코드를 작성합니다.
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => UserProfileScreen(nickname: messages[index]['nickname']),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          messages[index]['nickname'],
+                                          style: TextStyle(
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                       SizedBox(height: 4),
