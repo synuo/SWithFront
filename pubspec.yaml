@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_rating_bar: ^4.0.0
   flutter_native_splash: ^2.3.13   #스플래시화면을 위해 추가
   shared_preferences: ^2.2.2  #사용자의 메일주소와 비밀번호를 저장하기 위해 사용할 플러그인
   crypto: ^3.0.3  #암호 해싱을 제공하는 라이브러리
