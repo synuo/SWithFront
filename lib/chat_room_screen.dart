@@ -1,5 +1,3 @@
-//chat_room_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
@@ -29,25 +27,25 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   @override
   void initState() {
     super.initState();
-    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser; //현재 로그인된 유저 정보
-    _initializeSocket(); //소켓 초기화
-    _scrollController.addListener(_scrollListener); //스크롤할 때마다 _scrollListener 호출
+    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser; // 현재 로그인된 유저 정보
+    _initializeSocket(); // 소켓 초기화
+    _scrollController.addListener(_scrollListener); // 스크롤할 때마다 _scrollListener 호출
   }
 
   void _initializeSocket() {
-    widget.socket.off('chatMessage');
-    widget.socket.off('chatHistory');
+    //widget.socket.off('chatMessage');
+    // widget.socket.off('chatHistory');
 
     widget.socket.on('chatMessage', _onChatMessage);
     widget.socket.on('chatHistory', _onChatHistory);
 
-    widget.socket.emit('joinRoom', widget.roomId); //방 입장
-    _fetchChatHistory(); //채팅 내역 불러오기
+    //widget.socket.emit('joinRoom', widget.roomId); // 방 입장
+    _fetchChatHistory(); // 채팅 내역 불러오기
   }
 
   void _onChatMessage(data) {
     setState(() {
-      messages.insert(0, data); // 리스트 맨앞에 새로운 메시지 삽입
+      messages.insert(0, data); // 리스트 맨 앞에 새로운 메시지 삽입
     });
     _scrollController.animateTo(
       0.0,

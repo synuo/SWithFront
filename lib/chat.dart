@@ -1,5 +1,3 @@
-// chat.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -45,9 +43,23 @@ class _ChatScreenState extends State<ChatScreen> {
 
     socket.on('newMessage', (data) {
       setState(() {
-        final updatedRoom = chatRooms.firstWhere((room) => room['room_id'] == data['room_id']);
-        updatedRoom['last_message'] = data['last_message'];
-        updatedRoom['last_message_time'] = data['last_message_time'];
+        final updatedRoom = chatRooms.firstWhere(
+              (room) => room['room_id'] == data['room_id'],
+          orElse: () => <String, dynamic>{},
+        );
+
+        if (updatedRoom.isNotEmpty) {
+          updatedRoom['last_message'] = data['last_message'];
+          updatedRoom['last_message_time'] = data['last_message_time'];
+        } else {
+          // 새로운 채팅방인 경우 추가
+          chatRooms.add({
+            'room_id': data['room_id'],
+            'study_name': data['study_name'], // 필요한 경우 서버에서 study_name도 받아와야 함
+            'last_message': data['last_message'],
+            'last_message_time': data['last_message_time'],
+          });
+        }
         sortChatRooms();
       });
     });
