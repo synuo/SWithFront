@@ -210,6 +210,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  Future<void> createChatRoom() async {
+    final url = Uri.parse('http://localhost:3000/newchatroom');
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'post_id': widget.post_id,
+      }),
+    );
+    if (response.statusCode == 200) {
+      print("Chat room created successfully");
+    } else {
+      throw Exception('Failed to create chat room');
+    }
+  }
+
   void _showProgressDialog() {
     showDialog(
       context: context,
@@ -265,6 +284,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
                 patchProgress(progress);
+                createChatRoom();
               },
             ),
           ],
@@ -369,6 +389,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     },
                   ),
                 if (!isWriter)
+                  //Todo: 모집중/추가모집이 아닌 상태의 게시글에는 지원하기 버튼이 안 뜨게 해야함
                 //Todo : 중복지원 안되게 수정해야함 지금은 지원한 곳에 또 지원 가능
                   TextButton(
                     onPressed: () {
