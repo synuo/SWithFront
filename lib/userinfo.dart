@@ -415,6 +415,25 @@ class _UserInfoPageState extends State<UserInfoPage> {
         // 중복된 필드 오류 처리
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final field = responseBody['field'];
+        String errorMessage = responseBody['message'];
+
+        // 다이얼로그로 오류 메시지 표시
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('오류'),
+            content: Text(errorMessage),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('확인'),
+              ),
+            ],
+          ),
+        );
+
         if (field == 'student_id') {
           setState(() {
             _isStudentIdAvailable = false;
