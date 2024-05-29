@@ -8,6 +8,7 @@ import 'dart:async';
 import 'findpw.dart';
 import 'common_object.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 late User loggedInUser;
 
@@ -254,8 +255,7 @@ class __FormContentState extends State<_FormContent> {
         final userData = jsonDecode(userInfoResponse.body);
         final loggedInUser = User.fromJson(userData);
 
-        Provider.of<UserProvider>(context, listen: false)
-            .setLoggedInUser(loggedInUser); // Provider로 loggedInUser 설정
+        Provider.of<UserProvider>(context, listen: false).setLoggedInUser(loggedInUser); // Provider로 loggedInUser 설정
 
         print('User ID: ${loggedInUser.user_id}');
         print('Email: ${loggedInUser.email}');
