@@ -1,6 +1,6 @@
-import 'dart:convert';
+// chat.dart
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'common_object.dart';
@@ -21,24 +21,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
-    fetchData();
     initializeSocket();
-  }
-
-  Future<void> fetchData() async {
-    final response = await http.post(
-      Uri.parse('http://localhost:3000/getchatrooms'),
-      body: {'userId': loggedInUser?.user_id.toString()},
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        chatRooms = List<Map<String, dynamic>>.from(data['data']);
-      });
-    } else {
-      print('Failed to load data');
-    }
   }
 
   void initializeSocket() {
@@ -50,6 +33,14 @@ class _ChatScreenState extends State<ChatScreen> {
     socket.connect();
     socket.onConnect((_) {
       print('connected');
+      socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()});
+    });
+
+    socket.on('chatRooms', (data) {
+      setState(() {
+        chatRooms = List<Map<String, dynamic>>.from(data['data']);
+        sortChatRooms();
+      });
     });
 
     socket.on('newMessage', (data) {
@@ -57,15 +48,19 @@ class _ChatScreenState extends State<ChatScreen> {
         final updatedRoom = chatRooms.firstWhere((room) => room['room_id'] == data['room_id']);
         updatedRoom['last_message'] = data['last_message'];
         updatedRoom['last_message_time'] = data['last_message_time'];
-        chatRooms.sort((a, b) {
-          final timeA = a['last_message_time'] != null ? DateTime.parse(a['last_message_time']) : DateTime.fromMillisecondsSinceEpoch(0);
-          final timeB = b['last_message_time'] != null ? DateTime.parse(b['last_message_time']) : DateTime.fromMillisecondsSinceEpoch(0);
-          return timeB.compareTo(timeA);
-        });
+        sortChatRooms();
       });
     });
 
     socket.onDisconnect((_) => print('disconnected'));
+  }
+
+  void sortChatRooms() {
+    chatRooms.sort((a, b) {
+      final timeA = a['last_message_time'] != null ? DateTime.parse(a['last_message_time']) : DateTime.fromMillisecondsSinceEpoch(0);
+      final timeB = b['last_message_time'] != null ? DateTime.parse(b['last_message_time']) : DateTime.fromMillisecondsSinceEpoch(0);
+      return timeB.compareTo(timeA);
+    });
   }
 
   String formatMessageTimestamp(String timestamp) {
@@ -110,15 +105,19 @@ class _ChatScreenState extends State<ChatScreen> {
               )
                   : null,
               onTap: () {
+                socket.emit('joinRoom', chatRooms[index]['room_id']);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChatRoomScreen(
                       roomId: chatRooms[index]['room_id'].toString(),
                       studyName: chatRooms[index]['study_name'],
+                      socket: socket,
                     ),
                   ),
-                );
+                ).then((_) {
+                  socket.emit('leaveRoom', chatRooms[index]['room_id']);
+                });
               },
             ),
           );
