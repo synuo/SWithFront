@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:practice/post_detail.dart';
 import 'common_object.dart';
 
 class MyApplicationsPage extends StatefulWidget {
@@ -105,7 +106,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
                       title: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(_getCategoryIcon(userApplications[index].category?? '')),
+                          Icon(_getCategoryIcon(userApplications[index].category ?? '')),
                           SizedBox(width: 20),
                           Expanded(
                             child: Column(
@@ -128,12 +129,23 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                userApplications[index].status??'',
+                                userApplications[index].status ?? '',
                               ),
                             ],
                           ),
                         ],
                       ),
+                      onTap: () {
+                        // Navigate to the post detail screen with the postId
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PostDetailScreen(
+                              post_id: userApplications[index].postId,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
