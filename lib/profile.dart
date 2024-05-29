@@ -31,6 +31,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // 유저 닉네임을 가져오는 메서드
+  Future<String> fetchReviewerNickname(int reviewerId) async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/user/$reviewerId'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body); // JSON 데이터를 파싱
+        return data['nickname']; // 닉네임 반환
+      } else {
+        throw Exception('Failed to load user information');
+      }
+    } catch (error) {
+      print('Error fetching user information: $error');
+      return 'Unknown'; // 에러 발생 시 기본 닉네임
+    }
+  }
+
   // 리뷰를 가져오는 메서드
   Future<void> fetchReviews() async {
     User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
@@ -40,8 +56,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body); // JSON 데이터를 파싱
+        List<dynamic> updatedReviews = [];
+
+        // 각 리뷰의 닉네임 가져오기
+        for (var review in data) {
+          String nickname = await fetchReviewerNickname(review['reviewer_id']);
+          review['reviewer_nickname'] = nickname;
+          updatedReviews.add(review);
+        }
+
         setState(() {
-          reviews = data; // 리뷰 리스트를 저장
+          reviews = updatedReviews; // 리뷰 리스트를 저장
         });
       } else {
         throw Exception('Failed to load reviews');
@@ -236,7 +261,7 @@ class ProfileBody extends StatelessWidget {
                         backgroundColor: Colors.grey,
                         child: Icon(Icons.person, color: Colors.white),
                       ),
-                      title: Text(review['reviewer_id']?.toString() ?? ''),
+                      title: Text(review['reviewer_nickname']?.toString() ?? ''),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
