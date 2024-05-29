@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:practice/login.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 
@@ -179,16 +178,16 @@ class ProfileBody extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              for (int i = 0; i < 5; i++)
+              for (int i = 1; i < 6; i++)
                 Icon(
-                  i < averageRating! ? Icons.star : i - averageRating! + 0.5 < 0 ? Icons.star_border : Icons.star_half,
+                  i <= averageRating! ? Icons.star : (i == averageRating! + 0.5 ? Icons.star_half : Icons.star_border),
                   size: 50,
                   color: Colors.amber,
                 ),
               SizedBox(width: 5),
               if (averageRating != null)
                 Text(
-                  averageRating!.toStringAsFixed(1), // 평균 별점을 소수점 첫째 자리까지 표시
+                  averageRating!.toStringAsFixed(1),
                   style: TextStyle(fontSize: 30),
                 ),
               if (reviews != null)
