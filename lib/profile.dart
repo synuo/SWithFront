@@ -175,29 +175,37 @@ class ProfileBody extends StatelessWidget {
           ),
           SizedBox(height: 20),
           // 별점 표시
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              for (int i = 1; i < 6; i++)
-                Icon(
-                  i <= averageRating! ? Icons.star : (i == averageRating! + 0.5 ? Icons.star_half : Icons.star_border),
-                  size: 50,
-                  color: Colors.amber,
-                ),
-              SizedBox(width: 5),
-              if (averageRating != null)
-                Text(
-                  averageRating!.toStringAsFixed(1),
-                  style: TextStyle(fontSize: 30),
-                ),
-              if (reviews != null)
-                Text(
-                  '   (${reviews!.length})',
-                  style: TextStyle(fontSize: 20),
-                )
-            ],
-          ),
-
+          if (reviews != null && reviews!.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                for (int i = 1; i < 6; i++)
+                  Icon(
+                    i <= averageRating! ? Icons.star : (i == averageRating! + 0.5 ? Icons.star_half : Icons.star_border),
+                    size: 50,
+                    color: Colors.amber,
+                  ),
+                SizedBox(width: 5),
+                if (averageRating != null)
+                  Text(
+                    averageRating!.toStringAsFixed(1),
+                    style: TextStyle(fontSize: 30),
+                  ),
+                if (reviews != null)
+                  Text(
+                    '   (${reviews!.length})',
+                    style: TextStyle(fontSize: 20),
+                  )
+              ],
+            ),
+          if (reviews == null || reviews!.isEmpty)
+            SizedBox(height: 40),
+            Center(
+              child: Text(
+                '등록된 리뷰가 없습니다',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+            ),
           SizedBox(height: 20),
           // 리뷰 표시
           if (reviews != null && reviews!.isNotEmpty)
