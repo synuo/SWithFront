@@ -89,16 +89,37 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  Future<String> fetchReviewerNickname(int reviewerId) async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/user/$reviewerId'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body); // JSON 데이터를 파싱
+        return data['nickname']; // 닉네임 반환
+      } else {
+        throw Exception('Failed to load user information');
+      }
+    } catch (error) {
+      print('Error fetching user information: $error');
+      return 'Unknown'; // 에러 발생 시 기본 닉네임
+    }
+  }
 
   Future<void> fetchReviews() async {
-    User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
-    final url = 'http://localhost:3000/getreview/user/${userData!['user_id']}/reviews';
+    final url = 'http://localhost:3000/getreview/user/${widget.senderId}/reviews';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        List<dynamic> updatedReviews = [];
+
+        for (var review in data) {
+          String nickname = await fetchReviewerNickname(review['reviewer_id']);
+          review['reviewer_nickname'] = nickname;
+          updatedReviews.add(review);
+        }
+
         setState(() {
-          reviews = data;
+          reviews = updatedReviews;
           averageRating = calculateAverageRating(reviews);
         });
       } else {
@@ -139,11 +160,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(30.0),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 15.0),
-                      minimumSize: Size(200,10),
+                      minimumSize: Size(200, 10),
                     ),
                     onPressed: canWriteReview
                         ? () {
