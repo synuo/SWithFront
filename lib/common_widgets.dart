@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:practice/post_detail.dart';
 import 'dart:io';
+import 'common_object.dart';
 
 //원형 버튼
 class CircularButton extends StatelessWidget {
@@ -77,7 +81,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 }
 
-
+/*
 //검색 바
 class Search extends StatefulWidget {
 
@@ -210,6 +214,117 @@ class SearchField extends SearchDelegate{
     );
   }
 }
+
+
+ */
+// 검색 바
+class Search extends StatefulWidget {
+  final Function(String) onSearch;
+
+  const Search({Key? key, required this.onSearch}) : super(key: key);
+
+  @override
+  _SearchState createState() => _SearchState();
+}
+
+class _SearchState extends State<Search> {
+  final TextEditingController _controller = TextEditingController();
+  List<Post> _suggestions = [];
+
+  Future<void> _fetchSuggestions(String query) async {
+    final url = Uri.parse('http://localhost:3000/searchposts?query=$query');
+    final response = await http.get(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = jsonDecode(response.body);
+      setState(() {
+        _suggestions = jsonData.map((data) {
+          return Post(
+            post_id: data['post_id'],
+            title: data['title'],
+            category: data['category'],
+            view_count: data['view_count'],
+            progress: data['progress'],
+            writer_id: data['writer_id'],
+            create_at: DateTime.parse(data['create_at']),
+            update_at: DateTime.parse(data['update_at']),
+            study_name: data['study_name'],
+            content: data['content'],
+          );
+        }).toList();
+      });
+    } else {
+      throw Exception('Failed to load suggestions');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: SizedBox(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    hintText: '글 제목, 내용, 해시태그 등을 입력해보세요.',
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.search_outlined),
+                      onPressed: () {
+                        widget.onSearch(_controller.text);
+                      },
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      _fetchSuggestions(value);
+                    } else {
+                      setState(() {
+                        _suggestions = [];
+                      });
+                    }
+                  },
+                  onSubmitted: (value) {
+                    widget.onSearch(value);
+                  },
+                ),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: _suggestions.length,
+                itemBuilder: (context, index) {
+                  final suggestion = _suggestions[index];
+                  return ListTile(
+                    title: Text(suggestion.title),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PostDetailScreen(post_id: suggestion.post_id),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class UploadImage extends StatefulWidget {
   const UploadImage({super.key});

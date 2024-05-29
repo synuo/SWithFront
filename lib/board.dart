@@ -20,6 +20,7 @@ class BoardScreen extends StatefulWidget {
 
 class _BoardScreenState extends State<BoardScreen> {
   late List<Post> posts = []; // 게시물 목록 데이터
+  String? searchQuery;  //검색
 
   @override
   void initState() {
@@ -60,10 +61,25 @@ class _BoardScreenState extends State<BoardScreen> {
         if (widget.category != '전체') {
           fetchedPosts.retainWhere((post) => post.category == widget.category);
         }
+        // 검색어가 있는 경우 검색어가 포함된 게시물만 필터링
+        if (searchQuery != null && searchQuery!.isNotEmpty) {
+          posts = posts.where((post) =>
+          post.title.contains(searchQuery!) ||
+              post.content.contains(searchQuery!) ||
+              post.study_name.contains(searchQuery!)
+          ).toList();
+        }
       });
     } else {
       throw Exception('Failed to load posts');
     }
+  }
+
+  void handleSearch(String query) {
+    setState(() {
+      searchQuery = query;
+      fetchPosts();
+    });
   }
 
   Future<void> increaseViewCount(int post_id) async {
@@ -115,9 +131,9 @@ class _BoardScreenState extends State<BoardScreen> {
               });
             },
           ),
-          Search(),
         ],
       ),
+      /*
       body: RefreshIndicator(
         onRefresh: () => fetchPosts(),
         child: posts.isEmpty
@@ -180,6 +196,78 @@ class _BoardScreenState extends State<BoardScreen> {
                   );
                 },
               ),
+      ),
+
+       */
+      body: Column(
+        children: [
+          Search(onSearch: handleSearch),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => fetchPosts(),
+              child: posts.isEmpty
+                  ? const Center(
+                child: CircularProgressIndicator(),
+              )
+                  : ListView.builder(
+                itemCount: posts.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final Post post = posts[index];
+                  return GestureDetector(
+                    onTap: () async {
+                      //조회수 증가
+                      await increaseViewCount(post.post_id);
+                      //화면 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PostDetailScreen(post_id: post.post_id),
+                        ),
+                      ).then((_) {
+                        fetchPosts();
+                      });
+                    },
+                    child: Container(
+                      height: 136,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFE0E0E0)),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  post.title,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "${post.category} · ${post.progress} · ${post.view_count}",
+                                  //style: Theme.of(context).textTheme.caption,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
