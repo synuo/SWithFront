@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:practice/post_detail.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 
@@ -105,6 +106,17 @@ class _MyPostsPageState extends State<MyPostsPage> {
                           ),
                         ],
                       ),
+                      onTap: () {
+                        // Navigate to the post detail screen with the post_id
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PostDetailScreen(
+                              post_id: userPosts[index].post_id,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
