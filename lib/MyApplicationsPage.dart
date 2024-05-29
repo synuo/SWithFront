@@ -12,8 +12,7 @@ class MyApplicationsPage extends StatefulWidget {
 }
 
 class _MyApplicationsPageState extends State<MyApplicationsPage> {
-  List<Application> userApplications = [];
-  bool isLoading = true;
+  List<Post> userApplications = [];
 
   @override
   void initState() {
@@ -30,17 +29,10 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        List<Application> applications = (json.decode(response.body) as List)
-            .map((data) => Application.fromJson(data))
-            .toList();
-
-        for (var application in applications) {
-          await fetchPostDetails(application);
-        }
-
         setState(() {
-          userApplications = applications;
-          isLoading = false;
+            userApplications = (json.decode(response.body) as List)
+                .map((data) => Post.fromJson(data))
+                .toList();
         });
       } else {
         throw Exception('Failed to load applications');
@@ -50,34 +42,13 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
     }
   }
 
-  Future<void> fetchPostDetails(Application application) async {
-    final url = 'http://localhost:3000/userposts/user/${application.postId}/posts';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        List<dynamic> postDetails = json.decode(response.body);
-        if (postDetails.isNotEmpty) {
-          application.updatePostInfo(postDetails[0]);
-        }
-      } else {
-        throw Exception('Failed to load post details');
-      }
-    } catch (error) {
-      print('Error fetching post details: $error');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('나의 지원 내역'),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
+      body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,31 +67,31 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
                 itemCount: userApplications.length,
                 itemBuilder: (context, index) {
                   return Container(
-                    padding: EdgeInsets.all(10),
-                    margin: EdgeInsets.symmetric(vertical: 5),
+                    padding: EdgeInsets.all(10), // 테두리 내부 여백
+                    margin: EdgeInsets.symmetric(vertical: 5), // 테두리 외부 여백
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey), // 테두리 색상 및 두께 지정
+                      borderRadius: BorderRadius.circular(10), // 테두리 모서리 둥글기
                     ),
                     child: ListTile(
                       title: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(_getCategoryIcon(userApplications[index].category ?? '')),
+                          Icon(_getCategoryIcon(userApplications[index].category)),
                           SizedBox(width: 20),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  userApplications[index].title ?? '',
+                                  userApplications[index].title,
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  userApplications[index].studyName ?? '',
+                                  userApplications[index].study_name,
                                 ),
                               ],
                             ),
@@ -129,19 +100,19 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                userApplications[index].status ?? '',
+                                userApplications[index].progress,
                               ),
                             ],
                           ),
                         ],
                       ),
                       onTap: () {
-                        // Navigate to the post detail screen with the postId
+                        // Navigate to the post detail screen with the post_id
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PostDetailScreen(
-                              post_id: userApplications[index].postId,
+                              post_id: userApplications[index].post_id,
                             ),
                           ),
                         );
