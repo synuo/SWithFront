@@ -103,7 +103,7 @@ class _BoardScreenState extends State<BoardScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.add), // 포스트 쓰기 아이콘
+            icon: Icon(Icons.edit), // 포스트 쓰기 아이콘
             onPressed: () {
               Navigator.push(
                 context,
