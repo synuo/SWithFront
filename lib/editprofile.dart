@@ -1,17 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:practice/mypage.dart';
-import 'package:practice/notifications.dart';
-import 'package:practice/post_detail.dart';
+import 'dart:io';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'board.dart';
-import 'chat.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 import 'common_object.dart';
 import 'common_widgets.dart';
-import 'package:http/http.dart' as http;
 
 //프로필이미지, 이메일, 이름, 학번, 닉네임, 전공1, 전공2, 전공3, 자기소개 (이 순서대로)를 보여줌
 //닉네임, 전공1,전공2, 전공3, 프로필이미지, 자기소개 우측에는 수정 버튼이 존재해서 수정 가능함
@@ -30,7 +24,8 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // _formKey 정의
 
-  final TextEditingController _profileImageController = TextEditingController();
+  late File _pickedImage;
+  //final TextEditingController _profileImageController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _studentidController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -60,7 +55,7 @@ class _EditProfileState extends State<EditProfile> {
       _nameController.text = user.name;
       _studentidController.text = user.student_id.toString();
       _emailController.text = user.email;
-      _profileImageController.text = user.user_image ?? '';
+      _pickedImage = (user.user_image ?? '') as File;
       _introductionController.text = user.introduction ?? '';
       _major1changed = user.major1_change_log;
       fetchMajorInfo(1, user.major1);    //전공은 id로 받아온걸 이름으로 변경
@@ -92,17 +87,12 @@ class _EditProfileState extends State<EditProfile> {
             padding: const EdgeInsets.all(40.0),
             child: ListView(
               children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: _profileImageController != null
-                      ? NetworkImage(_profileImageController.text)
-                      : AssetImage('assets/default_profile.png') as ImageProvider,
-                ),
-                IconButton(
-                    onPressed: (){
-                      _getImageFromGallery();
-                    },
-                    icon: Icon(Icons.edit_outlined)
+                GestureDetector(
+                  onTap: _getImage,
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundImage: _pickedImage != null ? FileImage(_pickedImage) : AssetImage('assets/default_profile.png') as ImageProvider,
+                  ),
                 ),
                 SizedBox(height: 20),
                 _buildEditableField(
@@ -137,32 +127,6 @@ class _EditProfileState extends State<EditProfile> {
                       ? null
                       : '이미 사용 중인 닉네임입니다.',
                 ),
-                /*
-                TextFormField(
-                  controller: _nicknameController,
-                  decoration: InputDecoration(
-                    labelText: '닉네임',
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.edit_outlined),
-                      onPressed: () => checkDuplicateNickname(_nicknameController.text),
-                    ),
-                      errorText: _isNicknameAvailable == null || _isNicknameAvailable!
-                          ? null
-                          : '이미 사용 중인 닉네임입니다.'
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '닉네임을 입력해주세요.';
-                    }
-                    if (value.length > 10) {
-                      return '닉네임은 10자 이하여야 합니다.';
-                    }
-                    //checkDuplicateNickname(value);
-                    return null;
-                  },
-                ),
-
-                 */
                 _gap(),
                 TextField(
                   controller: _nameController,
@@ -273,6 +237,16 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
+  Future<void> _getImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _pickedImage = File(image.path);
+      });
+    }
+  }
+
   void _saveProfile() async {
     final user = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     final updatedUser = User(
@@ -291,7 +265,7 @@ class _EditProfileState extends State<EditProfile> {
       major2: _majorIdMap[_selectedMajor2]!,
       major3: _majorIdMap[_selectedMajor3]!,
       introduction: _introductionController.text,
-      user_image: user!.user_image,
+      user_image: _pickedImage.path, // 이미지 파일의 경로를 저장
       major1_change_log: _major1changed,
     );
     Provider.of<UserProvider>(context, listen: false).updateUser(updatedUser);
@@ -478,14 +452,25 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-  Future<void> _getImageFromGallery() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    if (image != null) {
-      setState(() {
-        _profileImageController.text = image.path;
-      });
+  Future<String?> _uploadImage(File imageFile) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse('http://localhost:3000/upload'));
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        var responseBody = await response.stream.bytesToString();
+        var responseData = json.decode(responseBody);
+        return responseData['imageUrl'];
+      } else {
+        print('Failed to upload image: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
     }
   }
 
@@ -526,6 +511,19 @@ class _EditProfileState extends State<EditProfile> {
     } catch (e) {
       print('오류 발생: $e');
       return false;
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? pickedImageFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (pickedImageFile != null) {
+      setState(() {
+        _pickedImage = File(pickedImageFile.path);
+      });
     }
   }
 

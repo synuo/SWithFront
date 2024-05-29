@@ -101,6 +101,28 @@ class User {
       review_noti: json['review_noti'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': user_id,
+      'email': email,
+      'password': password,
+      'name': name,
+      'student_id': student_id,
+      'nickname': nickname,
+      'user_image': user_image,
+      'major1': major1,
+      'major2': major2,
+      'major3': major3,
+      'major1_change_log': major1_change_log,
+      'introduction': introduction,
+      'all_noti': all_noti,
+      'chatroom_noti': chatroom_noti,
+      'qna_noti': qna_noti,
+      'accept_noti': accept_noti,
+      'review_noti': review_noti,
+    };
+  }
 }
 
 class UserProvider with ChangeNotifier {
