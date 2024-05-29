@@ -217,7 +217,7 @@ class SearchField extends SearchDelegate{
 
 
  */
-// 검색 바
+// 검색 바 : 현재 제목, 카테고리, 내용 감지함.
 class Search extends StatefulWidget {
   final Function(String) onSearch;
 
