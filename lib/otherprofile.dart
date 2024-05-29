@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 import 'profile.dart';
+import 'writereview.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final int senderId;
@@ -71,16 +72,35 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           } else {
             final userData = snapshot.data!;
             // ProfileBody 위젯으로 사용자 정보를 전달하여 표시
-            return ProfileBody(
-              nickname: userData['nickname'] ?? '',
-              name: userData['name'] ?? '',
-              studentId: userData['student_id'] ?? 0,
-              major: major ?? '',
-              introduction: userData['introduction'] ?? '',
-              reviews: userData['reviews'] ?? [],
-              averageRating: userData['average_rating'] ?? 0.0,
+            return Column(
+              children: [
+                Expanded(
+                  child: ProfileBody(
+                    nickname: userData['nickname'] ?? '',
+                    name: userData['name'] ?? '',
+                    studentId: userData['student_id'] ?? 0,
+                    major: major ?? '',
+                    introduction: userData['introduction'] ?? '',
+                    reviews: userData['reviews'] ?? [],
+                    averageRating: userData['average_rating'] ?? 0.0,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WriteReviewScreen(userId: widget.senderId),
+                        ),
+                      );
+                    },
+                    child: Text('Write a Review'),
+                  ),
+                ),
+              ],
             );
-
           }
         },
       ),
