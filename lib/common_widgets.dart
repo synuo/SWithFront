@@ -229,7 +229,7 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   final TextEditingController _controller = TextEditingController();
-  List<Post> _suggestions = [];
+  List<Post> _suggestions = [];   //검색어에 맞게 정렬
 
   Future<void> _fetchSuggestions(String query) async {
     final url = Uri.parse('http://localhost:3000/searchposts?query=$query');

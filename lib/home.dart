@@ -149,7 +149,6 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(100.0),
-          //preferredSize: Size.fromHeight(kToolbarHeight), // 검색 바를 위한 높이 조정 (AppBar의 높이를 따르도록 설정)
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child:  Search(onSearch: handleSearch),
@@ -174,6 +173,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '스터디',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
+                      print("카테고리 : 스터디");
                     },
                   ),
                   CircularButton(
@@ -184,6 +184,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '공모전',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
+                      print("카테고리 : 공모전");
                     },
                   ),
                   CircularButton(
@@ -194,6 +195,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '기타',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
+                      print("카테고리 : 기타");
                     },
                   ),
                 ],

@@ -205,8 +205,7 @@ class _BoardScreenState extends State<BoardScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => fetchPosts(),
-              child: posts.isEmpty
-                  ? const Center(
+              child: posts.isEmpty ? const Center(
                 child: CircularProgressIndicator(),
               )
                   : ListView.builder(
