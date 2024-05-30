@@ -30,6 +30,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _selectedMajor1;
   String? _selectedMajor2;
   String? _selectedMajor3;
+  IconData _selectedProfileIcon = Icons.person; // 기본 프로필 아이콘
 
   @override
   void initState() {
@@ -43,6 +44,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _selectedMajor1 = await fetchMajorInfo(user!.major1);
     _selectedMajor2 = await fetchMajorInfo(user.major2);
     _selectedMajor3 = await fetchMajorInfo(user.major3);
+    setState(() {
+      _selectedProfileIcon = IconData(user.user_image ?? Icons.person.codePoint, fontFamily: 'MaterialIcons');
+    });
   }
 
   @override
@@ -76,18 +80,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             children: [
               CircleAvatar(
                 radius: 50,
-                backgroundImage: user.user_image != null ? NetworkImage(user.user_image!) : null,
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      // 이미지 수정 로직 추가 필요
-                    },
-                  ),
+                child: Icon(
+                  _selectedProfileIcon,
+                  size: 50,
                 ),
+                backgroundColor: Colors.grey,
               ),
               SizedBox(height: 16),
+              _buildProfileIconRow(),
               _buildInfoRow('이메일', user.email),
               _buildInfoRow('이름', user.name),
               _buildInfoRow('학번', user.student_id.toString()),
@@ -98,6 +98,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               }),
               _buildDropdownRow('전공1', _selectedMajor1, _isMajor1Editing, (String? value) {
                 setState(() {
+                  if(_selectedMajor1 == value){
+                    _isMajor1Editing = true;
+                  }
                   _selectedMajor1 = value;
                   print('전공1 선택: $_selectedMajor1'); // 전공1 선택 시 출력
                 });
@@ -142,7 +145,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       name: user.name,
       student_id: user.student_id,
       nickname: _nicknameController.text.isEmpty ? user.nickname : _nicknameController.text,
-      user_image: user.user_image,
+      user_image: _selectedProfileIcon.codePoint, // 프로필 아이콘의 codePoint를 문자열로 저장
       major1: _selectedMajor1 != null && _selectedMajor1!.isNotEmpty ? findMajorId(_selectedMajor1!)! : user.major1,
       major2: _selectedMajor2 != null && _selectedMajor2!.isNotEmpty ? findMajorId(_selectedMajor2!) : user.major2,
       major3: _selectedMajor3 != null && _selectedMajor3!.isNotEmpty ? findMajorId(_selectedMajor3!) : user.major3,
@@ -171,7 +174,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         print('Name: ${updatedUser.name}');
         print('Student ID: ${updatedUser.student_id}');
         print('Nickname: ${updatedUser.nickname}');
-        print('Profile Image: ${updatedUser.user_image ?? '없음'}');
+        print('Profile Icon: ${updatedUser.user_image}');
         print('Major 1: ${updatedUser.major1}');
         print('Major 2: ${updatedUser.major2 ?? '없음'}');
         print('Major 3: ${updatedUser.major3 ?? '없음'}');
@@ -237,47 +240,67 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-      Expanded(
-        child: isEditing
-            ? DropdownButtonFormField<String>(
-          value: value,
-          onChanged: onChanged,
-          items: _majors.map((String major) {
-            return DropdownMenuItem<String>(
-              value: major,
-              child: Text(major),
-            );
-          }).toList(),
-        )
-            : DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: value != null ? value : (_majors.isNotEmpty ? _majors.first : null), // 기존 전공 이름이 선택되도록 설정
-            onChanged: (newValue) {
-              if(label == '전공1') {
-                _selectedMajor1 = newValue;
-              } else if(label == '전공2') {
-                _selectedMajor2 = newValue;
-              } else if(label == '전공3') {
-                _selectedMajor3 = newValue;
-              }
-              onChanged(newValue);
-            },
-            items: _majors.map((String major) {
-              return DropdownMenuItem<String>(
-                value: major,
-                child: Text(major),
-              );
-            }).toList(),
-          ),
-        ),),
+          Expanded(
+            child: isEditing
+                ? DropdownButtonFormField<String>(
+              value: value,
+              onChanged: onChanged,
+              items: _majors.map((String major) {
+                return DropdownMenuItem<String>(
+                  value: major,
+                  child: Text(major),
+                );
+              }).toList(),
+            )
+                : DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value != null ? value : (_majors.isNotEmpty ? _majors.first : null), // 기존 전공 이름이 선택되도록 설정
+                onChanged: (newValue) {
+                  if(label == '전공1') {
+                    _selectedMajor1 = newValue;
+                  } else if(label == '전공2') {
+                    _selectedMajor2 = newValue;
+                  } else if(label == '전공3') {
+                    _selectedMajor3 = newValue;
+                  }
+                  onChanged(newValue);
+                },
+                items: _majors.map((String major) {
+                  return DropdownMenuItem<String>(
+                    value: major,
+                    child: Text(major),
+                  );
+                }).toList(),
+              ),
+            ),),
         ],
       ),
     );
   }
 
+  // 프로필 아이콘 선택을 위한 Row 빌더
+  Widget _buildProfileIconRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: profileIcons.map((icon) {
+          return IconButton(
+            icon: Icon(icon, size: 30),
+            color: _selectedProfileIcon == icon ? Colors.blue : Colors.grey,
+            onPressed: () {
+              setState(() {
+                _selectedProfileIcon = icon;
+              });
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
 
   // 전공 이름과 ID를 매핑하는 맵
   Map<String, int> _majorIdMap = {};
@@ -330,7 +353,4 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   int? findMajorId(String majorName) {
     return _majorIdMap[majorName];
   }
-
-
 }
-

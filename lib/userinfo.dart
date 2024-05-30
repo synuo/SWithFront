@@ -33,7 +33,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
   String _selectedMajor2 = '';
   String _selectedMajor3 = '';
 
-  String? _pickedProfileImage; // 프로필 이미지를 저장할 변수 추가
+  //String? _pickedProfileImage; // 프로필 이미지를 저장할 변수 추가
+  IconData _pickedProfileIcon = Icons.person; // 프로필 아이콘 저장할 변수
   
   bool? _isStudentIdAvailable;    //학번 중복 확인
   bool? _isNicknameAvailable;     //닉네임 중복 확인
@@ -101,7 +102,34 @@ class _UserInfoPageState extends State<UserInfoPage> {
               child: ListView(
                 children: <Widget>[
                   // TODO : 프로필 이미지
+                  // 프로필 아이콘 선택 부분
+                  Center(
+                    child: DropdownButton<IconData>(
+                      value: _pickedProfileIcon,
+                      items: [
+                        DropdownMenuItem(
+                          value: Icons.person,
+                          child: Icon(Icons.person, size: 50),
+                        ),
+                        DropdownMenuItem(
+                          value: Icons.cookie,
+                          child: Icon(Icons.cookie, size: 50),
+                        ),
+                        DropdownMenuItem(
+                          value: Icons.ac_unit,
+                          child: Icon(Icons.ac_unit, size: 50),
+                        ),
+                      ],
+                      onChanged: (IconData? newIcon) {
+                        setState(() {
+                          _pickedProfileIcon = newIcon!;
+                        });
+                      },
+                      iconSize: 50,
+                    ),
+                  ),
                   // 프로필 이미지 업로드 부분 수정
+                  /*
                   GestureDetector(
                     onTap: () async {
                       final pickedImage = await Navigator.push(
@@ -116,12 +144,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     },
                     child: _pickedProfileImage != null
                         ? Image.file(File(_pickedProfileImage!), width: 100, height: 100, fit: BoxFit.cover)
-                        : CircleAvatar(
-                      radius: 50,
-                      child: Icon(Icons.person, size: 50),
-                    ),
+                        : CircleAvatar(radius: 50, child: Icon(Icons.ac_unit, size: 50),),
                   ),
-
+                   */
                   // 이름 입력 폼 필드
                   TextFormField(
                     controller: _nameController,
@@ -364,7 +389,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
     final int? majorId1 = findMajorId(_selectedMajor1);
     final int? majorId2 = findMajorId(_selectedMajor2);
     final int? majorId3 = findMajorId(_selectedMajor3);
-    final String profileImage = _profileImageController.text; //프로필 이미지 저장
+    final String profileIcon = _pickedProfileIcon.codePoint.toString(); // 프로필 아이콘 저장
+    //final String profileImage = _profileImageController.text; //프로필 이미지 저장
     final String introduction = _introduction;         // 자기소개 저장
 
     final Uri uri = Uri.parse('http://localhost:3000/signup');
@@ -384,7 +410,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
           'major1': majorId1,  //이름 대신 id 전달
           'major2': majorId2,
           'major3': majorId3,
-          'user_image': profileImage,
+          'user_image': profileIcon,
           'introduction' : introduction,
         }),
       );

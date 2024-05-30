@@ -124,8 +124,9 @@ class ProfileBody extends StatelessWidget {
   final String? introduction;
   final List<dynamic>? reviews;
   final double? averageRating;
+  final int? profileIconCodePoint;
 
-  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews, this.averageRating});
+  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews, this.averageRating, this.profileIconCodePoint,});
 
   @override
   Widget build(BuildContext context) {
@@ -148,8 +149,16 @@ class ProfileBody extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: Colors.grey, // 임시로 회색으로 지정
                   ),
+                  /*
                   child: Icon(
                     Icons.account_circle,
+                    size: 80,
+                    color: Colors.white,
+                  ),
+
+                   */
+                  child: Icon(
+                    profileIconCodePoint != null ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons') : Icons.person,
                     size: 80,
                     color: Colors.white,
                   ),

@@ -1,4 +1,11 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+const List<IconData> profileIcons = [
+  Icons.person,
+  Icons.cookie,
+  Icons.ac_unit,
+];
 
 class Post {
   final int post_id;
@@ -48,7 +55,7 @@ class User {
   final String name;
   final int student_id;
   final String nickname;
-  final String? user_image; // Nullable
+  final int? user_image; // Nullable
   final int major1;
   final int? major2;
   final int? major3;
@@ -88,7 +95,7 @@ class User {
       name: json['name'],
       student_id: json['student_id'],
       nickname: json['nickname'],
-      user_image: json['user_image'],
+      user_image: json['user_image'] != null ? int.tryParse(json['user_image']) : null, // 문자열을 int로 변환
       major1: json['major1'],
       major2: json['major2'],
       major3: json['major3'],
@@ -110,7 +117,7 @@ class User {
       'name': name,
       'student_id': student_id,
       'nickname': nickname,
-      'user_image': user_image,
+      'user_image': user_image?.toString(), // int를 문자열로 변환
       'major1': major1,
       'major2': major2,
       'major3': major3,
