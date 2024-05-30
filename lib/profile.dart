@@ -111,6 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         introduction: loggedInUser?.introduction ?? '',
         reviews: reviews,
         averageRating: averageRating,
+        profileIconCodePoint: loggedInUser?.user_image, // 아이콘 코드포인트 추가
       ),
     );
   }

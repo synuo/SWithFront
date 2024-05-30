@@ -55,10 +55,16 @@ class _MyPageState extends State<MyPage> {
                       color: Colors.grey, // 임시로 회색으로 지정
                     ),
                     child: Icon(
+                      IconData(loggedInUser?.user_image ?? Icons.person.codePoint, fontFamily: 'MaterialIcons'),
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                    /*
+                    child: Icon(
                       Icons.account_circle,
                       size: 80,
                       color: Colors.white,
-                    ),
+                    ),*/
                   ),
                   SizedBox(width: 20),
                   Expanded(
