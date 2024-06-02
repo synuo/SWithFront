@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:practice/updatepost.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'Applicants.dart';
 import 'common_object.dart';
+import 'updatepost.dart';
 import 'advance_a.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -16,13 +16,19 @@ class PostDetailScreen extends StatefulWidget {
   State<PostDetailScreen> createState() => _PostDetailScreenState();
 }
 
-class _PostDetailScreenState extends State<PostDetailScreen> {
+class _PostDetailScreenState extends State<PostDetailScreen>
+    with SingleTickerProviderStateMixin {
   bool isScrapped = false;
   User? loggedInUser;
+  late TabController _tabController;
+  List<Map<String, dynamic>> questions = [];
+  String newQuestion = '';
+  Map<int, String> newAnswers = {};
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       loggedInUser =
           Provider.of<UserProvider>(context, listen: false).loggedInUser;
@@ -30,6 +36,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         getScrap();
       }
     });
+    fetchQuestions();
   }
 
   Future<Post> fetchPostDetails(int postId) async {
@@ -63,7 +70,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> getScrap() async {
     final url =
-    Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
+        Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
       'user_id': loggedInUser?.user_id.toString(),
       'post_id': widget.post_id.toString(),
     });
@@ -79,11 +86,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       setState(() {
-        if (responseData['isScrapped'] == 1) {
-          isScrapped = true;
-        } else {
-          isScrapped = false;
-        }
+        isScrapped = responseData['isScrapped'] == 1;
       });
     } else {
       throw Exception('Failed to get scrap status');
@@ -149,16 +152,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AdvanceAScreen(post_id: widget.post_id, advance_q: responseData),
+            builder: (context) => AdvanceAScreen(
+                post_id: widget.post_id, advance_q: responseData),
           ),
         ).then((result) {
           if (result == true) {
-            // Add application after completing AdvanceA
             addApplication();
           }
         });
       } else {
-        // Add application directly
         addApplication();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('지원 완료')),
@@ -204,7 +206,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
     if (response.statusCode == 200) {
       print("Progress updated successfully");
-      setState(() {}); // Update the state to reflect changes
+      setState(() {});
     } else {
       throw Exception('Failed to update progress');
     }
@@ -293,6 +295,53 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
+  Future<void> fetchQuestions() async {
+    final response = await http
+        .get(Uri.parse('http://localhost:3000/getquestions/${widget.post_id}'));
+    if (response.statusCode == 200) {
+      setState(() {
+        questions = List<Map<String, dynamic>>.from(json.decode(response.body));
+      });
+    } else {
+      throw Exception('Failed to load questions');
+    }
+  }
+
+  Future<void> addQuestion() async {
+    if (newQuestion.trim().isEmpty) return;
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/addquestion/${widget.post_id}'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'questioner_id': loggedInUser?.user_id,
+        'question': newQuestion,
+      }),
+    );
+    if (response.statusCode == 201) {
+      fetchQuestions();
+      setState(() {
+        newQuestion = '';
+      });
+    } else {
+      throw Exception('Failed to add question');
+    }
+  }
+
+  Future<void> addAnswer(int questionId, String answer) async {
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/addanswer/${questionId}'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'answer': answer,
+      }),
+    );
+    if (response.statusCode == 201) {
+      fetchQuestions();
+    } else {
+      throw Exception('Failed to add answer');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Post>(
@@ -322,7 +371,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             appBar: AppBar(
               title: Text(post.title),
               elevation: 0.0,
-              backgroundColor: Color(0xff19A7CE),
               centerTitle: true,
               actions: [
                 if (isWriter)
@@ -351,7 +399,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       }
                     },
                     itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<String>>[
+                        <PopupMenuEntry<String>>[
                       const PopupMenuItem<String>(
                         value: 'update',
                         child: Text('게시글 수정'),
@@ -383,20 +431,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           isScrapped = !isScrapped;
                         });
                       } else {
-                        // Handle not logged in state
                         print("User is not logged in");
                       }
                     },
                   ),
                 if (!isWriter)
-                  //Todo: 모집중/추가모집이 아닌 상태의 게시글에는 지원하기 버튼이 안 뜨게 해야함
-                //Todo : 중복지원 안되게 수정해야함 지금은 지원한 곳에 또 지원 가능
                   TextButton(
                     onPressed: () {
                       if (loggedInUser != null) {
                         applyForPost();
                       } else {
-                        // Handle not logged in state
                         print("User is not logged in");
                       }
                     },
@@ -409,23 +453,142 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   ),
               ],
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    post.title,
-                    style:
-                    TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      Text(
+                        '카테고리: ${post.category}',
+                        textAlign: TextAlign.left,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '조회수: ${post.view_count}',
+                        textAlign: TextAlign.left,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '작성일: ${post.create_at.toString().substring(0, 10)}',
+                        textAlign: TextAlign.left,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '모집 현황: ${post.progress}',
+                        textAlign: TextAlign.left,
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 10),
-                  Text('Category: ${post.category}'),
-                  Text('View Count: ${post.view_count}'),
-                  Text('Progress: ${post.progress}'),
-                  Text('Content: ${post.content}'),
-                ],
-              ),
+                ),
+                Divider( // 가로로 된 구분선
+                  color: Colors.grey, // 구분선 색상 설정
+                  height: 1, // 구분선의 높이 설정
+                ),
+                TabBar(
+                  controller: _tabController,
+                  tabs: [
+                    Tab(text: '상세'),
+                    Tab(text: 'Q&A'),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${post.content}'),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: questions.length,
+                                itemBuilder: (context, index) {
+                                  final question = questions[index];
+                                  final questionId = question['question_id'];
+                                  final questionText = question['question'];
+                                  final answerText = question['answer'] ?? '';
+
+                                  return Card(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Q: $questionText',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)),
+                                          if (answerText.isNotEmpty)
+                                            Text('A: $answerText')
+                                          else if (isWriter)
+                                            TextField(
+                                              onChanged: (text) {
+                                                newAnswers[questionId] = text;
+                                              },
+                                              decoration: InputDecoration(
+                                                labelText: '답변 작성',
+                                              ),
+                                            ),
+                                          if (isWriter && answerText.isEmpty)
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                if (newAnswers
+                                                    .containsKey(questionId)) {
+                                                  addAnswer(questionId,
+                                                      newAnswers[questionId]!);
+                                                }
+                                              },
+                                              child: Text('답변 달기'),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            if (!isWriter)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        onChanged: (text) {
+                                          newQuestion = text;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: '질문 작성',
+                                        ),
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: addQuestion,
+                                      child: Text('추가'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           );
         }
