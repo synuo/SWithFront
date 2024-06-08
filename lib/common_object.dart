@@ -10,6 +10,12 @@ const List<IconData> profileIcons = [
 class Post {
   final int post_id;
   final int writer_id;
+  final String? writer_image;
+  final String? writer_nickname;
+  final String? writer_student_id;
+  final String? writer_major1;
+  final String? writer_major2;
+  final String? writer_major3;
   final DateTime create_at;
   final DateTime update_at;
   final String title;
@@ -23,6 +29,12 @@ class Post {
     required this.post_id,
     required this.writer_id,
     required this.create_at,
+    this.writer_image,
+    this.writer_nickname,
+    this.writer_student_id,
+    this.writer_major1,
+    this.writer_major2,
+    this.writer_major3,
     required this.update_at,
     required this.title,
     required this.category,
