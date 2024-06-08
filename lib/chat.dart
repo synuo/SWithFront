@@ -31,10 +31,10 @@ class _ChatScreenState extends State<ChatScreen> {
     socket.connect();
     socket.onConnect((_) {
       print('connected');
-      socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()});
+      socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()}); //채팅방 목록 데이터 요청
     });
 
-    socket.on('chatRooms', (data) {
+    socket.on('chatRooms', (data) { //채팅방 목록, 마지막 메시지 수신
       setState(() {
         chatRooms = List<Map<String, dynamic>>.from(data['data']);
         sortChatRooms();
@@ -117,7 +117,7 @@ class _ChatScreenState extends State<ChatScreen> {
               )
                   : null,
               onTap: () {
-                socket.emit('joinRoom', chatRooms[index]['room_id']);
+                //socket.emit('joinRoom', chatRooms[index]['room_id']);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -128,7 +128,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                 ).then((_) {
-                  socket.emit('leaveRoom', chatRooms[index]['room_id']);
+                  //socket.emit('leaveRoom', chatRooms[index]['room_id']);
                 });
               },
             ),

@@ -33,14 +33,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _initializeSocket() {
-    //widget.socket.off('chatMessage');
-    // widget.socket.off('chatHistory');
 
-    widget.socket.on('chatMessage', _onChatMessage);
-    widget.socket.on('chatHistory', _onChatHistory);
-
-    //widget.socket.emit('joinRoom', widget.roomId); // 방 입장
-    _fetchChatHistory(); // 채팅 내역 불러오기
+    widget.socket.on('chatHistory', _onChatHistory); //채팅 내역 불러오기
+    widget.socket.on('chatMessage', _onChatMessage); //실시간으로 새로운 메시지 수신
+    widget.socket.emit('joinRoom', widget.roomId); // 방 입장
+    //_fetchChatHistory(); // 채팅 내역 불러오기
   }
 
   void _onChatMessage(data) {
@@ -84,7 +81,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
   }
 
-  void _sendMessage() {
+  void _sendMessage() { //새로운 메시지 전송 버튼 누르면 호출
     if (_controller.text.isNotEmpty) {
       final now = DateTime.now().toIso8601String();
       final message = {
@@ -93,7 +90,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         'content': _controller.text,
         'chat_time': now,
       };
-      widget.socket.emit('chatMessage', message);
+      widget.socket.emit('chatMessage', message);//서버로 메시지 데이터 전송
       _controller.clear();
       _scrollController.animateTo(
         0.0,
