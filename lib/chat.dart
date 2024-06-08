@@ -31,10 +31,10 @@ class _ChatScreenState extends State<ChatScreen> {
     socket.connect();
     socket.onConnect((_) {
       print('connected');
-      socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()}); //채팅방 목록 데이터 요청
+      socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()}); // 채팅방 목록 데이터 요청
     });
 
-    socket.on('chatRooms', (data) { //채팅방 목록, 마지막 메시지 수신
+    socket.on('chatRooms', (data) { // 채팅방 목록, 마지막 메시지 수신
       setState(() {
         chatRooms = List<Map<String, dynamic>>.from(data['data']);
         sortChatRooms();
@@ -43,19 +43,27 @@ class _ChatScreenState extends State<ChatScreen> {
 
     socket.on('newMessage', (data) {
       setState(() {
-        final updatedRoom = chatRooms.firstWhere(
-              (room) => room['room_id'] == data['room_id'],
-          orElse: () => <String, dynamic>{},
-        );
-
-        if (updatedRoom.isNotEmpty) {
-          updatedRoom['last_message'] = data['last_message'];
-          updatedRoom['last_message_time'] = data['last_message_time'];
+        print('data room_id:');
+        print(data['room_id']);
+        print('Current chat rooms:');
+        for (var room in chatRooms) {
+          print('Room ID: ${room['room_id']}, Study Name: ${room['study_name']}, Last Message: ${room['last_message']}, Last Message Time: ${room['last_message_time']}');
+        }
+        int roomIndex = chatRooms.indexWhere((room) => room['room_id'].toString() == data['room_id'].toString());
+        print(roomIndex);
+        if (roomIndex != -1) {
+          // 기존 채팅방 업데이트
+          chatRooms[roomIndex] = {
+            'room_id': data['room_id'],
+            'study_name': data['study_name'],
+            'last_message': data['last_message'],
+            'last_message_time': data['last_message_time'],
+          };
         } else {
-          // 새로운 채팅방인 경우 추가
+          // 새로운 채팅방 추가
           chatRooms.add({
             'room_id': data['room_id'],
-            'study_name': data['study_name'], // 필요한 경우 서버에서 study_name도 받아와야 함
+            'study_name': data['study_name'],
             'last_message': data['last_message'],
             'last_message_time': data['last_message_time'],
           });
@@ -75,7 +83,10 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  String formatMessageTimestamp(String timestamp) {
+  String formatMessageTimestamp(String? timestamp) {
+    if (timestamp == null) {
+      return '';
+    }
     final now = DateTime.now();
     final messageTime = DateTime.parse(timestamp).toLocal();
 
@@ -97,11 +108,11 @@ class _ChatScreenState extends State<ChatScreen> {
           : ListView.builder(
         itemCount: chatRooms.length,
         itemBuilder: (context, index) {
-          final lastMessage = chatRooms[index]['last_message'];
-          final lastMessageTime = chatRooms[index]['last_message_time'];
+          final lastMessage = chatRooms[index]['last_message'] as String?;
+          final lastMessageTime = chatRooms[index]['last_message_time'] as String?;
           return Card(
             child: ListTile(
-              title: Text(chatRooms[index]['study_name']),
+              title: Text(chatRooms[index]['study_name'] as String),
               subtitle: lastMessage != null && lastMessageTime != null
                   ? Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,13 +128,12 @@ class _ChatScreenState extends State<ChatScreen> {
               )
                   : null,
               onTap: () {
-                //socket.emit('joinRoom', chatRooms[index]['room_id']);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChatRoomScreen(
                       roomId: chatRooms[index]['room_id'].toString(),
-                      studyName: chatRooms[index]['study_name'],
+                      studyName: chatRooms[index]['study_name'] as String,
                       socket: socket,
                     ),
                   ),
