@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:practice/profile.dart';
 import 'package:provider/provider.dart';
 import 'Applicants.dart';
 import 'common_object.dart';
+import 'otherprofile.dart';
 import 'updatepost.dart';
 import 'advance_a.dart';
 
@@ -48,9 +50,14 @@ class _PostDetailScreenState extends State<PostDetailScreen>
         'Accept': 'application/json',
       },
     );
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = jsonDecode(response.body);
       final data = jsonData.isNotEmpty ? jsonData.first : null;
+      if (data == null) {
+        throw Exception('Post not found');
+      }
+
       return Post(
         post_id: data['post_id'] as int,
         title: data['title'] as String,
@@ -58,6 +65,12 @@ class _PostDetailScreenState extends State<PostDetailScreen>
         view_count: data['view_count'] as int,
         progress: data['progress'] as String,
         writer_id: data['writer_id'] as int,
+        writer_nickname: data['nickname'] as String,
+        writer_student_id: data['student_id'].toString().substring(0, 2),
+        writer_major1: data['major1'] as String,
+        writer_image: data['user_image'] != null ? data['user_image'] as String : '',
+        writer_major2: data['major2'] != null ? data['major2'] as String : '',
+        writer_major3: data['major3'] != null ? data['major3'] as String : '',
         create_at: DateTime.parse(data['create_at']),
         update_at: DateTime.parse(data['update_at']),
         study_name: data['study_name'] as String,
@@ -67,6 +80,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
       throw Exception('Failed to load post detail');
     }
   }
+
 
   Future<void> getScrap() async {
     final url =
@@ -447,7 +461,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                     child: Text(
                       '지원하기',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     ),
                   ),
@@ -457,7 +471,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(2.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -484,9 +498,99 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                     ],
                   ),
                 ),
-                Divider( // 가로로 된 구분선
+                Divider(
+                  // 가로로 된 구분선
                   color: Colors.grey, // 구분선 색상 설정
-                  height: 1, // 구분선의 높이 설정
+                  height: 0, // 구분선의 높이 설정
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () {
+                    if (isWriter) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ProfileScreen()), // 본인 프로필 화면으로 이동
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UserProfileScreen(
+                                senderId: post.writer_id)), // 글 작성자 프로필 화면으로 이동
+                      );
+                    }
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey, // 임시로 회색으로 지정
+                        ),
+
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 20),
+                            Text(
+                              post.writer_nickname ?? '닉네임 로드 실패', // 닉네임 표시
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "${post.writer_student_id}학번" ?? '학번 로드 실패', // 학번 표시
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              '전공1: ${post.writer_major1}', // 전공1 표시
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                            if (post.writer_major2 != null)
+                              Text(
+                                '전공2: ${post.writer_major2}', // 전공2 표시
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            if (post.writer_major3 != null)
+                              Text(
+                                '전공3: ${post.writer_major3}', // 전공3 표시
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Divider(
+                  // 가로로 된 구분선
+                  color: Colors.grey, // 구분선 색상 설정
+                  height: 0, // 구분선의 높이 설정
                 ),
                 TabBar(
                   controller: _tabController,
@@ -494,6 +598,10 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                     Tab(text: '상세'),
                     Tab(text: 'Q&A'),
                   ],
+                ),
+                Divider(
+                  color: Colors.grey,
+                  height: 0,
                 ),
                 Expanded(
                   child: TabBarView(
@@ -520,46 +628,89 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                                   final questionId = question['question_id'];
                                   final questionText = question['question'];
                                   final answerText = question['answer'] ?? '';
+                                  final questionerId =
+                                      question['questioner_id']; // 질문자의 ID
 
                                   return Card(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Q: $questionText',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)),
-                                          if (answerText.isNotEmpty)
-                                            Text('A: $answerText')
-                                          else if (isWriter)
-                                            TextField(
-                                              onChanged: (text) {
-                                                newAnswers[questionId] = text;
-                                              },
-                                              decoration: InputDecoration(
-                                                labelText: '답변 작성',
-                                              ),
-                                            ),
-                                          if (isWriter && answerText.isEmpty)
-                                            ElevatedButton(
+                                    color: Colors.white,
+                                    child: Stack(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text('Q: $questionText',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              if (answerText.isNotEmpty)
+                                                Text('A: $answerText')
+                                              else if (isWriter)
+                                                Column(
+                                                  children: [
+                                                    TextField(
+                                                      onChanged: (text) {
+                                                        newAnswers[questionId] =
+                                                            text;
+                                                      },
+                                                      decoration:
+                                                          InputDecoration(
+                                                        labelText:
+                                                            '답변을 기다리고 있어요!',
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.centerRight,
+                                                      child:
+                                                          ElevatedButton.icon(
+                                                        onPressed: () {
+                                                          if (newAnswers
+                                                              .containsKey(
+                                                                  questionId)) {
+                                                            addAnswer(
+                                                                questionId,
+                                                                newAnswers[
+                                                                    questionId]!);
+                                                          }
+                                                        },
+                                                        icon: Icon(Icons.send),
+                                                        label: Text(''),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (questionerId ==
+                                                loggedInUser?.user_id &&
+                                            answerText.isEmpty)
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: IconButton(
+                                              icon: Icon(Icons.delete),
                                               onPressed: () {
-                                                if (newAnswers
-                                                    .containsKey(questionId)) {
-                                                  addAnswer(questionId,
-                                                      newAnswers[questionId]!);
-                                                }
+                                                print("질문 삭제");
                                               },
-                                              child: Text('답변 달기'),
                                             ),
-                                        ],
-                                      ),
+                                          ),
+                                      ],
                                     ),
                                   );
                                 },
                               ),
                             ),
+                            if (!isWriter)
+                              Divider(
+                                // 질문 추가 란과 Q&A Card 사이의 구분선
+                                color: Colors.grey,
+                                height: 1,
+                              ),
                             if (!isWriter)
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -571,13 +722,13 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                                           newQuestion = text;
                                         },
                                         decoration: InputDecoration(
-                                          labelText: '질문 작성',
+                                          labelText: '궁금한 점을 스터디장에게 물어보세요!',
                                         ),
                                       ),
                                     ),
-                                    ElevatedButton(
+                                    IconButton(
                                       onPressed: addQuestion,
-                                      child: Text('추가'),
+                                      icon: Icon(Icons.send),
                                     ),
                                   ],
                                 ),
