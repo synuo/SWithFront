@@ -43,14 +43,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     socket.on('newMessage', (data) {
       setState(() {
-        print('data room_id:');
-        print(data['room_id']);
-        print('Current chat rooms:');
-        for (var room in chatRooms) {
-          print('Room ID: ${room['room_id']}, Study Name: ${room['study_name']}, Last Message: ${room['last_message']}, Last Message Time: ${room['last_message_time']}');
-        }
         int roomIndex = chatRooms.indexWhere((room) => room['room_id'].toString() == data['room_id'].toString());
-        print(roomIndex);
+
         if (roomIndex != -1) {
           // 기존 채팅방 업데이트
           chatRooms[roomIndex] = {
@@ -59,7 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
             'last_message': data['last_message'],
             'last_message_time': data['last_message_time'],
           };
-        } else {
+        } else { //없으면
           // 새로운 채팅방 추가
           chatRooms.add({
             'room_id': data['room_id'],
@@ -112,19 +106,24 @@ class _ChatScreenState extends State<ChatScreen> {
           final lastMessageTime = chatRooms[index]['last_message_time'] as String?;
           return Card(
             child: ListTile(
-              title: Text(chatRooms[index]['study_name'] as String),
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage('https://via.placeholder.com/150'), // 임시 프로필 이미지
+              ),
+              title: Text(
+                chatRooms[index]['study_name'] as String,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               subtitle: lastMessage != null && lastMessageTime != null
-                  ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(lastMessage, overflow: TextOverflow.ellipsis),
-                  ),
-                  Text(
-                    formatMessageTimestamp(lastMessageTime),
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
+                  ? Text(
+                lastMessage,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              )
+                  : null,
+              trailing: lastMessageTime != null
+                  ? Text(
+                formatMessageTimestamp(lastMessageTime),
+                style: TextStyle(color: Colors.grey, fontSize: 10),
               )
                   : null,
               onTap: () {
@@ -146,6 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       ),
     );
+
   }
 
   @override
