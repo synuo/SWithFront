@@ -108,18 +108,7 @@ class _SearchState extends State<Search> {
       final List<dynamic> jsonData = jsonDecode(response.body);
       setState(() {
         _suggestions = jsonData.map((data) {
-          return Post(
-            post_id: data['post_id'],
-            title: data['title'],
-            category: data['category'],
-            view_count: data['view_count'],
-            progress: data['progress'],
-            writer_id: data['writer_id'],
-            create_at: DateTime.parse(data['create_at']),
-            update_at: DateTime.parse(data['update_at']),
-            study_name: data['study_name'],
-            content: data['content'],
-          );
+          return Post.fromJson(data);
         }).toList();
       });
     } else {

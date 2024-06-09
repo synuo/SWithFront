@@ -40,18 +40,7 @@ class _BoardScreenState extends State<BoardScreen> {
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = jsonDecode(response.body);
       final List<Post> fetchedPosts = jsonData.map((data) {
-        return Post(
-          post_id: data['post_id'] as int,
-          title: data['title'] as String,
-          category: data['category'] as String,
-          view_count: data['view_count'] as int,
-          progress: data['progress'] as String,
-          writer_id: data['writer_id'] as int,
-          create_at: DateTime.parse(data['create_at']),
-          update_at: DateTime.parse(data['update_at']),
-          study_name: data['study_name'] as String,
-          content: data['study_name'] as String,
-        );
+        return Post.fromJson(data);
       }).toList();
 
       setState(() {

@@ -24,6 +24,7 @@ class Post {
   final String content;
   final String progress;
   final int view_count;
+  final List<String> tags;  // 태그 리스트 추가
 
   Post({
     required this.post_id,
@@ -42,6 +43,7 @@ class Post {
     required this.content,
     required this.progress,
     required this.view_count,
+    required this.tags,  // 태그 리스트 추가
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -56,9 +58,17 @@ class Post {
       content: json['content'],
       progress: json['progress'],
       view_count: json['view_count'],
+      writer_image: json['user_image'],
+      writer_nickname: json['nickname'],
+      writer_student_id: json['student_id'] != null ? json['student_id'].toString().substring(0, 2) : '학번 없음',
+      writer_major1: json['major1'],
+      writer_major2: json['major2'],
+      writer_major3: json['major3'],
+      tags: List<String>.from(json['tags'] ?? []),  // 태그 리스트 추가
     );
   }
 }
+
 
 class User {
   final int user_id;

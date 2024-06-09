@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'Applicants.dart';
 import 'common_object.dart';
 import 'otherprofile.dart';
-import 'updatepost.dart';
+import 'editpost.dart';
 import 'advance_a.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -58,29 +58,11 @@ class _PostDetailScreenState extends State<PostDetailScreen>
         throw Exception('Post not found');
       }
 
-      return Post(
-        post_id: data['post_id'] as int,
-        title: data['title'] as String,
-        category: data['category'] as String,
-        view_count: data['view_count'] as int,
-        progress: data['progress'] as String,
-        writer_id: data['writer_id'] as int,
-        writer_nickname: data['nickname'] as String,
-        writer_student_id: data['student_id'].toString().substring(0, 2),
-        writer_major1: data['major1'] as String,
-        writer_image: data['user_image'] != null ? data['user_image'] as String : '',
-        writer_major2: data['major2'] != null ? data['major2'] as String : '',
-        writer_major3: data['major3'] != null ? data['major3'] as String : '',
-        create_at: DateTime.parse(data['create_at']),
-        update_at: DateTime.parse(data['update_at']),
-        study_name: data['study_name'] as String,
-        content: data['content'] as String,
-      );
+      return Post.fromJson(data);
     } else {
       throw Exception('Failed to load post detail');
     }
   }
-
 
   Future<void> getScrap() async {
     final url =
@@ -396,7 +378,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    UpdatePostScreen(post: post)),
+                                    EditPostScreen(post: post)),
                           );
                           break;
                         case 'change_progress':
