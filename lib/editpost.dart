@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'common_object.dart';
 
 class EditPostScreen extends StatefulWidget {
@@ -186,16 +185,15 @@ class _EditPostScreenState extends State<EditPostScreen> {
       }),
     );
     if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body);
-      post_id = responseData['postId'];
-      editPostTag();
+      await editPostTag();
     } else {
+      print('Failed to edit post. Status code: ${response.statusCode}');
       throw Exception('Failed to edit post');
     }
   }
 
-
   Future<void> editPostTag() async {
+    print("editposttag 실행됨");
     final url = Uri.parse('http://localhost:3000/editposttag');
     final response = await http.put(
       url,
@@ -209,13 +207,17 @@ class _EditPostScreenState extends State<EditPostScreen> {
       }),
     );
     if (response.statusCode == 200) {
-      print('Post tags edited successfully');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('게시글 업데이트 완료'),
+        ),
+      );
       Navigator.pop(context, true);
     } else {
+      print('Failed to edit post tags. Status code: ${response.statusCode}');
       throw Exception('Failed to edit post tags');
     }
   }
-
 
   Widget _dropDown({
     Widget? underline,

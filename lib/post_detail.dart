@@ -379,7 +379,10 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                             MaterialPageRoute(
                                 builder: (context) =>
                                     EditPostScreen(post: post)),
-                          );
+                          ).then((_) {
+                            fetchPostDetails(widget.post_id);
+                            fetchQuestions();
+                          });
                           break;
                         case 'change_progress':
                           _showProgressDialog();
@@ -514,7 +517,6 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                           shape: BoxShape.circle,
                           color: Colors.grey, // 임시로 회색으로 지정
                         ),
-
                       ),
                       SizedBox(width: 20),
                       Expanded(
@@ -532,7 +534,8 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                             ),
                             SizedBox(height: 10),
                             Text(
-                              "${post.writer_student_id}학번" ?? '학번 로드 실패', // 학번 표시
+                              "${post.writer_student_id}학번" ?? '학번 로드 실패',
+                              // 학번 표시
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.black,
