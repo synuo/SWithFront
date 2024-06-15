@@ -1,14 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:practice/post_detail.dart';
 import 'addpost.dart';
-import 'chat.dart';
 import 'common_object.dart';
 import 'common_widgets.dart';
-import 'home.dart';
-import 'mypage.dart';
 
 class BoardScreen extends StatefulWidget {
   final String? category; // 카테고리 파라미터
@@ -21,6 +17,7 @@ class BoardScreen extends StatefulWidget {
 class _BoardScreenState extends State<BoardScreen> {
   late List<Post> posts = []; // 게시물 목록 데이터
   String? searchQuery;  //검색
+  String selectedFilter = '모집중';
 
   @override
   void initState() {
@@ -70,6 +67,20 @@ class _BoardScreenState extends State<BoardScreen> {
       fetchPosts();
     });
   }
+  void applyFilter(String filter) {
+    setState(() {
+      selectedFilter = filter;
+    });
+    fetchPosts(); // 서버에서 데이터를 다시 가져와 필터링을 적용
+  }
+
+  List<Post> getFilteredPosts() {
+    if (selectedFilter == '전체') {
+      return posts;
+    } else {
+      return posts.where((post) => post.progress == selectedFilter).toList();
+    }
+  }
 
   Future<void> increaseViewCount(int post_id) async {
     final url = Uri.parse('http://localhost:3000/view_count/${post_id}');
@@ -95,6 +106,7 @@ class _BoardScreenState extends State<BoardScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +119,12 @@ class _BoardScreenState extends State<BoardScreen> {
         backgroundColor: Color(0xff19A7CE),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(Icons.filter_list), // 필터 버튼 아이콘
+            onPressed: () {
+              _showFilterDialog();
+            },
+          ),
           IconButton(
             icon: Icon(Icons.edit), // 포스트 쓰기 아이콘
             onPressed: () {
@@ -128,18 +146,19 @@ class _BoardScreenState extends State<BoardScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => fetchPosts(),
-              child: posts.isEmpty ? const Center(
+              child: posts.isEmpty
+                  ? const Center(
                 child: CircularProgressIndicator(),
               )
                   : ListView.builder(
-                itemCount: posts.length,
+                itemCount: getFilteredPosts().length,
                 itemBuilder: (BuildContext context, int index) {
-                  final Post post = posts[index];
+                  final Post post = getFilteredPosts()[index];
                   return GestureDetector(
                     onTap: () async {
-                      //조회수 증가
+                      // 조회수 증가
                       await increaseViewCount(post.post_id);
-                      //화면 이동
+                      // 화면 이동
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -151,7 +170,7 @@ class _BoardScreenState extends State<BoardScreen> {
                       });
                     },
                     child: Container(
-                      height: 136,
+                      height: 160,
                       margin: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8.0),
                       decoration: BoxDecoration(
@@ -159,27 +178,33 @@ class _BoardScreenState extends State<BoardScreen> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       padding: const EdgeInsets.all(8),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  post.title,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  "${post.category} · ${post.progress} · ${post.view_count}",
-                                  //style: Theme.of(context).textTheme.caption,
-                                ),
-                              ],
-                            ),
+                          Text(
+                            post.title,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "${post.category} · ${post.progress} · ${post.view_count}",
+                            //style: Theme.of(context).textTheme.caption,
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 4.0,
+                            children: post.tags
+                                .map((tag) => Text(
+                              '#$tag',
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 14.0),
+                            ))
+                                .toList(),
                           ),
                         ],
                       ),
@@ -191,6 +216,40 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('필터 선택'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <String>[
+              '전체',
+              '모집중',
+              '모집 종료',
+              '추가 모집',
+              '스터디 종료'
+            ].map((filter) {
+              return RadioListTile(
+                title: Text(filter),
+                value: filter,
+                groupValue: selectedFilter,
+                onChanged: (value) {
+                  setState(() {
+                    selectedFilter = value!;
+                  });
+                  Navigator.of(context).pop();
+                  applyFilter(selectedFilter);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 }
