@@ -8,8 +8,9 @@ import 'otherprofile.dart';
 class ChatRoomScreen extends StatefulWidget {
   final String roomId;
   final String studyName;
+  final IO.Socket socket;
 
-  ChatRoomScreen({required this.roomId, required this.studyName});
+  ChatRoomScreen({required this.roomId, required this.studyName, required this.socket});
 
   @override
   _ChatRoomScreenState createState() => _ChatRoomScreenState();
@@ -18,7 +19,6 @@ class ChatRoomScreen extends StatefulWidget {
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   User? loggedInUser;
   List<Map<String, dynamic>> messages = [];
-  late IO.Socket socket;
   TextEditingController _controller = TextEditingController();
   ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
@@ -28,31 +28,40 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   @override
   void initState() {
     super.initState();
-    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
-    _initializeSocket();
-    _scrollController.addListener(_scrollListener);
+    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser; // 현재 로그인된 유저 정보
+    _initializeSocket(); // 소켓 초기화
+    _scrollController.addListener(_scrollListener); // 스크롤할 때마다 _scrollListener 호출
   }
 
   void _initializeSocket() {
-    socket = IO.io('http://localhost:3000', <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-    });
 
-    socket.connect();
-    socket.onConnect((_) {
-      print('connected');
-      socket.emit('joinRoom', widget.roomId);
-      _fetchChatHistory();
-    });
+    widget.socket.on('chatHistory', _onChatHistory); //채팅 내역 불러오기
+    widget.socket.on('chatMessage', _onChatMessage); //실시간으로 새로운 메시지 수신
+    widget.socket.emit('joinRoom', widget.roomId); // 방 입장
+    //_fetchChatHistory(); // 채팅 내역 불러오기
+  }
 
-    socket.on('chatMessage', (data) {
-      setState(() {
-        messages.insert(0, data);
-      });
+  void _onChatMessage(data) {
+    print('Received new message: ${data['content']}');
+    setState(() {
+      messages.insert(0, data); // 리스트 맨 앞에 새로운 메시지 삽입
     });
+    _scrollController.animateTo(
+      0.0,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
 
-    socket.onDisconnect((_) => print('disconnected'));
+  void _onChatHistory(data) {
+    final newMessages = List<Map<String, dynamic>>.from(data['data']);
+    setState(() {
+      if (newMessages.length < _messageLimit) {
+        _hasMoreMessages = false;
+      }
+      messages.addAll(newMessages.reversed); // 시간 순서대로 추가
+    });
+    _isLoadingMore = false;
   }
 
   Future<void> _fetchChatHistory() async {
@@ -61,21 +70,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     _isLoadingMore = true;
     final lastMessageTime = messages.isNotEmpty ? messages.last['chat_time'] : null;
 
-    socket.emit('getChatHistory', {
+    widget.socket.emit('getChatHistory', {
       'roomId': widget.roomId,
       'limit': _messageLimit,
       'lastMessageTime': lastMessageTime,
-    });
-
-    socket.once('chatHistory', (data) {
-      final newMessages = List<Map<String, dynamic>>.from(data['data']);
-      setState(() {
-        if (newMessages.length < _messageLimit) {
-          _hasMoreMessages = false;
-        }
-        messages.addAll(newMessages.reversed);
-      });
-      _isLoadingMore = false;
     });
   }
 
@@ -85,18 +83,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
   }
 
-  void _sendMessage() {
+  void _sendMessage() { //새로운 메시지 전송 버튼 누르면 호출
     if (_controller.text.isNotEmpty) {
-
       final now = DateTime.now().toIso8601String();
       final message = {
         'roomId': widget.roomId,
         'sender_id': loggedInUser?.user_id,
-        'nickname': loggedInUser?.nickname,
         'content': _controller.text,
         'chat_time': now,
       };
-      socket.emit('chatMessage', message);
+      widget.socket.emit('chatMessage', message);//서버로 메시지 데이터 전송
       _controller.clear();
       _scrollController.animateTo(
         0.0,
@@ -107,13 +103,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   String _formatTimestamp(String timestamp) {
-
     final dateTime = DateTime.parse(timestamp).toLocal();
     return DateFormat('HH:mm').format(dateTime);
   }
 
   String _formatDate(String timestamp) {
-
     final dateTime = DateTime.parse(timestamp).toLocal();
     return DateFormat('yyyy-MM-dd').format(dateTime);
   }
@@ -279,7 +273,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   @override
   void dispose() {
-    socket.dispose();
+    widget.socket.emit('leaveRoom', widget.roomId);
+    widget.socket.off('chatMessage', _onChatMessage);
+    widget.socket.off('chatHistory', _onChatHistory);
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
