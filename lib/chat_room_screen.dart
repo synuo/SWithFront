@@ -41,6 +41,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _onChatMessage(data) {
+    print('Received new message: ${data['content']}');
     setState(() {
       messages.insert(0, data); // 리스트 맨 앞에 새로운 메시지 삽입
     });
