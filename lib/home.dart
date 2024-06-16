@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage> {
 }
 
 class MainhomeScreen extends StatefulWidget {
-
   const MainhomeScreen({Key? key,}) : super(key: key);
 
   @override
@@ -58,6 +57,7 @@ class MainhomeScreen extends StatefulWidget {
 
 class _MainhomeScreenState extends State<MainhomeScreen> {
   late List<Post> topPosts = [];
+  String? searchQuery;
 
   @override
   void initState() {
@@ -77,18 +77,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = jsonDecode(response.body);
       final List<Post> fetchedPosts = jsonData.map((data) {
-        return Post(
-          post_id: data['post_id'] as int,
-          title: data['title'] as String,
-          category: data['category'] as String,
-          view_count: data['view_count'] as int,
-          progress: data['progress'] as String,
-          writer_id: data['writer_id'] as int,
-          create_at: DateTime.parse(data['create_at']),
-          update_at: DateTime.parse(data['update_at']),
-          study_name: data['study_name'] as String,
-          content: data['content'] as String,
-        );
+        return Post.fromJson(data);
       }).toList();
 
       // Sort the posts by view_count in descending order
@@ -127,6 +116,13 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     }
   }
 
+  void handleSearch(String query) {
+    setState(() {
+      searchQuery = query;
+      fetchTopPosts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,10 +138,9 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(100.0),
-          //preferredSize: Size.fromHeight(kToolbarHeight), // 검색 바를 위한 높이 조정 (AppBar의 높이를 따르도록 설정)
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Search(),
+            child:  Search(onSearch: handleSearch),
           ),
         ),
       ),
@@ -167,6 +162,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '스터디',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
+                      print("카테고리 : 스터디");
                     },
                   ),
                   CircularButton(
@@ -177,6 +173,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '공모전',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
+                      print("카테고리 : 공모전");
                     },
                   ),
                   CircularButton(
@@ -187,6 +184,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         context,
                         MaterialPageRoute(builder: (context) => BoardScreen(category: '기타',)), // NotificationPage는 알림 화면의 위젯입니다.
                       );
+                      print("카테고리 : 기타");
                     },
                   ),
                 ],
@@ -201,9 +199,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
               ),
               SizedBox(height: 16.0),
               Expanded(
-                child: topPosts.isEmpty
-                    ? Center(child: CircularProgressIndicator())
-                    : ListView.builder(
+                child: topPosts.isEmpty ? Center(child: CircularProgressIndicator()) : ListView.builder(
                   itemCount: topPosts.length,
                   itemBuilder: (BuildContext context, int index) {
                     final Post post = topPosts[index];

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:practice/login.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 
@@ -13,6 +12,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String? major;
   List<dynamic>? reviews;
+  double? averageRating;
 
   // 전공 정보를 가져오는 메서드
   Future<void> fetchMajorInfo(int? majorId) async {
@@ -31,6 +31,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // 유저 닉네임을 가져오는 메서드
+  Future<String> fetchReviewerNickname(int reviewerId) async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/user/$reviewerId'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body); // JSON 데이터를 파싱
+        return data['nickname']; // 닉네임 반환
+      } else {
+        throw Exception('Failed to load user information');
+      }
+    } catch (error) {
+      print('Error fetching user information: $error');
+      return 'Unknown'; // 에러 발생 시 기본 닉네임
+    }
+  }
+
   // 리뷰를 가져오는 메서드
   Future<void> fetchReviews() async {
     User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
@@ -40,8 +56,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body); // JSON 데이터를 파싱
+        List<dynamic> updatedReviews = [];
+
+        // 각 리뷰의 닉네임 가져오기
+        for (var review in data) {
+          String nickname = await fetchReviewerNickname(review['reviewer_id']);
+          review['reviewer_nickname'] = nickname;
+          updatedReviews.add(review);
+        }
+
         setState(() {
-          reviews = data; // 리뷰 리스트를 저장
+          reviews = updatedReviews; // 리뷰 리스트를 저장
         });
       } else {
         throw Exception('Failed to load reviews');
@@ -60,10 +85,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     fetchReviews();
   }
 
+  double calculateAverageRating(List<dynamic>? reviews) {
+    if (reviews == null || reviews.isEmpty) return 0.0;
+
+    double totalRating = 0.0;
+    for (var review in reviews) {
+      totalRating += review['rating'];
+    }
+    return totalRating / reviews.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     User? loggedInUser = Provider.of<UserProvider>(context).loggedInUser;
-
+    averageRating = calculateAverageRating(reviews);
     return Scaffold(
       appBar: AppBar(
         title: Text('프로필'),
@@ -74,7 +109,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         studentId: loggedInUser?.student_id,
         major: major,
         introduction: loggedInUser?.introduction ?? '',
-        reviews: reviews
+        reviews: reviews,
+        averageRating: averageRating,
+        profileIconCodePoint: loggedInUser?.user_image, // 아이콘 코드포인트 추가
       ),
     );
   }
@@ -87,8 +124,10 @@ class ProfileBody extends StatelessWidget {
   final String? major;
   final String? introduction;
   final List<dynamic>? reviews;
+  final double? averageRating;
+  final int? profileIconCodePoint;
 
-  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews});
+  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews, this.averageRating, this.profileIconCodePoint,});
 
   @override
   Widget build(BuildContext context) {
@@ -100,10 +139,6 @@ class ProfileBody extends StatelessWidget {
           // 프로필 정보 표시
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
-              );
             },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,8 +150,16 @@ class ProfileBody extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: Colors.grey, // 임시로 회색으로 지정
                   ),
+                  /*
                   child: Icon(
                     Icons.account_circle,
+                    size: 80,
+                    color: Colors.white,
+                  ),
+
+                   */
+                  child: Icon(
+                    profileIconCodePoint != null ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons') : Icons.person,
                     size: 80,
                     color: Colors.white,
                   ),
@@ -166,28 +209,50 @@ class ProfileBody extends StatelessWidget {
             ),
           ),
           SizedBox(height: 20),
-          // 별점 표시
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Divider(),
-              Icon(Icons.star, size: 50, color: Colors.amber),
-              Icon(Icons.star, size: 50, color: Colors.amber),
-              Icon(Icons.star, size: 50, color: Colors.amber),
-              Icon(Icons.star_half, size: 50, color: Colors.amber),
-              Icon(Icons.star_border, size: 50, color: Colors.amber),
-              SizedBox(width: 5),
-              Text(
-                '3.5',
-                style: TextStyle(fontSize: 30),
-              ),
-              Text(
-                '   (7)',
-                style: TextStyle(fontSize: 20),
-              ),
-              Divider(),
-            ],
+          Text(
+            '리뷰',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
           ),
+          if (reviews != null && reviews!.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                for (int i = 1; i < 6; i++)
+                  Icon(
+                    i <= averageRating! ? Icons.star : (i == averageRating! + 0.5 ? Icons.star_half : Icons.star_border),
+                    size: 50,
+                    color: Colors.amber,
+                  ),
+                SizedBox(width: 5),
+                if (averageRating != null)
+                  Text(
+                    averageRating!.toStringAsFixed(1),
+                    style: TextStyle(fontSize: 30),
+                  ),
+                if (reviews != null)
+                  Text(
+                    '   (${reviews!.length})',
+                    style: TextStyle(fontSize: 20),
+                  )
+              ],
+            ),
+          if (reviews == null || reviews!.isEmpty)
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 40),
+                  Text(
+                    '등록된 리뷰가 없습니다',
+                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
           SizedBox(height: 20),
           // 리뷰 표시
           if (reviews != null && reviews!.isNotEmpty)
@@ -195,14 +260,6 @@ class ProfileBody extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Divider(),
-                Text(
-                  '리뷰',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
                 SizedBox(height: 10),
                 ListView.builder(
                   shrinkWrap: true,
@@ -210,8 +267,26 @@ class ProfileBody extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final review = reviews![index];
                     return ListTile(
-                      title: Text(review['content'] ?? ''),
-                      subtitle: Text('Rating: ${review['rating']}'),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      title: Text(review['reviewer_nickname']?.toString() ?? ''),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: List.generate(5, (i) {
+                              return Icon(
+                                i < review['rating'] ? Icons.star : Icons.star_border,
+                                color: Colors.amber,
+                              );
+                            }),
+                          ),
+                          SizedBox(height: 5),
+                          Text(review['content'] ?? ''),
+                        ],
+                      ),
                     );
                   },
                 ),

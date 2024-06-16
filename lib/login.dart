@@ -8,8 +8,11 @@ import 'dart:async';
 import 'findpw.dart';
 import 'common_object.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 late User loggedInUser;
+
+//TODO : 자동로그인
 
 class LogInPage extends StatefulWidget {
   const LogInPage({Key? key}) : super(key: key);
@@ -18,6 +21,116 @@ class LogInPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LogInPage> {
+
+  bool _isPasswordVisible = false;
+  bool _rememberMe = false;
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAutoLogin();
+  }
+
+  Future<void> _checkAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('email');
+    final savedPassword = prefs.getString('password');
+
+    if (savedEmail != null && savedPassword != null) {
+      _emailController.text = savedEmail;
+      _passwordController.text = savedPassword;
+      await login(context, autoLogin: true);
+    }
+  }
+
+  Future <void> login(BuildContext context, {bool autoLogin = false}) async {  //로그인 처리 함수
+    print("login 함수 실행됨");
+    final url = Uri.parse('http://localhost:3000/login');   // Uri.parse() : 서버의 주소를 파싱하여 Uri 객체를 생성
+    print(url);
+    final response = await http.post( //POST 요청을 보냄
+      url, //첫 번째 인자는 요청을 보낼 URL임.
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({ //두 번째 인자는 요청 본문(body)
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      }),
+    );
+    print(response.statusCode);
+    //서버에서의 응답은 http.Response 객체로 받게 됨.
+    //응답의 상태 코드(statusCode)를 확인하여 요청이 성공했는지 아니면 실패했는지를 판단
+    if (response.statusCode == 200) { // 상태 코드가 200인 경우는 성공
+      print('Logged in!');
+
+      final responseData = jsonDecode(response.body);
+      final user_id = responseData['user_id'];  // 유저 아이디 받아옴
+      print('User ID: $user_id');
+
+      // 서버에서 사용자 정보 가져오기
+      final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/user/$user_id'));
+      if (userInfoResponse.statusCode == 200) {
+        final userData = jsonDecode(userInfoResponse.body);
+        final loggedInUser = User.fromJson(userData);
+
+        Provider.of<UserProvider>(context, listen: false).setLoggedInUser(loggedInUser); // Provider로 loggedInUser 설정
+
+        if (_rememberMe && !autoLogin) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('email', _emailController.text);
+          await prefs.setString('password', _passwordController.text);
+        }
+
+        print('User ID: ${loggedInUser.user_id}');
+        print('Email: ${loggedInUser.email}');
+        print('Password: ${loggedInUser.password}');
+        print('Name: ${loggedInUser.name}');
+        print('Student ID: ${loggedInUser.student_id}');
+        print('Nickname: ${loggedInUser.nickname}');
+        print('Profile Image: ${loggedInUser.user_image ?? '없음'}');
+        print('Major 1: ${loggedInUser.major1}');
+        print('Major 2: ${loggedInUser.major2 ?? '없음'}');
+        print('Major 3: ${loggedInUser.major3 ?? '없음'}');
+        print('Major1 Changed: ${loggedInUser.major1_change_log}');
+        print('Introduction: ${loggedInUser.introduction ?? '없음'}');
+        print('all_noti: ${loggedInUser.all_noti}');
+        print('chatroom_noti: ${loggedInUser.chatroom_noti}');
+        print('qna_noti: ${loggedInUser.qna_noti}');
+        print('accept_noti: ${loggedInUser.accept_noti}');
+        print('review_noti: ${loggedInUser.review_noti}');
+      } else {
+        // 사용자 정보를 가져오는 데 실패한 경우
+        print('Failed to fetch user information');
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('로그인 성공'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      print('화면전환 : login -> homepage ');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage(user_id: user_id,)),
+      ); // 로그인 성공 시 홈으로 이동. 유저아이디도 같이 전달.
+    } else {
+      print('Log in failed..');
+      print(response.statusCode);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('로그인 실패'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +311,7 @@ class __FormContentState extends State<_FormContent> {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => FindPassword()),
+                      MaterialPageRoute(builder: (context) => FindPasswordPage()),
                     );
                     print('화면전환 : login -> findpw');
                   },
@@ -223,7 +336,8 @@ class __FormContentState extends State<_FormContent> {
     );
   }
 
-  Future <void> login(BuildContext context) async {  //로그인 처리 함수
+
+  Future <void> login(BuildContext context, {bool autoLogin = false}) async {  //로그인 처리 함수
     print("login 함수 실행됨");
     final url = Uri.parse('http://localhost:3000/login');   // Uri.parse() : 서버의 주소를 파싱하여 Uri 객체를 생성
     print(url);
@@ -254,8 +368,13 @@ class __FormContentState extends State<_FormContent> {
         final userData = jsonDecode(userInfoResponse.body);
         final loggedInUser = User.fromJson(userData);
 
-        Provider.of<UserProvider>(context, listen: false)
-            .setLoggedInUser(loggedInUser); // Provider로 loggedInUser 설정
+        Provider.of<UserProvider>(context, listen: false).setLoggedInUser(loggedInUser); // Provider로 loggedInUser 설정
+
+        if (_rememberMe && !autoLogin) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('email', _emailController.text);
+          await prefs.setString('password', _passwordController.text);
+        }
 
         print('User ID: ${loggedInUser.user_id}');
         print('Email: ${loggedInUser.email}');
@@ -290,7 +409,16 @@ class __FormContentState extends State<_FormContent> {
         context,
         MaterialPageRoute(builder: (context) => HomePage(user_id: user_id,)),
       ); // 로그인 성공 시 홈으로 이동. 유저아이디도 같이 전달.
-    } else {
+    } else if (response.statusCode == 401){
+      print('Invalid password or email..');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('로그인 정보가 올바르지 않습니다. 다시 시도해주세요!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+    }else {
       print('Log in failed..');
       print(response.statusCode);
       ScaffoldMessenger.of(context).showSnackBar(

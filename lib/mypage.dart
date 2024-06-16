@@ -2,17 +2,15 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:practice/editprofile.dart';
 import 'package:practice/neweditprofile.dart';
+import 'package:practice/study_members.dart';
 import 'package:provider/provider.dart';
-import 'login.dart';
+import 'MyScrapsPage.dart';
 import 'setting.dart';
 import 'profile.dart';
-import 'chat.dart';
 import 'common_object.dart';
-import 'common_widgets.dart';
-import 'home.dart';
 import 'MyPostsPage.dart';
+import 'MyApplicationsPage.dart';
 import 'neweditprofile.dart';
 
 class MyPage extends StatefulWidget {
@@ -57,10 +55,16 @@ class _MyPageState extends State<MyPage> {
                       color: Colors.grey, // 임시로 회색으로 지정
                     ),
                     child: Icon(
+                      IconData(loggedInUser?.user_image ?? Icons.person.codePoint, fontFamily: 'MaterialIcons'),
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                    /*
+                    child: Icon(
                       Icons.account_circle,
                       size: 80,
                       color: Colors.white,
-                    ),
+                    ),*/
                   ),
                   SizedBox(width: 20),
                   Expanded(
@@ -131,21 +135,30 @@ class _MyPageState extends State<MyPage> {
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
             buildMenuItem('나의 지원 내역', Icons.arrow_forward_ios, () {
-              // 나의 지원 현황으로 이동하는 기능 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyApplicationsPage()),
+              );
             }),
             SizedBox(height: 10),
             // 구분선
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
             buildMenuItem('스크랩', Icons.arrow_forward_ios, () {
-              // 스크랩으로 이동하는 기능 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyScrapsPage()),
+              );
             }),
             SizedBox(height: 10),
             // 구분선
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
             SizedBox(height: 10),
-            buildMenuItem('피드백', Icons.arrow_forward_ios, () {
-              // 피드백으로 이동하는 기능 추가
+            buildMenuItem('나와 함께한 사람들', Icons.arrow_forward_ios, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => StudyMembersScreen()),
+              );
             }),
             SizedBox(height: 10),
             Divider(height: 1, color: Colors.grey), // 회색 구분선 추가

@@ -1,8 +1,21 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+const List<IconData> profileIcons = [
+  Icons.person,
+  Icons.cookie,
+  Icons.ac_unit,
+];
 
 class Post {
   final int post_id;
   final int writer_id;
+  final String? writer_image;
+  final String? writer_nickname;
+  final String? writer_student_id;
+  final String? writer_major1;
+  final String? writer_major2;
+  final String? writer_major3;
   final DateTime create_at;
   final DateTime update_at;
   final String title;
@@ -11,11 +24,18 @@ class Post {
   final String content;
   final String progress;
   final int view_count;
+  final List<String> tags;  // 태그 리스트 추가
 
   Post({
     required this.post_id,
     required this.writer_id,
     required this.create_at,
+    this.writer_image,
+    this.writer_nickname,
+    this.writer_student_id,
+    this.writer_major1,
+    this.writer_major2,
+    this.writer_major3,
     required this.update_at,
     required this.title,
     required this.category,
@@ -23,6 +43,7 @@ class Post {
     required this.content,
     required this.progress,
     required this.view_count,
+    required this.tags,  // 태그 리스트 추가
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -37,9 +58,17 @@ class Post {
       content: json['content'],
       progress: json['progress'],
       view_count: json['view_count'],
+      writer_image: json['user_image'],
+      writer_nickname: json['nickname'],
+      writer_student_id: json['student_id'] != null ? json['student_id'].toString().substring(0, 2) : '학번 없음',
+      writer_major1: json['major1'],
+      writer_major2: json['major2'],
+      writer_major3: json['major3'],
+      tags: List<String>.from(json['tags'] ?? []),  // 태그 리스트 추가
     );
   }
 }
+
 
 class User {
   final int user_id;
@@ -48,7 +77,7 @@ class User {
   final String name;
   final int student_id;
   final String nickname;
-  final String? user_image; // Nullable
+  final int? user_image; // Nullable
   final int major1;
   final int? major2;
   final int? major3;
@@ -88,7 +117,7 @@ class User {
       name: json['name'],
       student_id: json['student_id'],
       nickname: json['nickname'],
-      user_image: json['user_image'],
+      user_image: json['user_image'] != null ? int.tryParse(json['user_image']) : null, // 문자열을 int로 변환
       major1: json['major1'],
       major2: json['major2'],
       major3: json['major3'],
@@ -100,6 +129,28 @@ class User {
       accept_noti: json['accept_noti'],
       review_noti: json['review_noti'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': user_id,
+      'email': email,
+      'password': password,
+      'name': name,
+      'student_id': student_id,
+      'nickname': nickname,
+      'user_image': user_image?.toString(), // int를 문자열로 변환
+      'major1': major1,
+      'major2': major2,
+      'major3': major3,
+      'major1_change_log': major1_change_log,
+      'introduction': introduction,
+      'all_noti': all_noti,
+      'chatroom_noti': chatroom_noti,
+      'qna_noti': qna_noti,
+      'accept_noti': accept_noti,
+      'review_noti': review_noti,
+    };
   }
 }
 

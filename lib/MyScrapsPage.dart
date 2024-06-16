@@ -6,31 +6,40 @@ import 'package:practice/post_detail.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 
-class MyPostsPage extends StatefulWidget {
+class MyScrapsPage extends StatefulWidget {
   @override
-  _MyPostsPageState createState() => _MyPostsPageState();
+  _MyScrapsPageState createState() => _MyScrapsPageState();
 }
 
-class _MyPostsPageState extends State<MyPostsPage> {
-  List<Post> userPosts = [];
+class _MyScrapsPageState extends State<MyScrapsPage> {
+  List<Post> userScraps = [];
 
   @override
   void initState() {
     super.initState();
-    fetchUserPosts();
+    fetchUserScraps();
   }
 
-  Future<void> fetchUserPosts() async {
+  Future<void> fetchUserScraps() async {
     User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     final userId = loggedInUser?.user_id;
-    final url = 'http://localhost:3000/userPosts/user/$userId/posts';
+    final url =
+    Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
+      'user_id': loggedInUser?.user_id.toString(),
+    });
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
 
       if (response.statusCode == 200) {
         setState(() {
-          userPosts = (json.decode(response.body) as List)
+          userScraps = (json.decode(response.body) as List)
               .map((data) => Post.fromJson(data))
               .toList();
         });
@@ -46,7 +55,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 모집 내역'),
+        title: Text('나의 스크랩 내역'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -54,7 +63,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 모집 내역',
+              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 스크랩 내역',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -64,7 +73,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
             SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: userPosts.length,
+                itemCount: userScraps.length,
                 itemBuilder: (context, index) {
                   return Container(
                     padding: EdgeInsets.all(10), // 테두리 내부 여백
@@ -77,21 +86,21 @@ class _MyPostsPageState extends State<MyPostsPage> {
                       title: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(_getCategoryIcon(userPosts[index].category)),
+                          Icon(_getCategoryIcon(userScraps[index].category)),
                           SizedBox(width: 20),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  userPosts[index].title,
+                                  userScraps[index].title,
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  userPosts[index].study_name,
+                                  userScraps[index].study_name,
                                 ),
                               ],
                             ),
@@ -100,7 +109,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                userPosts[index].progress,
+                                userScraps[index].progress,
                               ),
                             ],
                           ),
@@ -112,7 +121,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PostDetailScreen(
-                              post_id: userPosts[index].post_id,
+                              post_id: userScraps[index].post_id,
                             ),
                           ),
                         );

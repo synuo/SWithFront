@@ -3,7 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'changePassword.dart';
+import 'changepw.dart';
+import 'package:provider/provider.dart';
+import 'common_object.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -20,11 +22,13 @@ class _SettingPageState extends State<SettingPage> {
   bool qnaNotification = true;
   bool supportResultNotification = true;
   bool reviewNotification = true;
+  User? loggedInUser;
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
   }
 
   Future<void> _loadSettings() async {
@@ -45,9 +49,9 @@ class _SettingPageState extends State<SettingPage> {
   Future<void> _updateSettings() async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/setnoti'), // 서버의 알림 설정 업데이트 엔드포인트 URL로 변경
+        Uri.parse('http://localhost:3000/setnoti'),
         body: json.encode({
-          'user_id': 1,
+          'user_id': loggedInUser?.user_id,
           'all_noti': allowNotifications,
           'chatroom_noti': chatroomNotification,
           'qna_noti': qnaNotification,
@@ -56,7 +60,6 @@ class _SettingPageState extends State<SettingPage> {
         }),
         headers: {'Content-Type': 'application/json'},
       );
-
       if (response.statusCode == 200) {
         print('Notification settings updated successfully');
         _prefs.setBool('allowNotifications', allowNotifications);

@@ -2,43 +2,43 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:practice/post_detail.dart';
 import 'package:provider/provider.dart';
+import 'package:practice/post_detail.dart';
 import 'common_object.dart';
 
-class MyPostsPage extends StatefulWidget {
+class MyApplicationsPage extends StatefulWidget {
   @override
-  _MyPostsPageState createState() => _MyPostsPageState();
+  _MyApplicationsPageState createState() => _MyApplicationsPageState();
 }
 
-class _MyPostsPageState extends State<MyPostsPage> {
-  List<Post> userPosts = [];
+class _MyApplicationsPageState extends State<MyApplicationsPage> {
+  List<Post> userApplications = [];
 
   @override
   void initState() {
     super.initState();
-    fetchUserPosts();
+    fetchUserApplications();
   }
 
-  Future<void> fetchUserPosts() async {
+  Future<void> fetchUserApplications() async {
     User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     final userId = loggedInUser?.user_id;
-    final url = 'http://localhost:3000/userPosts/user/$userId/posts';
+    final url = 'http://localhost:3000/userapplications/user/$userId/applications';
 
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         setState(() {
-          userPosts = (json.decode(response.body) as List)
-              .map((data) => Post.fromJson(data))
-              .toList();
+            userApplications = (json.decode(response.body) as List)
+                .map((data) => Post.fromJson(data))
+                .toList();
         });
       } else {
-        throw Exception('Failed to load posts');
+        throw Exception('Failed to load applications');
       }
     } catch (error) {
-      print('Error fetching user posts: $error');
+      print('Error fetching user applications: $error');
     }
   }
 
@@ -46,7 +46,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 모집 내역'),
+        title: Text('나의 지원 내역'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -54,7 +54,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 모집 내역',
+              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 지원 내역',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -64,7 +64,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
             SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: userPosts.length,
+                itemCount: userApplications.length,
                 itemBuilder: (context, index) {
                   return Container(
                     padding: EdgeInsets.all(10), // 테두리 내부 여백
@@ -77,21 +77,21 @@ class _MyPostsPageState extends State<MyPostsPage> {
                       title: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(_getCategoryIcon(userPosts[index].category)),
+                          Icon(_getCategoryIcon(userApplications[index].category)),
                           SizedBox(width: 20),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  userPosts[index].title,
+                                  userApplications[index].title,
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  userPosts[index].study_name,
+                                  userApplications[index].study_name,
                                 ),
                               ],
                             ),
@@ -100,7 +100,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                userPosts[index].progress,
+                                userApplications[index].progress,
                               ),
                             ],
                           ),
@@ -112,7 +112,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PostDetailScreen(
-                              post_id: userPosts[index].post_id,
+                              post_id: userApplications[index].post_id,
                             ),
                           ),
                         );
