@@ -130,6 +130,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   void _showMemberList() async {
     await _fetchMembers();
+    bool isOwner = await _checkIfOwner(); // 방장 여부 확인 함수
 
     showModalBottomSheet(
       context: context,
@@ -156,7 +157,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     radius: 16,
                   ),
                   title: Text(member['nickname']),
-                  trailing: isMe
+                  trailing: isOwner && !isMe
+                      ? IconButton(
+                    icon: Icon(Icons.more_vert),
+                    onPressed: () {
+                      _showKickMemberOptions(member['member_id'], member['nickname']);
+                    },
+                  )
+                      : isMe
                       ? CircleAvatar(
                     child: Text('나'),
                     radius: 16,
@@ -164,7 +172,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       : null,
                   onTap: () {
                     if (isMe) {
-                      // 나의 경우 다른 페이지로 이동
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -172,7 +179,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         ),
                       );
                     } else {
-                      // 다른 사용자의 경우 프로필 페이지로 이동
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -198,6 +204,109 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
+  Future<bool> _checkIfOwner() async {
+    // 방장 여부를 백엔드에서 확인하는 로직을 구현합니다.
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/checkhost'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'roomId': widget.roomId,
+        'memberId': loggedInUser?.user_id,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      return responseData['isOwner'] as bool;
+    } else {
+      // 요청 실패 처리
+      print('Failed to check owner status');
+      return false;
+    }
+  }
+
+  void _showKickMemberOptions(int memberId, String nickname) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return ListTile(
+          title: Text('내보내기'),
+          onTap: () {
+            Navigator.pop(context); // Close the bottom sheet
+            _showKickMemberConfirmation(memberId, nickname);
+          },
+        );
+      },
+    );
+  }
+
+  void _showKickMemberConfirmation(int memberId, String nickname) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('사용자 내보내기'),
+          content: Text('$nickname 님을 내보내시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _kickMember(memberId);
+                Navigator.of(context).pop();
+              },
+              child: Text('내보내기'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _kickMember(int memberId) async {
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/leaveroom'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'roomId': widget.roomId,
+        'memberId': memberId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        members.removeWhere((member) => member['member_id'] == memberId);
+      });
+      _showDialog('멤버를 내보냈습니다.');
+    } else {
+      // 오류 처리
+      _showDialog('멤버 내보내기에 실패했습니다.');
+    }
+  }
+
+  void _showDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+
+              },
+              child: Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 
   void _showLeaveRoomDialog() {
