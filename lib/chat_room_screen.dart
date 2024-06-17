@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'common_object.dart';
 import 'package:intl/intl.dart';
 import 'otherprofile.dart';
@@ -19,6 +21,7 @@ class ChatRoomScreen extends StatefulWidget {
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   User? loggedInUser;
   List<Map<String, dynamic>> messages = [];
+  List<Map<String, dynamic>> members = [];
   TextEditingController _controller = TextEditingController();
   ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
@@ -34,9 +37,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _initializeSocket() {
-
-    widget.socket.on('chatHistory', _onChatHistory); //채팅 내역 불러오기
-    widget.socket.on('chatMessage', _onChatMessage); //실시간으로 새로운 메시지 수신
+    widget.socket.on('chatHistory', _onChatHistory); // 채팅 내역 불러오기
+    widget.socket.on('chatMessage', _onChatMessage); // 실시간으로 새로운 메시지 수신
     widget.socket.emit('joinRoom', widget.roomId); // 방 입장
     //_fetchChatHistory(); // 채팅 내역 불러오기
   }
@@ -112,11 +114,134 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     return DateFormat('yyyy-MM-dd').format(dateTime);
   }
 
+  Future<void> _fetchMembers() async {
+    final response = await http.get(Uri.parse('http://localhost:3000/getchatroommembers/${widget.roomId}'));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        members = List<Map<String, dynamic>>.from(json.decode(response.body));
+      });
+    } else {
+      // 오류 처리
+      throw Exception('Failed to load members');
+    }
+  }
+
+  void _showMemberList() async {
+    await _fetchMembers();
+
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Members',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              Divider(),
+              ...members.map((member) {
+                bool isMe = member['member_id'] == loggedInUser?.user_id;
+                return ListTile(
+                  leading: CircleAvatar(
+                    child: Icon(Icons.person, size: 32),
+                    radius: 16,
+                  ),
+                  title: Text(member['nickname']),
+                  trailing: isMe
+                      ? CircleAvatar(
+                    child: Text('나'),
+                    radius: 16,
+                  )
+                      : ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserProfileScreen(senderId: member['member_id']),
+                        ),
+                      );
+                    },
+                    child: Text('View Profile'),
+                  ),
+                );
+              }).toList(),
+              SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () => _showLeaveRoomDialog(),
+                child: Text('나가기'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor : Colors.red, // 버튼 색상
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLeaveRoomDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('나가기'),
+          content: Text('이 채팅방을 나가시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _leaveRoom();
+              },
+              child: Text('나가기'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _leaveRoom() async {
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/leaveroom'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'roomId': widget.roomId,
+        'memberId': loggedInUser?.user_id,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.of(context).pop();
+    } else {
+      // 오류 처리
+      throw Exception('Failed to leave room');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.studyName),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: _showMemberList,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -149,96 +274,68 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         mainAxisAlignment:
                         isMyMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
                         children: [
-                          if (isMyMessage)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8.0),
-                                      bottomLeft: Radius.circular(8.0),
-                                      topRight: Radius.circular(8.0),
-                                    ),
+                          if (!isMyMessage)
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => UserProfileScreen(senderId: messages[index]['sender_id']),
                                   ),
-                                  padding: EdgeInsets.all(12.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        messages[index]['content'],
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0, left: 8.0),
-                                  child: Text(
-                                    _formatTimestamp(messages[index]['chat_time']),
-                                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                                  ),
-                                ),
-                              ],
-                            )
-                          else
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[300],
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8.0),
-                                      bottomRight: Radius.circular(8.0),
-                                      topRight: Radius.circular(8.0),
-                                    ),
-                                  ),
-                                  padding: EdgeInsets.all(12.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          // 클릭한 닉네임에 해당하는 사용자 정보를 가져오는 로직을 구현해야 합니다.
-                                          // 사용자 정보를 가져왔다고 가정하고, 프로필 화면으로 이동하는 예시 코드를 작성합니다.
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => UserProfileScreen(senderId: messages[index]['sender_id']),
-                                            ),
-                                          );
-                                        },
-                                        child: Text(
-                                          messages[index]['nickname'],
-                                          style: TextStyle(
-                                            color: Colors.black87,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        messages[index]['content'],
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0, right: 8.0),
-                                  child: Text(
-                                    _formatTimestamp(messages[index]['chat_time']),
-                                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                                  ),
-                                ),
-                              ],
+                                );
+                              },
+                              child: CircleAvatar(
+                                child: Icon(Icons.person, size: 32),
+                                radius: 16,
+                              ),
                             ),
+                          if (!isMyMessage)
+                            SizedBox(width: 8.0),
+                          Column(
+                            crossAxisAlignment: isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: isMyMessage ? Colors.blue : Colors.grey[300],
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: isMyMessage ? Radius.circular(8.0) : Radius.zero,
+                                    bottomLeft: Radius.circular(8.0),
+                                    topRight: Radius.circular(8.0),
+                                    bottomRight: isMyMessage ? Radius.zero : Radius.circular(8.0),
+                                  ),
+                                ),
+                                padding: EdgeInsets.all(12.0),
+                                child: Column(
+                                  crossAxisAlignment: isMyMessage ? CrossAxisAlignment.start : CrossAxisAlignment.start,
+                                  children: [
+                                    if (!isMyMessage)
+                                      Text(
+                                        messages[index]['nickname'],
+                                        style: TextStyle(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    if (!isMyMessage)
+                                      SizedBox(height: 4),
+                                    Text(
+                                      messages[index]['content'],
+                                      style: TextStyle(
+                                        color: isMyMessage ? Colors.white : Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0, right: 8.0),
+                                child: Text(
+                                  _formatTimestamp(messages[index]['chat_time']),
+                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
