@@ -104,13 +104,18 @@ class _ChatScreenState extends State<ChatScreen> {
         itemBuilder: (context, index) {
           final lastMessage = chatRooms[index]['last_message'] as String?;
           final lastMessageTime = chatRooms[index]['last_message_time'] as String?;
+          final studyName = chatRooms[index]['study_name'] as String;
           return Card(
             child: ListTile(
               leading: CircleAvatar(
-                backgroundImage: NetworkImage('https://via.placeholder.com/150'), // 임시 프로필 이미지
+                child: Text(
+                  studyName.isNotEmpty ? studyName[0] : '', // study_name의 첫 글자
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+                radius: 16,
               ),
               title: Text(
-                chatRooms[index]['study_name'] as String,
+                studyName,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: lastMessage != null && lastMessageTime != null
@@ -132,12 +137,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   MaterialPageRoute(
                     builder: (context) => ChatRoomScreen(
                       roomId: chatRooms[index]['room_id'].toString(),
-                      studyName: chatRooms[index]['study_name'] as String,
+                      studyName: studyName,
                       socket: socket,
                     ),
                   ),
                 ).then((_) {
-                  //socket.emit('leaveRoom', chatRooms[index]['room_id']);
+                  socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()});
                 });
               },
             ),
@@ -145,8 +150,8 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       ),
     );
-
   }
+
 
   @override
   void dispose() {

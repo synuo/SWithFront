@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'common_object.dart';
 import 'package:intl/intl.dart';
 import 'otherprofile.dart';
+import 'profile.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final String roomId;
@@ -160,17 +161,26 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     child: Text('나'),
                     radius: 16,
                   )
-                      : ElevatedButton(
-                    onPressed: () {
+                      : null,
+                  onTap: () {
+                    if (isMe) {
+                      // 나의 경우 다른 페이지로 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileScreen(), // 나의 프로필 페이지로 이동
+                        ),
+                      );
+                    } else {
+                      // 다른 사용자의 경우 프로필 페이지로 이동
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => UserProfileScreen(senderId: member['member_id']),
                         ),
                       );
-                    },
-                    child: Text('View Profile'),
-                  ),
+                    }
+                  },
                 );
               }).toList(),
               SizedBox(height: 16.0),
@@ -178,7 +188,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 onPressed: () => _showLeaveRoomDialog(),
                 child: Text('나가기'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor : Colors.red, // 버튼 색상
+                  backgroundColor: Colors.red, // 버튼 색상
                 ),
               ),
             ],
@@ -187,6 +197,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
+
+
 
   void _showLeaveRoomDialog() {
     showDialog(
@@ -224,6 +236,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
 
     if (response.statusCode == 200) {
+      Navigator.of(context).pop();
       Navigator.of(context).pop();
     } else {
       // 오류 처리
