@@ -29,7 +29,8 @@ class CircularButton extends StatelessWidget {
         height: 100,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Color(0xff94BDF2),
+          //color: Color(0xff94BDF2),
+          color: Theme.of(context).colorScheme.primary
         ),
         child: Center(
           child: Column(
@@ -86,6 +87,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: '마이페이지',
         ),
       ],
+        selectedItemColor: Color(0xff19A7CE), // Color for selected item
+        unselectedItemColor: Colors.grey, // Color for unselected items
+        //backgroundColor: Colors.lightBlueAccent // Background color of the BottomNavigationBar
     );
   }
 }
