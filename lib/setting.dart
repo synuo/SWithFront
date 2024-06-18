@@ -80,7 +80,7 @@ class _SettingPageState extends State<SettingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '마이페이지',
+          '설정',
           style: TextStyle(
             fontWeight: FontWeight.bold,
           ),
