@@ -130,7 +130,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
 
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => ChangePasswordPage(email : _email)),
+                              MaterialPageRoute(builder: (context) => ResetPasswordPage(email : _email)),
                             );
                             print('화면전환 : findpw -> resetpw');
                           } else {
