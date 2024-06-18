@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:practice/neweditprofile.dart';
+import 'package:practice/editprofile.dart';
 import 'package:practice/study_members.dart';
 import 'package:provider/provider.dart';
 import 'MyScrapsPage.dart';
@@ -8,7 +8,7 @@ import 'profile.dart';
 import 'common_object.dart';
 import 'MyPostsPage.dart';
 import 'MyApplicationsPage.dart';
-import 'neweditprofile.dart';
+import 'editprofile.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({Key? key}) : super(key: key);

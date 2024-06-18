@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {  //앱의 메인페이지 MyApp
             background: Colors.white54,
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity, //플랫폼 간 레이아웃 일관성 유지
-        fontFamily: 'Teko', // San Francisco 폰트 사용
+        fontFamily: 'San Francisco', // San Francisco 폰트 사용
       ),
       home: SplashScreen(),  //시작 : 스플래시
     );
@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'SWith',
               style: TextStyle(
-                fontSize: 40, fontWeight: FontWeight.bold,
+                fontSize: 60, fontFamily: 'Teko',
                 color: Theme.of(context).colorScheme.primary, // MyApp의 테마 색상 사용
               ),),],
         ),

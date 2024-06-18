@@ -128,12 +128,19 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'SWith', style: TextStyle(color: Colors.black, fontSize: 30.0, fontFamily: 'Teko'),),
+          'SWith',
+          style: TextStyle(
+              color: Colors.black,
+              fontSize: 45.0,
+              fontFamily: 'Teko'
+          ),
+        ),
         elevation: 0.0,
         backgroundColor: Colors.white,
-        //centerTitle: true,
+        centerTitle: true,
         actions: [
-          _buildNotificationButton(),
+          //_buildSearchButton()
+          //_buildNotificationButton(),
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(100.0),
@@ -208,11 +215,11 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  ' 조회수 Top 5 게시글',  //조회수가 높은 게시물 5개
+                  '  조회수 Top 5 게시글',  //조회수가 높은 게시물 5개
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
-              SizedBox(height: 16.0),
+              SizedBox(height: 12.0),
               Expanded(
                 child: topPosts.isEmpty ? Center(child: CircularProgressIndicator()) : ListView.builder(
                   itemCount: topPosts.length,
@@ -283,7 +290,6 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
       icon: Icon(Icons.search_outlined),
       onPressed: () {
         print('Search button clicked');
-        //
       },
     );
   }
