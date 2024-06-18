@@ -75,12 +75,16 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     }
   }
 
-  void navigateToAdvanceQuestions(int postId, int applicantId) {
+  void navigateToAdvanceQuestions(
+      int postId, int applicantId, String nickname) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AdvanceAnswersScreen(postId: postId, applicantId: applicantId),
+        builder: (context) => AdvanceAnswersScreen(
+          postId: postId,
+          applicantId: applicantId,
+          nickname: nickname,
+        ),
       ),
     );
   }
@@ -100,7 +104,11 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('지원자 목록'),
+        title: Text(
+          '지원자 목록',
+          style: TextStyle(
+              color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -153,7 +161,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                                   ),
                                   Text(
                                     '${applicant['student_id']} 학번  |  ${applicant['major1']}, ${applicant['major2'] ?? '-'}, ${applicant['major3'] ?? '-'}',
-                                    style: TextStyle(fontSize: 12, color: CupertinoColors.inactiveGray),
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: CupertinoColors.inactiveGray),
                                     overflow: TextOverflow.fade,
                                   ),
                                 ],
@@ -166,8 +176,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                             children: [
                               TextButton(
                                 onPressed: () {
-                                  navigateToAdvanceQuestions(widget.post_id,
-                                      applicant['applicant_id']);
+                                  navigateToAdvanceQuestions(
+                                      widget.post_id,
+                                      applicant['applicant_id'],
+                                      applicant['nickname']);
                                 },
                                 child: Text('사전질문 답변확인'),
                               ),
@@ -181,26 +193,24 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                                             title: Text('상태 변경'),
                                             content: Text('지원자의 상태를 변경하시겠습니까?'),
                                             actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                    updateApplicationStatus(
-                                                        applicant[
-                                                            'applicant_id'],
-                                                        '수락');
-                                                  },
-                                                  child: Text('수락'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                    updateApplicationStatus(
-                                                        applicant[
-                                                            'applicant_id'],
-                                                        '거절');
-                                                  },
-                                                  child: Text('거절'),
-                                                ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  updateApplicationStatus(
+                                                      applicant['applicant_id'],
+                                                      '수락');
+                                                },
+                                                child: Text('수락'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  updateApplicationStatus(
+                                                      applicant['applicant_id'],
+                                                      '거절');
+                                                },
+                                                child: Text('거절'),
+                                              ),
                                             ],
                                           ),
                                         );
@@ -227,9 +237,13 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 class AdvanceAnswersScreen extends StatelessWidget {
   final int postId;
   final int applicantId;
+  final String nickname;
 
   const AdvanceAnswersScreen(
-      {Key? key, required this.postId, required this.applicantId})
+      {Key? key,
+      required this.postId,
+      required this.applicantId,
+      required this.nickname})
       : super(key: key);
 
   Future<List<Map<String, dynamic>>> fetchAdvanceAnswers() async {
@@ -263,7 +277,11 @@ class AdvanceAnswersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('사전질문 답변 확인'),
+        title: Text(
+          '${nickname} 님의 사전질문 답변',
+          style: TextStyle(
+              color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold),
+        ),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: fetchAdvanceAnswers(),
@@ -294,15 +312,19 @@ class AdvanceAnswersScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 5),
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        question['aqa_content'],
-                        style: TextStyle(fontSize: 16),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: double.infinity),
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          question['aqa_content'],
+                          style: TextStyle(fontSize: 16),
+                          maxLines: null, // Allow multiline text
+                        ),
                       ),
                     ),
                   ],

@@ -579,24 +579,60 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                         '작성일: ${post.create_at.toString().substring(0, 10)}',
                         textAlign: TextAlign.left,
                       ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 4.0,
+                        children: post.tags
+                            .map((tag) => Text(
+                          '#$tag',
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 14.0),
+                        ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+
+                ),Container(
+                  height: kToolbarHeight + 2.0,
+                  padding: const EdgeInsets.only(top: 16.0, right: 16.0, left: 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8.0),
+                      topRight: Radius.circular(8.0),
+                    ),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8.0),
+                        topRight: Radius.circular(8.0),
+                      ),
+                    ),
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.white,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    labelStyle: TextStyle(
+                      fontSize: 16.0, // Adjust the font size for the selected tab
+                      fontWeight: FontWeight.bold, // Adjust the font weight for the selected tab
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: 16.0, // Adjust the font size for the unselected tabs
+                      fontWeight: FontWeight.bold, // Adjust the font weight for the unselected tabs
+                    ),
+                    tabs: [
+                      Tab(text: '상     세'),
+                      Tab(text: 'Q  &  A'),
                     ],
                   ),
                 ),
-                Divider(
-                  color: Colors.grey,
-                  height: 0,
-                ),
-                TabBar(
-                  controller: _tabController,
-                  tabs: [
-                    Tab(text: '상세'),
-                    Tab(text: 'Q&A'),
-                  ],
-                ),
-                Divider(
-                  color: Colors.grey,
-                  height: 0,
-                ),
+
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
@@ -747,6 +783,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                                   builder: (context) => AdvanceAnswersScreen(
                                     postId: widget.post_id,
                                     applicantId: loggedInUser!.user_id,
+                                    nickname: loggedInUser!.nickname,
                                   ),
                                 ),
                               );
