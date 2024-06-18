@@ -12,8 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 late User loggedInUser;
 
-//TODO : 자동로그인
-
 class LogInPage extends StatefulWidget {
   const LogInPage({Key? key}) : super(key: key);
   @override
@@ -175,14 +173,6 @@ class _Logo extends StatelessWidget {
         FlutterLogo(size: isSmallScreen ? 100 : 200),
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Text(
-            "Welcome to SWith!",
-            textAlign: TextAlign.center,
-            style: isSmallScreen
-                ? Theme.of(context).textTheme.headlineSmall
-                : Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(color: Colors.black),
-          ),
         )
       ],
     );
@@ -232,7 +222,7 @@ class __FormContentState extends State<_FormContent> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Email',
+                labelText: '이메일',
                 hintText: '숙명 메일을 입력해주세요.',
                 prefixIcon: Icon(Icons.email_outlined),
                 border: OutlineInputBorder(),
@@ -249,8 +239,8 @@ class __FormContentState extends State<_FormContent> {
               },
               obscureText: !_isPasswordVisible,
               decoration: InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Enter your password',
+                  labelText: '비밀번호',
+                  hintText: '비밀번호를 입력해주세요.',
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
@@ -289,7 +279,7 @@ class __FormContentState extends State<_FormContent> {
                 child: const Padding(
                   padding: EdgeInsets.all(10.0),
                   child: Text(
-                    'Log in',
+                    '로그인',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
