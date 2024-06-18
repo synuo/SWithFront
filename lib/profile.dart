@@ -14,37 +14,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<dynamic>? reviews;
   double? averageRating;
 
-  // 전공 정보를 가져오는 메서드
   Future<void> fetchMajorInfo(int? majorId, int? majorId2, int? majorId3) async {
     try {
-      // Fetch major
       final response = await http.get(Uri.parse('http://localhost:3000/majorDetail/$majorId'));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body); // JSON 데이터를 파싱
+        final data = json.decode(response.body);
         setState(() {
-          major = data['major_name']; // 전공 이름을 저장
+          major = data['major_name'];
         });
       } else {
         throw Exception('Failed to load major information');
       }
 
-      // Fetch major2
       final response2 = await http.get(Uri.parse('http://localhost:3000/majorDetail/$majorId2'));
       if (response2.statusCode == 200) {
         final data2 = json.decode(response2.body);
         setState(() {
-          major2 = data2['major_name']; // Save major2
+          major2 = data2['major_name'];
         });
       } else {
         throw Exception('Failed to load major2 information');
       }
 
-      // Fetch major3
       final response3 = await http.get(Uri.parse('http://localhost:3000/majorDetail/$majorId3'));
       if (response3.statusCode == 200) {
         final data3 = json.decode(response3.body);
         setState(() {
-          major3 = data3['major_name']; // Save major3
+          major3 = data3['major_name'];
         });
       } else {
         throw Exception('Failed to load major3 information');
@@ -54,23 +50,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // 유저 닉네임을 가져오는 메서드
-  Future<String> fetchReviewerNickname(int reviewerId) async {
+  Future<Map<String, dynamic>> fetchReviewerDetails(int reviewerId) async {
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/user/$reviewerId'));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body); // JSON 데이터를 파싱
-        return data['nickname']; // 닉네임 반환
+        final data = json.decode(response.body);
+        return {
+          'nickname': data['nickname'],
+          'iconCodePoint': int.tryParse(data['user_image'].toString()) // Convert to int
+        };
       } else {
         throw Exception('Failed to load user information');
       }
     } catch (error) {
       print('Error fetching user information: $error');
-      return 'Unknown'; // 에러 발생 시 기본 닉네임
+      return {'nickname': 'Unknown', 'iconCodePoint': null};
     }
   }
 
-  // 리뷰를 가져오는 메서드
   Future<void> fetchReviews() async {
     User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     final userId = loggedInUser?.user_id;
@@ -78,18 +75,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body); // JSON 데이터를 파싱
+        final data = json.decode(response.body);
         List<dynamic> updatedReviews = [];
 
-        // 각 리뷰의 닉네임 가져오기
         for (var review in data) {
-          String nickname = await fetchReviewerNickname(review['reviewer_id']);
-          review['reviewer_nickname'] = nickname;
+          Map<String, dynamic> reviewerDetails = await fetchReviewerDetails(review['reviewer_id']);
+          review['reviewer_nickname'] = reviewerDetails['nickname'];
+          review['reviewer_icon_code_point'] = reviewerDetails['iconCodePoint'];
           updatedReviews.add(review);
         }
 
         setState(() {
-          reviews = updatedReviews; // 리뷰 리스트를 저장
+          reviews = updatedReviews;
         });
       } else {
         throw Exception('Failed to load reviews');
@@ -144,7 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         introduction: loggedInUser?.introduction ?? '',
         reviews: reviews,
         averageRating: averageRating,
-        profileIconCodePoint: loggedInUser?.user_image, // 아이콘 코드포인트 추가
+        profileIconCodePoint: loggedInUser?.user_image,
       ),
     );
   }
@@ -182,7 +179,6 @@ class ProfileBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 프로필 정보 표시
           GestureDetector(
             onTap: () {},
             child: Row(
@@ -193,7 +189,7 @@ class ProfileBody extends StatelessWidget {
                   height: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.grey, // 임시로 회색으로 지정
+                    color: Colors.grey,
                   ),
                   child: Icon(
                     profileIconCodePoint != null
@@ -363,11 +359,11 @@ class ProfileBody extends StatelessWidget {
                                 height: 60,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.grey, // 임시로 회색으로 지정
+                                  color: Colors.grey,
                                 ),
                                 child: Icon(
-                                  profileIconCodePoint != null
-                                      ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons')
+                                  review['reviewer_icon_code_point'] != null
+                                      ? IconData(review['reviewer_icon_code_point'], fontFamily: 'MaterialIcons')
                                       : Icons.person,
                                   size: 40,
                                   color: Colors.white,

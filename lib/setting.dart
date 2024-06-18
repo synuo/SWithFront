@@ -79,7 +79,13 @@ class _SettingPageState extends State<SettingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('설정'),
+        title: Text(
+          '마이페이지',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: false,
       ),
       body: ListView(
         children: [
@@ -89,14 +95,18 @@ class _SettingPageState extends State<SettingPage> {
             child: Text(
               '알림 설정',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 20,
                 color: Color(0xff19A7CE),
               ),
             ),
           ),
           SwitchListTile(
-            title: Text('알림 허용'),
+            title: Text(
+              '알림 허용',
+              style: TextStyle(
+                fontSize: 18,
+              ),
+            ),
             value: allowNotifications,
             onChanged: (value) {
               setState(() {
@@ -114,7 +124,15 @@ class _SettingPageState extends State<SettingPage> {
             },
           ),
           Divider(),
-          Text('    세부 알림 설정'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Text(
+              '세부 알림 설정',
+              style: TextStyle(
+                fontSize: 18,
+              ),
+            ),
+          ),
           Divider(),
           _buildNotificationSettingItem(
             '채팅방 알림 설정',
@@ -164,20 +182,25 @@ class _SettingPageState extends State<SettingPage> {
               _updateSettings();
             },
           ),
+          SizedBox(height: 10),
           Container(
             color: Colors.grey.shade200,
             padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: Text(
               '회원정보 변경',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 20,
                 color: Color(0xff19A7CE),
               ),
             ),
           ),
           ListTile(
-            title: Text('비밀번호 변경'),
+            title: Text(
+              '비밀번호 변경',
+              style: TextStyle(
+                fontSize: 18,
+              ),
+            ),
             onTap: () {
               // 비밀번호 변경 페이지로 이동
               Navigator.push(
@@ -198,7 +221,12 @@ class _SettingPageState extends State<SettingPage> {
       ValueChanged<bool> onChanged,
       ) {
     return ListTile(
-      title: Text(title),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+        ),
+      ),
       trailing: allowNotifications
           ? Switch(
         value: value,
