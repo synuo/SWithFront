@@ -83,27 +83,6 @@ class _StudyMembersScreenState extends State<StudyMembersScreen> {
                       onTap: () {
                         navigateToProfile(member['user_id']);
                       },
-                      /*
-                      child : ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: member['user_image'] != null
-                              ? NetworkImage(member['user_image'])
-                              : null,
-                          child: member['user_image'] == null
-                              ? Icon(Icons.account_circle)
-                              : null,
-                          radius: 25,
-                        ),
-                        title: Text(
-                          member['nickname'],
-                          style: TextStyle( // 추가된 부분
-                            fontWeight: FontWeight.bold, // 추가된 부분
-                            fontSize: 16, // 추가된 부분
-                          ),
-                        ),
-                      ),
-
-                       */
                       child: Container(
                         padding: EdgeInsets.all(10),
                         margin: EdgeInsets.symmetric(vertical: 5),
