@@ -155,7 +155,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 48.0),
                 child: Text(
                   '> 카테고리별 게시판으로 이동하기\n',
-                  style: TextStyle(color: Color(0xff94BDF2), fontSize: 15.0, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.black45, fontSize: 15.0, fontWeight: FontWeight.bold),
                 ),
               ),
               Row(
@@ -205,7 +205,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  ' 조회수 Top 5',  //조회수가 높은 게시물 5개
+                  ' 조회수 Top 5 게시글',  //조회수가 높은 게시물 5개
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
