@@ -98,7 +98,7 @@ class _MyPageState extends State<MyPage> {
                         shape: BoxShape.rectangle,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.indigo,
+                          color: Color(0xff19A7CE),
                           width: 1,
                         ),
                       ),
@@ -111,7 +111,7 @@ class _MyPageState extends State<MyPage> {
                           );
                         },
                         icon: Icon(Icons.edit),
-                        color: Colors.indigo,
+                        color: Color(0xff19A7CE),
                         iconSize: 35,
                       ),
                     ),
@@ -190,14 +190,14 @@ class _MyPageState extends State<MyPage> {
               title,
               style: TextStyle(
                 fontSize: 20,
-                color: Colors.indigo,
+                color: Color(0xff19A7CE),
               ),
             ),
             SizedBox(width: 5), // 텍스트와 아이콘이 겹치지 않게 간격 추가
             Icon(
               icon,
               size: 16,
-              color: Colors.indigo,
+              color: Color(0xff19A7CE),
             ), // 화살표 아이콘 추가
           ],
         ),
