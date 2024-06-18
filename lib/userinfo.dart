@@ -90,10 +90,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'User Information', style: TextStyle(color: Color(0xff19A7CE), fontSize: 20.0, fontWeight: FontWeight.bold),),
+            '회원 정보', style: TextStyle(color: Colors.black, fontSize: 20.0, fontWeight: FontWeight.bold),),
           elevation: 0.0,
           backgroundColor: Colors.white30,
-          centerTitle: true,
+          //centerTitle: true,
         ),
         body: Center(
           child: Form(
@@ -149,10 +149,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                    */
                   // 이름 입력 폼 필드
+                  Text('이름'),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      labelText: '이름',
+                      //labelText: '이름',
                       hintText: '이름(성이름)을 입력해주세요.',
                       border: const OutlineInputBorder(),
                     ),
@@ -165,11 +166,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 학번 입력 폼 필드
+                  Text('학번'),
                   TextFormField(
                     controller: _studentnumController,
                     keyboardType: TextInputType.number, // 숫자 입력 타입 지정
                     decoration: InputDecoration(
-                      labelText: '학번',
+                      //labelText: '학번',
                       hintText: '학번을 입력해주세요.(7자리)',
                       border: OutlineInputBorder(),
                       //errorText: _isStudentIdAvailable == null || _isStudentIdAvailable! ? null : '이미 사용 중인 학번입니다.',
@@ -188,10 +190,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 닉네임 입력 폼 필드
+                  Text('닉네임'),
                   TextFormField(
                     controller: _nicknameController,
                     decoration: InputDecoration(
-                      labelText: '닉네임',
+                      //labelText: '닉네임',
                       hintText: '닉네임을 입력해주세요.(10자 이하)',
                       border: OutlineInputBorder(),
                       errorText: _isNicknameAvailable == false ? '이미 사용 중인 닉네임입니다.' : null,
@@ -225,7 +228,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     },
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
-                      labelText: '비밀번호',
+                      //labelText: '비밀번호',
                       hintText: '비밀번호를 입력해주세요.(영문, 숫자 포함 8자 이상)',
                       border: OutlineInputBorder(),
                       suffixIcon: IconButton(
@@ -242,11 +245,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 비밀번호 재확인 입력 폼 필드
+                  Text('비밀번호 재입력'),
                   TextFormField(
                     controller: _confirmPasswordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: '비밀번호 확인',
+                      //labelText: '비밀번호 확인',
                       hintText: '비밀번호를 다시 입력해주세요.',
                       border: OutlineInputBorder(),
                     ),
@@ -262,6 +266,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 전공 선택 필드
+                  Text('전공'),
+                  SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     value: _selectedMajor1.isNotEmpty
                         ? _selectedMajor1
@@ -275,7 +281,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       print('전공1id : ${findMajorId(_selectedMajor1)}');
                     },
                     decoration: InputDecoration(
-                      labelText: '전공',
+                      labelText: '전공 1 (필수)',
                       border: OutlineInputBorder(),
                     ),
                     items: _majors.map<DropdownMenuItem<String>>((String value) {
@@ -331,9 +337,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 자기소개 입력 폼 필드
+                  Text('자기 소개 (선택)'),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: '자기소개 (선택)',
+                      //labelText: '자기소개 (선택)',
                       hintText: '본인에 대해 간단히 소개해주세요. (300자 이하) ',
                       border: OutlineInputBorder(),
                     ),
