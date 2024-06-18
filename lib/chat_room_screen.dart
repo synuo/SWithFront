@@ -152,36 +152,44 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               // Map members into ListTiles
               ...members.map((member) {
                 bool isMe = member['member_id'] == loggedInUser?.user_id;
-                //bool isHost = loggedInUser?.user_id == isOwner;
 
                 return ListTile(
+                  contentPadding: EdgeInsets.zero, // 내부 패딩 제거
                   leading: CircleAvatar(
                     child: Icon(Icons.person, size: 32),
                     radius: 16,
                   ),
                   title: Text(member['nickname']),
-                  trailing: isOwner && !isMe
-                      ? PopupMenuButton<String>(
-                    itemBuilder: (context) {
-                      return [
-                        PopupMenuItem(
-                          value: 'kick',
-                          child: Text('내보내기'),
-                        ),
-                      ];
-                    },
-                    onSelected: (value) {
-                      if (value == 'kick') {
-                        _showKickMemberConfirmation(member['member_id'], member['nickname']);
-                      }
-                    },
-                  )
-                      : isMe
-                      ? CircleAvatar(
-                    child: Text('나'),
-                    radius: 12,
-                  )
-                      : null,
+                  trailing: Container(
+                    width: 100, // 버튼 영역의 너비 설정
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (isMe)
+                          CircleAvatar(
+                            child: Text('나'),
+                            radius: 12,
+                          ),
+                        SizedBox(width: 8), // '나' 표시와 버튼 사이 간격 조정
+                        if (isOwner && !isMe)
+                          PopupMenuButton<String>(
+                            itemBuilder: (context) {
+                              return [
+                                PopupMenuItem(
+                                  value: 'kick',
+                                  child: Text('내보내기'),
+                                ),
+                              ];
+                            },
+                            onSelected: (value) {
+                              if (value == 'kick') {
+                                _showKickMemberConfirmation(member['member_id'], member['nickname']);
+                              }
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
                   onTap: () {
                     if (isMe) {
                       Navigator.push(
@@ -203,14 +211,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               }).toList(),
               SizedBox(height: 16.0),
               // Button to leave the room
-              ElevatedButton(
-                onPressed: () => _showLeaveRoomDialog(),
-                child: Text('나가기'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xff19A7CE),
-                  foregroundColor: Colors.white,
-                  // 버튼 색상
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () => _showLeaveRoomDialog(),
+                    icon: Icon(Icons.exit_to_app), // 나가기 아이콘
+                    color: Colors.black,
+                    iconSize: 20, // 아이콘 사이즈 조정
+                  ),
+                ],
               ),
             ],
           ),
@@ -218,7 +228,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
-
 
 
   Future<bool> _checkIfOwner() async {
@@ -333,6 +342,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.white, // 배경색을 흰색으로 설정
           title: Text('나가기'),
           content: Text('이 채팅방을 나가시겠습니까?'),
           actions: [
@@ -352,6 +362,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
+
 
   void _leaveRoom() async {
     final response = await http.post(
