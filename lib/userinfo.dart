@@ -7,11 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:practice/login.dart';
 import 'common_widgets.dart';
 
-// 사용자 기본 정보 입력 (이름, 학번, 닉네임, 전공, 비번)
-// 전공1, 전공2, 프로필이미지, 자기소개는 선택사항
-
 class UserInfoPage extends StatefulWidget {
-  final String email;  //앞 회원가입 페이지로부터 이메일 받아옴 (이 페이지에서 다른 정보와 함께 저장)
+  final String email; //앞 회원가입 페이지로부터 이메일 받아옴 (이 페이지에서 다른 정보와 함께 저장)
 
   const UserInfoPage({Key? key, required this.email}) : super(key: key);
 
@@ -21,28 +18,29 @@ class UserInfoPage extends StatefulWidget {
 
 class _UserInfoPageState extends State<UserInfoPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // _formKey 정의
-  List<String> _majors = [];  //전공 리스트
-  String _introduction = '';  //자기소개
+  List<String> _majors = []; //전공 리스트
+  String _introduction = ''; //자기소개
   final _nameController = TextEditingController();
   final _studentnumController = TextEditingController();
   final _nicknameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();  //비밀번호 확인용
-  final _profileImageController = TextEditingController();    //프로필 이미지
+  final _confirmPasswordController = TextEditingController(); //비밀번호 확인용
+  final _profileImageController = TextEditingController(); //프로필 이미지
   String _selectedMajor1 = '';
   String _selectedMajor2 = '';
   String _selectedMajor3 = '';
 
-  //String? _pickedProfileImage; // 프로필 이미지를 저장할 변수 추가
   IconData _pickedProfileIcon = Icons.person; // 프로필 아이콘 저장할 변수
-  
-  bool? _isStudentIdAvailable;    //학번 중복 확인
-  bool? _isNicknameAvailable;     //닉네임 중복 확인
+
+  bool? _isStudentIdAvailable; //학번 중복 확인
+  bool? _isNicknameAvailable; //닉네임 중복 확인
+  bool _isPasswordVisible = false;
+  bool _isPasswordVisible2 = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchMajors();  //전공 데이터 가져옴
+    _fetchMajors(); //전공 데이터 가져옴
   }
 
   // 전공 이름과 ID를 매핑하는 맵
@@ -56,13 +54,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
         final List<dynamic> data = json.decode(response.body);
         final List<Map<String, dynamic>> majors = data.cast<Map<String, dynamic>>();
         _majors = majors.map((major) => major['major_name'] as String).toList();
-        _majors.insert(0, ''); // 맨 앞에 널값 추가
         setState(() {
-          _selectedMajor1 = _majors.isNotEmpty ? _majors.first : ''; // 여기서 빈 문자열로 초기화
-          _selectedMajor2 = _majors.isNotEmpty ? _majors.first : '';
-          _selectedMajor3 = _majors.isNotEmpty ? _majors.first : '';
+          _selectedMajor1 = '';
+          _selectedMajor2 = '';
+          _selectedMajor3 = '';
         });
-        // _majors 리스트와 majors 데이터를 동일한 인덱스를 사용하여 전공 이름과 ID를 매핑
         _majorIdMap = Map.fromIterable(majors,
             key: (major) => major['major_name'] as String,
             value: (major) => major['major_id'] as int);
@@ -84,13 +80,17 @@ class _UserInfoPageState extends State<UserInfoPage> {
   @override
   Widget build(BuildContext context) {
     final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
-    bool _isPasswordVisible = false;
     return Container(
       constraints: const BoxConstraints(maxWidth: 300),
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            '회원 정보', style: TextStyle(color: Colors.black, fontSize: 20.0, fontWeight: FontWeight.bold),),
+            '회원 정보',
+            style: TextStyle(
+                color: Color(0xff19A7CE),
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold),
+          ),
           elevation: 0.0,
           backgroundColor: Colors.white30,
           //centerTitle: true,
@@ -102,7 +102,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
               padding: EdgeInsets.all(80.0),
               child: ListView(
                 children: <Widget>[
-                  // TODO : 프로필 이미지
                   // 프로필 아이콘 선택 부분
                   Center(
                     child: DropdownButton<IconData>(
@@ -129,32 +128,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       iconSize: 50,
                     ),
                   ),
-                  // 프로필 이미지 업로드 부분 수정
-                  /*
-                  GestureDetector(
-                    onTap: () async {
-                      final pickedImage = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => UploadImage()),
-                      );
-                      if (pickedImage != null && pickedImage is String) {
-                        setState(() {
-                          _pickedProfileImage = pickedImage;
-                        });
-                      }
-                    },
-                    child: _pickedProfileImage != null
-                        ? Image.file(File(_pickedProfileImage!), width: 100, height: 100, fit: BoxFit.cover)
-                        : CircleAvatar(radius: 50, child: Icon(Icons.ac_unit, size: 50),),
-                  ),
-                   */
                   // 이름 입력 폼 필드
                   Text('이름'),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      //labelText: '이름',
                       hintText: '이름(성이름)을 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -171,11 +151,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     controller: _studentnumController,
                     keyboardType: TextInputType.number, // 숫자 입력 타입 지정
                     decoration: InputDecoration(
-                      //labelText: '학번',
                       hintText: '학번을 입력해주세요.(7자리)',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
-                      //errorText: _isStudentIdAvailable == null || _isStudentIdAvailable! ? null : '이미 사용 중인 학번입니다.',
-                      errorText: _isStudentIdAvailable == false ? '이미 사용 중인 학번입니다.' : null,
+                      errorText: _isStudentIdAvailable == false
+                          ? '이미 사용 중인 학번입니다.'
+                          : null,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -184,7 +165,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       if (value.length != 7) {
                         return '학번은 7자리여야 합니다.';
                       }
-                      //checkDuplicateStudentId(value); // 학번 중복 체크
                       return null;
                     },
                   ),
@@ -194,11 +174,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   TextFormField(
                     controller: _nicknameController,
                     decoration: InputDecoration(
-                      //labelText: '닉네임',
                       hintText: '닉네임을 입력해주세요.(10자 이하)',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
-                      errorText: _isNicknameAvailable == false ? '이미 사용 중인 닉네임입니다.' : null,
-                        //errorText: _isNicknameAvailable == null || _isNicknameAvailable! ? null : '이미 사용 중인 닉네임입니다.'
+                      errorText: _isNicknameAvailable == false
+                          ? '이미 사용 중인 닉네임입니다.'
+                          : null,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -207,7 +188,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       if (value.length > 10) {
                         return '닉네임은 10자 이하여야 합니다.';
                       }
-                      //checkDuplicateNickname(value);
                       return null;
                     },
                   ),
@@ -228,8 +208,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     },
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
-                      //labelText: '비밀번호',
                       hintText: '비밀번호를 입력해주세요.(영문, 숫자 포함 8자 이상)',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(_isPasswordVisible
@@ -240,19 +220,29 @@ class _UserInfoPageState extends State<UserInfoPage> {
                             _isPasswordVisible = !_isPasswordVisible;
                           });
                         },
-                    ),
+                      ),
                     ),
                   ),
                   _gap(),
                   // 비밀번호 재확인 입력 폼 필드
-                  Text('비밀번호 재입력'),
+                  Text('비밀번호 확인'),
                   TextFormField(
                     controller: _confirmPasswordController,
-                    obscureText: true,
+                    obscureText: !_isPasswordVisible2,
                     decoration: InputDecoration(
-                      //labelText: '비밀번호 확인',
                       hintText: '비밀번호를 다시 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(_isPasswordVisible2
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible2 = !_isPasswordVisible2;
+                          });
+                        },
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -261,87 +251,73 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       if (value != _passwordController.text) {
                         return '비밀번호가 일치하지 않습니다.';
                       }
-                      return null;     // 비밀번호와 재확인이 일치하면 오류 없음
+                      return null; // 비밀번호와 재확인이 일치하면 오류 없음
                     },
                   ),
                   _gap(),
                   // 전공 선택 필드
-                  Text('전공'),
-                  SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    value: _selectedMajor1.isNotEmpty
-                        ? _selectedMajor1
-                        : _majors.isNotEmpty
-                        ? _majors.first
-                        : '', // 초기 값 설정 및 유효성 검사
-                    onChanged: (String? newValue) {
+                  Text('전공 1'),
+                  AutocompleteTextField(
+                    items: _majors,
+                    decoration: InputDecoration(
+                      //labelText: '전공 1',
+                      hintText : '본전공 이름을 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 13.0),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) {
+                      if (_majors.contains(val)) {
+                        return null;
+                      } else {
+                        return 'Invalid Major';
+                      }
+                    },
+                    onItemSelect: (selected) {
                       setState(() {
-                        _selectedMajor1 = newValue!;
+                        _selectedMajor1 = selected;
                       });
                       print('전공1id : ${findMajorId(_selectedMajor1)}');
                     },
+                  ),
+                  _gap(),
+                  Text('전공 2'),
+                  AutocompleteTextField(
+                    items: _majors,
                     decoration: InputDecoration(
-                      labelText: '전공 1 (필수)',
+                      //labelText: '전공 2 (선택)',
+                      hintText: '전공 2 이름을 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
                     ),
-                    items: _majors.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '전공을 선택해주세요.';
-                      }
-                      return null;
+                    onItemSelect: (selected) {
+                      setState(() {
+                        _selectedMajor2 = selected;
+                      });
                     },
                   ),
                   _gap(),
-                  DropdownButtonFormField<String>(
-                    value: _selectedMajor2,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedMajor2 = newValue!;
-                      });
-                    },
+                  Text('전공 3'),
+                  AutocompleteTextField(
+                    items: _majors,
                     decoration: InputDecoration(
-                      labelText: '전공 2 (선택)',
+                      //labelText: '전공 3 (선택)',
+                      hintText: '전공 3 이름을 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
                     ),
-                    items: _majors.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  _gap(),
-                  DropdownButtonFormField<String>(
-                    value: _selectedMajor3,
-                    onChanged: (String? newValue) {
+                    onItemSelect: (selected) {
                       setState(() {
-                        _selectedMajor3 = newValue!;
+                        _selectedMajor3 = selected;
                       });
                     },
-                    decoration: InputDecoration(
-                      labelText: '전공 3 (선택)',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _majors.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
                   ),
                   _gap(),
                   // 자기소개 입력 폼 필드
                   Text('자기 소개 (선택)'),
                   TextFormField(
                     decoration: InputDecoration(
-                      //labelText: '자기소개 (선택)',
-                      hintText: '본인에 대해 간단히 소개해주세요. (300자 이하) ',
+                      hintText: '본인에 대해 간단히 소개해주세요. (300자 이하)',
+                      hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
                     ),
                     maxLength: 300, // 최대 300자
@@ -360,13 +336,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       padding: EdgeInsets.all(10.0),
                       child: Text(
                         '가입하기',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                     ),
                     onPressed: () {
                       if (_formKey.currentState != null &&
-                          _formKey.currentState!.validate()) {  //회원정보가 모두 성공적으로 입력된 경우
-                        // 입력된 데이터 출력 (확인용)
+                          _formKey.currentState!.validate()) {
                         print('이메일:${widget.email}');
                         print('이름: ${_nameController.text}');
                         print('학번 : ${_studentnumController.text}');
@@ -377,7 +353,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                         print('전공3: $_selectedMajor3');
                         print('프로필이미지: ${_profileImageController.text}');
                         print('자기소개: $_introduction');
-                        _registerUser();  // 회원 정보 저장 (=가입)
+                        _registerUser(); // 회원 정보 저장 (=가입)
                       }
                     },
                   ),
@@ -385,7 +361,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
               ),
             ),
           ),
-        )
+        ),
       ),
     );
   }
@@ -401,40 +377,39 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
   void _registerUser() async {
     final String email = widget.email; // SignupPage에서 전달된 이메일 값
-    final String name = _nameController.text;  // 이름 저장
-    final String nickname = _nicknameController.text;  // 닉네임 저장
-    final String password = _passwordController.text;  // 비밀번호 저장
-    final String studentnum = _studentnumController.text;  //학번 저장
+    final String name = _nameController.text; // 이름 저장
+    final String nickname = _nicknameController.text; // 닉네임 저장
+    final String password = _passwordController.text; // 비밀번호 저장
+    final String studentnum = _studentnumController.text; //학번 저장
     final int? majorId1 = findMajorId(_selectedMajor1);
     final int? majorId2 = findMajorId(_selectedMajor2);
     final int? majorId3 = findMajorId(_selectedMajor3);
     final String profileIcon = _pickedProfileIcon.codePoint.toString(); // 프로필 아이콘 저장
-    //final String profileImage = _profileImageController.text; //프로필 이미지 저장
-    final String introduction = _introduction;         // 자기소개 저장
+    final String introduction = _introduction; // 자기소개 저장
 
     final Uri uri = Uri.parse('http://localhost:3000/signup');
 
     try {
-      final response = await http.post(    // 서버로 회원 가입 요청을 보냄
+      final response = await http.post(
         uri,
-        headers:{
-          'Content-Type' : 'application/json',
+        headers: {
+          'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'email' : email,
-          'name' : name,
+          'email': email,
+          'name': name,
           'nickname': nickname,
           'password': password,
-          'student_id' : studentnum,
-          'major1': majorId1,  //이름 대신 id 전달
+          'student_id': studentnum,
+          'major1': majorId1, //이름 대신 id 전달
           'major2': majorId2,
           'major3': majorId3,
           'user_image': profileIcon,
-          'introduction' : introduction,
+          'introduction': introduction,
         }),
       );
 
-      if (response.statusCode == 201) {  // 회원 가입 성공
+      if (response.statusCode == 201) {
         print('회원 가입 성공!');
         showDialog(
           context: context,
@@ -457,12 +432,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
         );
         print('화면전환 : userinfo -> login');
       } else if (response.statusCode == 409) {
-        // 중복된 필드 오류 처리
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final field = responseBody['field'];
         String errorMessage = responseBody['message'];
 
-        // 다이얼로그로 오류 메시지 표시
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -488,18 +461,138 @@ class _UserInfoPageState extends State<UserInfoPage> {
             _isNicknameAvailable = false;
           });
         }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(responseBody['message'])));
-      } else {  // 회원 가입 실패
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+      } else {
         print('회원 가입 실패: ${response.body}');
       }
-    } catch (e) {  // 오류 발생
+    } catch (e) {
       print('오류 발생: $e');
-
     }
   }
 
   Widget _gap() => const SizedBox(height: 14);
 }
 
+class AutocompleteTextField extends StatefulWidget {
+  final List<String> items;
+  final Function(String) onItemSelect;
+  final InputDecoration? decoration;
+  final String? Function(String?)? validator;
+  const AutocompleteTextField(
+      {Key? key,
+        required this.items,
+        required this.onItemSelect,
+        this.decoration,
+        this.validator})
+      : super(key: key);
 
+  @override
+  State<AutocompleteTextField> createState() => _AutocompleteTextFieldState();
+}
+
+class _AutocompleteTextFieldState extends State<AutocompleteTextField> {
+  final FocusNode _focusNode = FocusNode();
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
+  late List<String> _filteredItems;
+
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredItems = widget.items;
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        _showOverlay();
+      } else {
+        _removeOverlay();
+      }
+    });
+  }
+
+  void _showOverlay() {
+    _removeOverlay();
+    _overlayEntry = _createOverlayEntry();
+    Overlay.of(context)?.insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: TextFormField(
+        controller: _controller,
+        focusNode: _focusNode,
+        onChanged: _onFieldChange,
+        decoration: widget.decoration,
+        validator: widget.validator,
+      ),
+    );
+  }
+
+  void _onFieldChange(String val) {
+    setState(() {
+      if (val == '') {
+        _filteredItems = widget.items;
+      } else {
+        _filteredItems = widget.items
+            .where((element) =>
+            element.toLowerCase().contains(val.toLowerCase()))
+            .toList();
+      }
+    });
+    _showOverlay();
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    var size = renderBox.size;
+
+    return OverlayEntry(
+        builder: (context) => Positioned(
+          width: size.width,
+          child: CompositedTransformFollower(
+            link: _layerLink,
+            showWhenUnlinked: false,
+            offset: Offset(0.0, size.height + 5.0),
+            child: Material(
+              elevation: 4.0,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: ListView.builder(
+                  itemCount: _filteredItems.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final item = _filteredItems[index];
+                    return ListTile(
+                      title: Text(item),
+                      onTap: () {
+                        _controller.text = item; // Set the selected item in the text field
+                        widget.onItemSelect(item);
+                        _focusNode.unfocus();
+                        _removeOverlay();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    _removeOverlay();
+    super.dispose();
+  }
+}
 
