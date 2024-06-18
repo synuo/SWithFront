@@ -28,7 +28,8 @@ class AdvanceAScreen extends StatefulWidget {
   final int post_id;
   final List<dynamic> advance_q;
 
-  const AdvanceAScreen({Key? key, required this.post_id, required this.advance_q})
+  const AdvanceAScreen(
+      {Key? key, required this.post_id, required this.advance_q})
       : super(key: key);
 
   @override
@@ -43,7 +44,8 @@ class _AdvanceAScreenState extends State<AdvanceAScreen> {
   @override
   void initState() {
     super.initState();
-    loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
+    loggedInUser =
+        Provider.of<UserProvider>(context, listen: false).loggedInUser;
     // Map advance_q to AdvanceQuestion objects
     questions = widget.advance_q
         .map((question) => AdvanceQuestion.fromJson(question))
@@ -82,10 +84,12 @@ class _AdvanceAScreenState extends State<AdvanceAScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Advance Questions'),
+        title: Text(
+          '사전 질문 답변',
+          style: TextStyle(
+              color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold),
+        ),
         elevation: 0.0,
-        backgroundColor: Color(0xff19A7CE),
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -97,27 +101,30 @@ class _AdvanceAScreenState extends State<AdvanceAScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        '사전질문 ${questions[index].aq_id}:',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
-                      ),
-                      SizedBox(width: 8), // Add spacing between AQ ID and content
-                      Expanded(
-                        child: Text(
-                          questions[index].aq_content,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
-                        ),
-                      ),
-                    ],
-                  ),
-                  TextField(
-                    onChanged: (value) {
-                      answers[index] = value;
-                    },
+                  Text(
+                    '${questions[index].aq_id}. ${questions[index].aq_content}',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                   ),
                   SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(
+                        color: Colors.grey,
+                        width: 1.0,
+                      ),
+                    ),
+                    child: TextFormField(
+                      onChanged: (value) {
+                        answers[index] = value;
+                      },
+                      maxLines: null,
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
                 ],
               );
             },
