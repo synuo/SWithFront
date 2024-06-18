@@ -29,7 +29,6 @@ class CircularButton extends StatelessWidget {
         height: 100,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          //color: Color(0xff94BDF2),
           color: Theme.of(context).colorScheme.primary
         ),
         child: Center(
@@ -37,7 +36,7 @@ class CircularButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 30, color: Colors.white),
-              SizedBox(height: 4),
+              //SizedBox(height: 4),
               Text(
                 text,
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15.0),
