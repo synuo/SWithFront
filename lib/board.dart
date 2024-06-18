@@ -16,7 +16,7 @@ class BoardScreen extends StatefulWidget {
 
 class _BoardScreenState extends State<BoardScreen> {
   late List<Post> posts = []; // 게시물 목록 데이터
-  String? searchQuery;  //검색
+  String? searchQuery;  // 검색
   String selectedFilter = '모집중';
 
   @override
@@ -67,6 +67,7 @@ class _BoardScreenState extends State<BoardScreen> {
       fetchPosts();
     });
   }
+
   void applyFilter(String filter) {
     setState(() {
       selectedFilter = filter;
@@ -105,7 +106,6 @@ class _BoardScreenState extends State<BoardScreen> {
       print('오류 발생: $e');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +167,7 @@ class _BoardScreenState extends State<BoardScreen> {
                       });
                     },
                     child: Container(
-                      height: 160,
+                      height: 100,
                       margin: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8.0),
                       decoration: BoxDecoration(
@@ -185,21 +185,24 @@ class _BoardScreenState extends State<BoardScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Text(
                             "${post.category} · ${post.progress} · ${post.view_count}",
-                            //style: Theme.of(context).textTheme.caption,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Wrap(
-                            spacing: 8.0,
-                            runSpacing: 4.0,
+                            spacing: 4.0,
+                            runSpacing: 2.0,
                             children: post.tags
                                 .map((tag) => Text(
                               '#$tag',
                               style: TextStyle(
                                   color: Colors.blue,
-                                  fontSize: 14.0),
+                                  fontSize: 12.0),
                             ))
                                 .toList(),
                           ),
