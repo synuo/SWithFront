@@ -128,7 +128,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'SWith', style: TextStyle(color: Colors.black, fontSize: 30.0),),
+          'SWith', style: TextStyle(color: Colors.black, fontSize: 30.0, fontFamily: 'PlaywritePL'),),
         elevation: 0.0,
         backgroundColor: Colors.white,
         //centerTitle: true,
@@ -150,12 +150,21 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(height: 16.0,),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                child: Text(
+                  '> 카테고리별 게시판으로 이동하기\n',
+                  style: TextStyle(color: Color(0xff94BDF2), fontSize: 15.0, fontWeight: FontWeight.bold),
+                ),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   SizedBox(height: 16.0),
                   CircularButton(
                     text: '스터디',
+                    icon: Icons.book_outlined, // 적절한 아이콘 선택
                     onTap: () {
                       //board 에서 카테고리가 스터디인 게시글만 보여줌
                       Navigator.push(
@@ -167,6 +176,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   ),
                   CircularButton(
                     text: '공모전',
+                    icon: Icons.emoji_events_outlined,
                     onTap: () {
                       //board 에서 카테고리가 공모전인 게시글만 보여줌
                       Navigator.push(
@@ -178,6 +188,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   ),
                   CircularButton(
                     text: '기타',
+                    icon: Icons.category_outlined,
                     onTap: () {
                       //board 에서 카테고리가 기타인 게시글만 보여줌
                       Navigator.push(
@@ -189,6 +200,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   ),
                 ],
               ),
+
               SizedBox(height: 16.0),
               Padding(
                 padding: const EdgeInsets.all(8.0),
