@@ -53,12 +53,26 @@ class _MyPostsPageState extends State<MyPostsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 모집 내역',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''}',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff19A7CE),
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' 님이 모집한',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 20),
@@ -77,7 +91,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                       title: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(_getCategoryIcon(userPosts[index].category)),
+                          _getCategoryIcon(userPosts[index].category),
                           SizedBox(width: 20),
                           Expanded(
                             child: Column(
@@ -128,14 +142,16 @@ class _MyPostsPageState extends State<MyPostsPage> {
     );
   }
 
-  IconData _getCategoryIcon(String category) {
+  Widget _getCategoryIcon(String category) {
+    const double iconSize = 50.0; // Define the size of the icons
+
     switch (category) {
       case '스터디':
-        return Icons.book;
+        return Icon(Icons.book, color: Colors.blue, size: iconSize);
       case '공모전':
-        return Icons.emoji_events;
+        return Icon(Icons.emoji_events, color: Colors.orange, size: iconSize);
       default:
-        return Icons.category;
+        return Icon(Icons.category, color: Colors.grey, size: iconSize);
     }
   }
 }

@@ -10,13 +10,14 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? major;
+  String? major, major2, major3;
   List<dynamic>? reviews;
   double? averageRating;
 
   // 전공 정보를 가져오는 메서드
-  Future<void> fetchMajorInfo(int? majorId) async {
+  Future<void> fetchMajorInfo(int? majorId, int? majorId2, int? majorId3) async {
     try {
+      // Fetch major
       final response = await http.get(Uri.parse('http://localhost:3000/majorDetail/$majorId'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body); // JSON 데이터를 파싱
@@ -25,6 +26,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       } else {
         throw Exception('Failed to load major information');
+      }
+
+      // Fetch major2
+      final response2 = await http.get(Uri.parse('http://localhost:3000/majorDetail/$majorId2'));
+      if (response2.statusCode == 200) {
+        final data2 = json.decode(response2.body);
+        setState(() {
+          major2 = data2['major_name']; // Save major2
+        });
+      } else {
+        throw Exception('Failed to load major2 information');
+      }
+
+      // Fetch major3
+      final response3 = await http.get(Uri.parse('http://localhost:3000/majorDetail/$majorId3'));
+      if (response3.statusCode == 200) {
+        final data3 = json.decode(response3.body);
+        setState(() {
+          major3 = data3['major_name']; // Save major3
+        });
+      } else {
+        throw Exception('Failed to load major3 information');
       }
     } catch (error) {
       print('Error fetching major information: $error');
@@ -81,7 +104,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     final majorId = loggedInUser?.major1;
-    fetchMajorInfo(majorId);
+    final majorId2 = loggedInUser?.major2;
+    final majorId3 = loggedInUser?.major3;
+    fetchMajorInfo(majorId, majorId2, majorId3);
     fetchReviews();
   }
 
@@ -101,13 +126,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     averageRating = calculateAverageRating(reviews);
     return Scaffold(
       appBar: AppBar(
-        title: Text('프로필'),
+        title: Text(
+          '프로필',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: false,
       ),
       body: ProfileBody(
         nickname: loggedInUser?.nickname,
         name: loggedInUser?.name,
         studentId: loggedInUser?.student_id,
         major: major,
+        major2: major2,
+        major3: major3,
         introduction: loggedInUser?.introduction ?? '',
         reviews: reviews,
         averageRating: averageRating,
@@ -122,12 +155,25 @@ class ProfileBody extends StatelessWidget {
   final String? name;
   final int? studentId;
   final String? major;
+  final String? major2;
+  final String? major3;
   final String? introduction;
   final List<dynamic>? reviews;
   final double? averageRating;
   final int? profileIconCodePoint;
 
-  ProfileBody({this.nickname, this.name, this.studentId, this.major, this.introduction, this.reviews, this.averageRating, this.profileIconCodePoint,});
+  ProfileBody({
+    this.nickname,
+    this.name,
+    this.studentId,
+    this.major,
+    this.major2,
+    this.major3,
+    this.introduction,
+    this.reviews,
+    this.averageRating,
+    this.profileIconCodePoint,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -138,8 +184,7 @@ class ProfileBody extends StatelessWidget {
         children: [
           // 프로필 정보 표시
           GestureDetector(
-            onTap: () {
-            },
+            onTap: () {},
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -150,16 +195,10 @@ class ProfileBody extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: Colors.grey, // 임시로 회색으로 지정
                   ),
-                  /*
                   child: Icon(
-                    Icons.account_circle,
-                    size: 80,
-                    color: Colors.white,
-                  ),
-
-                   */
-                  child: Icon(
-                    profileIconCodePoint != null ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons') : Icons.person,
+                    profileIconCodePoint != null
+                        ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons')
+                        : Icons.person,
                     size: 80,
                     color: Colors.white,
                   ),
@@ -169,54 +208,101 @@ class ProfileBody extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 20),
+                      SizedBox(height: 10),
                       Text(
                         nickname ?? '',
                         style: TextStyle(
                           fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Color(0xff19A7CE),
                         ),
                       ),
                       SizedBox(height: 10),
-                      Text(
-                        name ?? '',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.black,
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: name ?? '',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' | ',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                            TextSpan(
+                              text: studentId != null ? studentId.toString() : '',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       SizedBox(height: 10),
-                      Text(
-                        '${studentId ?? ''} / ${major ?? ''}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            major ?? '',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.black,
+                            ),
+                          ),
+                          if (major2 != null && major2!.isNotEmpty) ...[
+                            Text(
+                              ' | $major2',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+
+                          if (major3 != null && major3!.isNotEmpty) ...[
+                            Text(
+                              ' | $major3',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 20),
           Text(
             '   $introduction',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 30),
+          Divider(height: 1, color: Color(0xff19A7CE)),
+          SizedBox(height: 5),
           Text(
             '리뷰',
             style: TextStyle(
               fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Color(0xff19A7CE),
             ),
           ),
+          SizedBox(height: 5),
+          Divider(height: 1, color: Color(0xff19A7CE)),
+          SizedBox(height: 20),
           if (reviews != null && reviews!.isNotEmpty)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -259,7 +345,7 @@ class ProfileBody extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Divider(),
+                Divider(height: 1, color: Color(0xff19A7CE)),
                 SizedBox(height: 10),
                 ListView.builder(
                   shrinkWrap: true,

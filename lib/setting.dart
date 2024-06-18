@@ -91,7 +91,7 @@ class _SettingPageState extends State<SettingPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.indigo,
+                color: Color(0xff19A7CE),
               ),
             ),
           ),
@@ -172,7 +172,7 @@ class _SettingPageState extends State<SettingPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.indigo,
+                color: Color(0xff19A7CE),
               ),
             ),
           ),

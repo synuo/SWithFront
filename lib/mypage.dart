@@ -1,7 +1,4 @@
-import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:practice/neweditprofile.dart';
 import 'package:practice/study_members.dart';
 import 'package:provider/provider.dart';
@@ -21,50 +18,47 @@ class MyPage extends StatefulWidget {
 }
 
 class _MyPageState extends State<MyPage> {
-
   @override
   Widget build(BuildContext context) {
     User? loggedInUser = Provider.of<UserProvider>(context).loggedInUser;
 
-    int _currentIndex = 0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Page'),
+        title: Text(
+          '마이페이지',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 프로필 이미지와 사용자 정보
             InkWell(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfileScreen()), // profile.dart로 이동합니다.
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
                 );
               },
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 120,
-                    height: 120,
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.grey, // 임시로 회색으로 지정
+                      color: Colors.grey,
                     ),
                     child: Icon(
                       IconData(loggedInUser?.user_image ?? Icons.person.codePoint, fontFamily: 'MaterialIcons'),
-                      size: 50,
+                      size: 60,
                       color: Colors.white,
                     ),
-                    /*
-                    child: Icon(
-                      Icons.account_circle,
-                      size: 80,
-                      color: Colors.white,
-                    ),*/
                   ),
                   SizedBox(width: 20),
                   Expanded(
@@ -73,26 +67,38 @@ class _MyPageState extends State<MyPage> {
                       children: [
                         SizedBox(height: 20),
                         Text(
-                          loggedInUser?.nickname ?? '', // 닉네임 표시
+                          loggedInUser?.nickname ?? '',
                           style: TextStyle(
                             fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Color(0xff19A7CE),
                           ),
                         ),
                         SizedBox(height: 10),
-                        Text(
-                          loggedInUser?.name ?? '', // 이름 표시
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.black,
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: loggedInUser?.name ?? '',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              TextSpan(
+                                text: loggedInUser?.student_id != null ? ' | ${loggedInUser!.student_id}' : '',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 30),
+                    padding: const EdgeInsets.only(top: 30, left: 10),
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.rectangle,
@@ -104,7 +110,6 @@ class _MyPageState extends State<MyPage> {
                       ),
                       child: IconButton(
                         onPressed: () {
-                          // 프로필 수정으로 이동하는 기능 추가
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => EditProfileScreen()),
@@ -120,85 +125,88 @@ class _MyPageState extends State<MyPage> {
               ),
             ),
             SizedBox(height: 20),
-            // 구분선
-            Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 10),
-            // 기능 목록
-            buildMenuItem('나의 모집 내역', Icons.arrow_forward_ios, () {
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 5),
+            buildMenuItem('나의 모집 내역', Icons.post_add, Color(0xff84b9c0), () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => MyPostsPage()),
               );
             }),
-
-            SizedBox(height: 10),
-            Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 10),
-            buildMenuItem('나의 지원 내역', Icons.arrow_forward_ios, () {
+            SizedBox(height: 5),
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 5),
+            buildMenuItem('나의 지원 내역', Icons.assignment_turned_in, Color(0xffe26559), () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => MyApplicationsPage()),
               );
             }),
-            SizedBox(height: 10),
-            // 구분선
-            Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 10),
-            buildMenuItem('스크랩', Icons.arrow_forward_ios, () {
+            SizedBox(height: 5),
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 5),
+            buildMenuItem('스크랩', Icons.bookmark, Color(0xffffe697), () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => MyScrapsPage()),
               );
             }),
-            SizedBox(height: 10),
-            // 구분선
-            Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 10),
-            buildMenuItem('나와 함께한 사람들', Icons.arrow_forward_ios, () {
+            SizedBox(height: 5),
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 5),
+            buildMenuItem('나와 함께한 사람들', Icons.people, Color(0xff2b7799), () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => StudyMembersScreen()),
               );
             }),
-            SizedBox(height: 10),
-            Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 10),
-            buildMenuItem('설정', Icons.arrow_forward_ios, () {
+            SizedBox(height: 5),
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 5),
+            buildMenuItem('설정', Icons.settings, Color(0xffc5d7f2), () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) =>
-                    SettingPage()), // setting.dart로 이동합니다.
+                MaterialPageRoute(builder: (context) => SettingPage()),
               );
             }),
-            SizedBox(height: 10),
-            Divider(height: 1, color: Colors.grey), // 회색 구분선 추가
-            SizedBox(height: 10),
+            SizedBox(height: 5),
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 5),
           ],
         ),
       ),
     );
   }
 
-  Widget buildMenuItem(String title, IconData icon, VoidCallback onTap) {
+  Widget buildMenuItem(String title, IconData icon, Color iconColor, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
+            Container(
+              padding: EdgeInsets.all(6),
+              child: Icon(
+                icon,
+                size: 24,
+                color: iconColor,
+              ),
+            ),
+            SizedBox(width: 10),
             Text(
               title,
               style: TextStyle(
                 fontSize: 20,
-                color: Color(0xff19A7CE),
+                color: Colors.black,
               ),
             ),
-            SizedBox(width: 5), // 텍스트와 아이콘이 겹치지 않게 간격 추가
+            Spacer(),
             Icon(
-              icon,
-              size: 16,
+              Icons.arrow_forward_ios,
+              size: 18,
               color: Color(0xff19A7CE),
-            ), // 화살표 아이콘 추가
+            ),
           ],
         ),
       ),
