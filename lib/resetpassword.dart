@@ -5,16 +5,16 @@ import 'dart:convert';
 import 'common_object.dart';
 import 'login.dart';
 
-class ChangePasswordPage extends StatefulWidget {
+class ResetPasswordPage extends StatefulWidget {
   final String email;
 
-  const ChangePasswordPage({Key? key, required this.email}) : super(key: key);
+  const ResetPasswordPage({Key? key, required this.email}) : super(key: key);
 
   @override
-  _ChangePasswordPageState createState() => _ChangePasswordPageState();
+  _ResetPasswordPageState createState() => _ResetPasswordPageState();
 }
 
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
+class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -26,24 +26,26 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   Future<void> _changePassword() async {
     final String password = _passwordController.text;
 
-    final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/user/${widget.email}'));
-    if (userInfoResponse.statusCode == 200) {
-      final userData = jsonDecode(userInfoResponse.body);
-      setState(() {
-        final UserId = User.fromJson(userData);
-      });
+    try {
+      final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/user/${widget.email}'));
+      if (userInfoResponse.statusCode == 200) {
+        final userData = jsonDecode(userInfoResponse.body);
+        setState(() {
+          loggedInUser = User.fromJson(userData);
+        });
+      } else {
+        throw Exception('Failed to load user data');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('사용자 정보를 가져오는데 실패했습니다: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
-    // 서버에서 사용자 정보 가져오기
-    final userInfoResponse2 = await http.get(Uri.parse('http://localhost:3000/user/${widget.email}'));
-    if (userInfoResponse2.statusCode == 200) {
-      final userData = jsonDecode(userInfoResponse2.body);
-      setState(() {
-        loggedInUser = User.fromJson(userData);
-      });
-    }
-
-    // 사용자 정보를 제공받아야 함
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (loggedInUser == null && userProvider.loggedInUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -57,35 +59,38 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
     final int userId = loggedInUser?.user_id ?? userProvider.loggedInUser!.user_id;
 
+    try {
+      final response = await http.put(
+        Uri.parse('http://localhost:3000/user/$userId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'password': password,
+        }),
+      );
 
-    final response = await http.put(
-      Uri.parse('http://localhost:3000/user/$userId'),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(<String, String>{
-        'password': password,
-      }),
-    );
-
-    if (response.statusCode == 200) {
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('비밀번호가 성공적으로 변경되었습니다.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LogInPage(),
+          ),
+        );
+      } else {
+        throw Exception('Failed to change password');
+      }
+    } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('비밀번호가 성공적으로 변경되었습니다.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LogInPage(),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('비밀번호 변경 실패'),
+          content: Text('비밀번호 변경 실패: $error'),
           backgroundColor: Colors.red,
         ),
       );
