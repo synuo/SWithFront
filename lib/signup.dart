@@ -56,7 +56,7 @@ class _Logo extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            "Welcome to SWith!",
+            "SWith에 오신 것을 환영합니다!",
             textAlign: TextAlign.center,
             style: isSmallScreen
                 ? Theme.of(context).textTheme.headlineSmall
@@ -88,7 +88,6 @@ class __FormContentState extends State<_FormContent> {
   bool emailValid = false;
   bool _codeSent = false;    // 인증코드 전송 여부
   bool _emailExists = false; //이미 존재하는 이메일 db인지 확인 용도
-  //late String sessionId; // 세션 ID를 저장하는 변수
   late String expectedCode;  //인증코드를 저장하는 변수
 
   @override
@@ -117,11 +116,16 @@ class __FormContentState extends State<_FormContent> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Email',
+                labelText: '이메일',
                 hintText: '숙명 메일을 입력해주세요.',
                 prefixIcon: Icon(Icons.email_outlined),
                 border: OutlineInputBorder(),
               ),
+            ),
+            _gap(),
+            Text(
+              '회원 가입을 위해 이메일 입력과 인증을 먼저 진행해주세요. SWith은 숙명 이메일 @sookmyung.ac.kr로만 회원 가입이 가능합니다.  ',
+              style: TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.normal),
             ),
             _gap(),
             SizedBox(
@@ -226,6 +230,7 @@ class __FormContentState extends State<_FormContent> {
                 },
                 child: Text('새로운 인증 코드 받기'),
               ),
+
             ]
           ],
         ),
