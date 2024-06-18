@@ -128,10 +128,10 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Main Home', style: TextStyle(color: Color(0xff19A7CE), fontSize: 20.0),),
+          'SWith', style: TextStyle(color: Colors.black, fontSize: 30.0),),
         elevation: 0.0,
         backgroundColor: Colors.white,
-        centerTitle: true,
+        //centerTitle: true,
         actions: [
           _buildNotificationButton(),
           _buildMenuButton(),
@@ -193,7 +193,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '추천 글',  //조회수가 높은 게시물 5개
+                  ' 조회수 Top 5',  //조회수가 높은 게시물 5개
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -263,9 +263,19 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     );
   }
 
+  Widget _buildSearchButton() {
+    return IconButton(
+      icon: Icon(Icons.search_outlined),
+      onPressed: () {
+        print('Search button clicked');
+        //
+      },
+    );
+  }
+
   Widget _buildNotificationButton() {
     return IconButton(
-      icon: Icon(Icons.notifications),
+      icon: Icon(Icons.notifications_none_outlined),
       onPressed: () {
         print('Notification button clicked');
         Navigator.push(
