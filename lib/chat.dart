@@ -95,7 +95,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('채팅'),
+        title: Text('채팅', style: TextStyle(color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold),),
       ),
       body: chatRooms.isEmpty
           ? Center(child: Text('현재 가입한 스터디가 없습니다.'))
