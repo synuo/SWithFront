@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:practice/login.dart';
 import 'common_widgets.dart';
+import 'common_object.dart';
 
 class UserInfoPage extends StatefulWidget {
   final String email; //앞 회원가입 페이지로부터 이메일 받아옴 (이 페이지에서 다른 정보와 함께 저장)
@@ -29,6 +30,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
   String _selectedMajor1 = '';
   String _selectedMajor2 = '';
   String _selectedMajor3 = '';
+  final _major1Controller = TextEditingController(); // 전공1 입력 컨트롤러
+  final _major2Controller = TextEditingController(); // 전공2 입력 컨트롤러
+  final _major3Controller = TextEditingController(); // 전공3 입력 컨트롤러
 
   IconData _pickedProfileIcon = Icons.person; // 프로필 아이콘 저장할 변수
 
@@ -87,13 +91,18 @@ class _UserInfoPageState extends State<UserInfoPage> {
           title: Text(
             '회원 정보',
             style: TextStyle(
-                color: Color(0xff19A7CE),
+                color: Colors.black,
                 fontSize: 20.0,
                 fontWeight: FontWeight.bold),
           ),
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(4.0), // 선의 두께를 설정합니다.
+            child: Container(
+              color: Colors.black12, // 선의 색상을 설정합니다.
+              height: 1.0, // 선의 높이를 설정합니다.
+            ),
+          ),
           elevation: 0.0,
-          backgroundColor: Colors.white30,
-          //centerTitle: true,
         ),
         body: Center(
           child: Form(
@@ -125,7 +134,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                           _pickedProfileIcon = newIcon!;
                         });
                       },
-                      iconSize: 50,
+                      iconSize: 30,
                     ),
                   ),
                   // 이름 입력 폼 필드
@@ -258,9 +267,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   // 전공 선택 필드
                   Text('전공 1'),
                   AutocompleteTextField(
+                    controller: _major1Controller,
                     items: _majors,
-                    decoration: InputDecoration(
-                      //labelText: '전공 1',
+                    decoration: const InputDecoration(
                       hintText : '본전공 이름을 입력해주세요.',
                       hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
@@ -274,6 +283,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     },
                     onItemSelect: (selected) {
                       setState(() {
+                        _major1Controller.text = selected;
                         _selectedMajor1 = selected;
                       });
                       print('전공1id : ${findMajorId(_selectedMajor1)}');
@@ -282,15 +292,16 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   _gap(),
                   Text('전공 2'),
                   AutocompleteTextField(
+                    controller: _major2Controller,
                     items: _majors,
-                    decoration: InputDecoration(
-                      //labelText: '전공 2 (선택)',
+                    decoration: const InputDecoration(
                       hintText: '전공 2 이름을 입력해주세요.',
                       hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
                     ),
                     onItemSelect: (selected) {
                       setState(() {
+                        _major2Controller.text = selected;
                         _selectedMajor2 = selected;
                       });
                     },
@@ -298,15 +309,16 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   _gap(),
                   Text('전공 3'),
                   AutocompleteTextField(
+                    controller: _major3Controller,
                     items: _majors,
-                    decoration: InputDecoration(
-                      //labelText: '전공 3 (선택)',
+                    decoration: const InputDecoration(
                       hintText: '전공 3 이름을 입력해주세요.',
                       hintStyle: TextStyle(fontSize: 13.0),
                       border: OutlineInputBorder(),
                     ),
                     onItemSelect: (selected) {
                       setState(() {
+                        _major3Controller.text = selected;
                         _selectedMajor3 = selected;
                       });
                     },
@@ -372,6 +384,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
     _nicknameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _studentnumController.dispose(); // 추가된 부분
+    _profileImageController.dispose(); // 추가된 부분
     super.dispose();
   }
 
@@ -477,15 +491,18 @@ class _UserInfoPageState extends State<UserInfoPage> {
 class AutocompleteTextField extends StatefulWidget {
   final List<String> items;
   final Function(String) onItemSelect;
+  final TextEditingController controller;
   final InputDecoration? decoration;
   final String? Function(String?)? validator;
-  const AutocompleteTextField(
-      {Key? key,
-        required this.items,
-        required this.onItemSelect,
-        this.decoration,
-        this.validator})
-      : super(key: key);
+
+  const AutocompleteTextField({
+    Key? key,
+    required this.items,
+    required this.onItemSelect,
+    required this.controller,
+    this.decoration,
+    this.validator,
+  }) : super(key: key);
 
   @override
   State<AutocompleteTextField> createState() => _AutocompleteTextFieldState();
@@ -493,10 +510,9 @@ class AutocompleteTextField extends StatefulWidget {
 
 class _AutocompleteTextFieldState extends State<AutocompleteTextField> {
   final FocusNode _focusNode = FocusNode();
-  OverlayEntry? _overlayEntry;
+  late OverlayEntry _overlayEntry;
   final LayerLink _layerLink = LayerLink();
   late List<String> _filteredItems;
-
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -505,22 +521,12 @@ class _AutocompleteTextFieldState extends State<AutocompleteTextField> {
     _filteredItems = widget.items;
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
-        _showOverlay();
+        _overlayEntry = _createOverlayEntry();
+        Overlay.of(context)?.insert(_overlayEntry);
       } else {
-        _removeOverlay();
+        _overlayEntry.remove();
       }
     });
-  }
-
-  void _showOverlay() {
-    _removeOverlay();
-    _overlayEntry = _createOverlayEntry();
-    Overlay.of(context)?.insert(_overlayEntry!);
-  }
-
-  void _removeOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
   }
 
   @override
@@ -528,7 +534,7 @@ class _AutocompleteTextFieldState extends State<AutocompleteTextField> {
     return CompositedTransformTarget(
       link: _layerLink,
       child: TextFormField(
-        controller: _controller,
+        controller: widget.controller,
         focusNode: _focusNode,
         onChanged: _onFieldChange,
         decoration: widget.decoration,
@@ -543,12 +549,11 @@ class _AutocompleteTextFieldState extends State<AutocompleteTextField> {
         _filteredItems = widget.items;
       } else {
         _filteredItems = widget.items
-            .where((element) =>
-            element.toLowerCase().contains(val.toLowerCase()))
+            .where((element) => element.toLowerCase().contains(val.toLowerCase()))
             .toList();
       }
+      _overlayEntry.markNeedsBuild();
     });
-    _showOverlay();
   }
 
   OverlayEntry _createOverlayEntry() {
@@ -556,43 +561,42 @@ class _AutocompleteTextFieldState extends State<AutocompleteTextField> {
     var size = renderBox.size;
 
     return OverlayEntry(
-        builder: (context) => Positioned(
-          width: size.width,
-          child: CompositedTransformFollower(
-            link: _layerLink,
-            showWhenUnlinked: false,
-            offset: Offset(0.0, size.height + 5.0),
-            child: Material(
-              elevation: 4.0,
-              child: Container(
-                constraints: const BoxConstraints(maxHeight: 200),
-                child: ListView.builder(
-                  itemCount: _filteredItems.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final item = _filteredItems[index];
-                    return ListTile(
-                      title: Text(item),
-                      onTap: () {
-                        _controller.text = item; // Set the selected item in the text field
-                        widget.onItemSelect(item);
-                        _focusNode.unfocus();
-                        _removeOverlay();
-                      },
-                    );
-                  },
-                ),
+      builder: (context) => Positioned(
+        width: size.width,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: Offset(0.0, size.height + 5.0),
+          child: Material(
+            elevation: 4.0,
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                itemCount: _filteredItems.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final item = _filteredItems[index];
+                  return ListTile(
+                    title: Text(item),
+                    onTap: () {
+                      widget.controller.text = item; // Set the selected item in the text field
+                      _focusNode.unfocus();
+                      widget.onItemSelect(item);
+                      _overlayEntry.remove();
+                    },
+                  );
+                },
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _focusNode.dispose();
-    _removeOverlay();
     super.dispose();
   }
 }
-
