@@ -112,12 +112,9 @@ class _BoardScreenState extends State<BoardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Board',
-          style: TextStyle(color: Colors.white, fontSize: 20.0),
+          '게시판',
+          style: TextStyle(color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold),
         ),
-        elevation: 0.0,
-        backgroundColor: Color(0xff19A7CE),
-        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(Icons.filter_list), // 필터 버튼 아이콘

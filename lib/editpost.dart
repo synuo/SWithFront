@@ -47,30 +47,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Post'),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                if (_titleController.text.isEmpty ||
-                    _selectedCategory == null ||
-                    _studyNameController.text.isEmpty ||
-                    _contentController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('모든 항목을 채워주세요.'),
-                    ),
-                  );
-                } else {
-                  editPost();
-                }
-              },
-              child: Text('저장'),
-            ),
+        title: Text(
+          '게시글 수정',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
-        ],
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -78,63 +61,194 @@ class _EditPostScreenState extends State<EditPostScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  labelText: 'Title',
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  '카테고리',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-              SizedBox(height: 12),
-              Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8.0)),
-                  child: _dropDown(underline: Container())),
-              SizedBox(height: 12),
-              TextField(
-                controller: _studyNameController,
-                decoration: InputDecoration(
-                  labelText: 'Study Name',
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  '스터디, 공모전, 기타 중 하나의 카테고리를 선택해주세요.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _contentController,
-                maxLines: null,
-                decoration: InputDecoration(
-                  labelText: 'Content',
-                ),
-              ),
-              SizedBox(height: 24),
               Row(
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _tagController,
-                      decoration: InputDecoration(
-                        labelText: '태그 추가',
-                      ),
-                      onFieldSubmitted: (value) {
-                        _addTag();
-                      },
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: _addTag,
-                  ),
+                  _buildCategoryButton('스터디'),
+                  SizedBox(width: 10),
+                  _buildCategoryButton('공모전'),
+                  SizedBox(width: 10),
+                  _buildCategoryButton('기타'),
                 ],
+              ),
+              SizedBox(height: 25),
+              _buildTextField(
+                title: '게시글 제목',
+                hintText: '',
+                controller: _titleController,
+                description: '스터디에 대한 한줄 소개를 적어주세요.',
+              ),
+              SizedBox(height: 25),
+              _buildTextField(
+                title: '스터디명',
+                hintText: '',
+                controller: _studyNameController,
+                description: '채팅방 개설시 사용할 이름을 정해주세요.',
+              ),
+              SizedBox(height: 25),
+              _buildTextField(
+                title: '본문',
+                hintText: '',
+                controller: _contentController,
+                isMultiline: true,
+                description: '스터디 계획, 일정 등 스터디의 전반적인 내용에 대해서 기재해주세요.',
+              ),
+              SizedBox(height: 25),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  '해시태그',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  '태그를 입력한 뒤 오른쪽의 + 버튼을 눌러주세요.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _tagController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: '',
+                        ),
+                        onFieldSubmitted: (value) {
+                          _addTag();
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: _addTag,
+                    ),
+                  ],
+                ),
               ),
               SizedBox(height: 10),
               Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
+                spacing: 8.0, //가로 간격
+                runSpacing: 8.0, //세로 간격
                 children: _tags.map((tag) => _buildTagItem(tag)).toList(),
               ),
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  // 폼 유효성 검사
+                  if (_titleController.text.isEmpty ||
+                      _selectedCategory == null ||
+                      _studyNameController.text.isEmpty ||
+                      _contentController.text.isEmpty) {
+                    // 필수 필드가 비어있는 경우
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('모든 항목을 채워주세요.'),
+                      ),
+                    );
+                  } else {
+                    editPost();
+                  }
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Color(0xff19A7CE)), // 버튼 배경색
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(10.0), // 버튼 모서리 둥글기 설정
+                    ),
+                  ),
+                ),
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.75,
+                  padding: EdgeInsets.symmetric(vertical: 15.0), // 버튼 내부 패딩
+                  child: Center(
+                    child: Text(
+                      '저장',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryButton(String category) {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          _selectedCategory = category;
+        });
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor:
+            _selectedCategory == category ? Color(0xff19A7CE) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5.0),
+        ),
+        minimumSize: Size(20, 40),
+      ),
+      child: Text(
+        category,
+        style: TextStyle(
+            color:
+                _selectedCategory == category ? Colors.white : Colors.blueGrey,
+            fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -165,6 +279,60 @@ class _EditPostScreenState extends State<EditPostScreen> {
           _tags.remove(tag);
         });
       },
+    );
+  }
+
+  Widget _buildTextField({
+    required String title,
+    required String hintText,
+    required TextEditingController controller,
+    bool isMultiline = false,
+    String? description,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4.0),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+        if (description != null) // Render description if provided
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              description,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(
+              color: Colors.grey,
+              width: 1.0,
+            ),
+          ),
+          child: TextFormField(
+            controller: controller,
+            maxLines: isMultiline ? null : 1,
+            minLines: isMultiline ? 5 : 1,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: hintText,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -218,30 +386,4 @@ class _EditPostScreenState extends State<EditPostScreen> {
       throw Exception('Failed to edit post tags');
     }
   }
-
-  Widget _dropDown({
-    Widget? underline,
-    Widget? icon,
-    TextStyle? style,
-    TextStyle? hintStyle,
-    Color? iconEnabledColor,
-  }) =>
-      DropdownButton<String>(
-        value: _selectedCategory,
-        underline: underline,
-        icon: icon,
-        dropdownColor: Colors.white,
-        style: style,
-        iconEnabledColor: iconEnabledColor,
-        onChanged: (String? newValue) {
-          setState(() {
-            _selectedCategory = newValue;
-          });
-        },
-        hint: Text("카테고리 선택", style: hintStyle),
-        items: ["스터디", "공모전", "기타"]
-            .map((category) =>
-            DropdownMenuItem<String>(value: category, child: Text(category)))
-            .toList(),
-      );
 }

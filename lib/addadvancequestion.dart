@@ -25,7 +25,6 @@ class _AddAQScreenState extends State<AddAQScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('사전 질문 추가'),
-        centerTitle: true,
         automaticallyImplyLeading: false, // AppBar의 뒤로 가기 버튼 비활성화
         actions: [
           Padding(
