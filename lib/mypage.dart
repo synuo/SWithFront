@@ -189,7 +189,7 @@ class _MyPageState extends State<MyPage> {
               padding: EdgeInsets.all(6),
               child: Icon(
                 icon,
-                size: 24,
+                size: 28,
                 color: iconColor,
               ),
             ),

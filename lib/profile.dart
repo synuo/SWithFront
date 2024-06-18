@@ -263,7 +263,6 @@ class ProfileBody extends StatelessWidget {
                               ),
                             ),
                           ],
-
                           if (major3 != null && major3!.isNotEmpty) ...[
                             Text(
                               ' | $major3',
@@ -291,7 +290,7 @@ class ProfileBody extends StatelessWidget {
           ),
           SizedBox(height: 30),
           Divider(height: 1, color: Color(0xff19A7CE)),
-          SizedBox(height: 5),
+          SizedBox(height: 10),
           Text(
             '리뷰',
             style: TextStyle(
@@ -299,7 +298,7 @@ class ProfileBody extends StatelessWidget {
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 5),
+          SizedBox(height: 10),
           Divider(height: 1, color: Color(0xff19A7CE)),
           SizedBox(height: 20),
           if (reviews != null && reviews!.isNotEmpty)
@@ -339,8 +338,6 @@ class ProfileBody extends StatelessWidget {
               ),
             ),
           SizedBox(height: 20),
-          // 리뷰 표시
-          // 리뷰 표시
           if (reviews != null && reviews!.isNotEmpty)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,64 +353,76 @@ class ProfileBody extends StatelessWidget {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ListTile(
-                          leading: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey, // 임시로 회색으로 지정
-                            ),
-                            child: Icon(
-                              profileIconCodePoint != null
-                                  ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons')
-                                  : Icons.person,
-                              size: 40,
-                              color: Colors.white,
-                            ),
-                          ),
-                          title: Text(
-                            review['reviewer_nickname']?.toString() ?? '',
-                            style: TextStyle(
-                              color: Color(0xff19A7CE),
-                            ),
-                          ),
-                          subtitle: Column(
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(height: 10),
-                              Row(
-                                children: List.generate(5, (i) {
-                                  return Icon(
-                                    i < review['rating'] ? Icons.star : Icons.star_border,
-                                    color: Colors.amber,
-                                    size: 16,
-                                  );
-                                }),
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey, // 임시로 회색으로 지정
+                                ),
+                                child: Icon(
+                                  profileIconCodePoint != null
+                                      ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons')
+                                      : Icons.person,
+                                  size: 40,
+                                  color: Colors.white,
+                                ),
                               ),
-                              SizedBox(height: 5),
-                              Text(review['content'] ?? ''),
-                              Align(
-                                alignment: Alignment.centerRight, // Align text to the right
-                                child: Text(
-                                  review['update_at']?.toString().substring(0, 10) ?? '',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      review['reviewer_nickname']?.toString() ?? '',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Color(0xff19A7CE),
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    Row(
+                                      children: List.generate(5, (i) {
+                                        return Icon(
+                                          i < review['rating'] ? Icons.star : Icons.star_border,
+                                          color: Colors.amber,
+                                          size: 18,
+                                        );
+                                      }),
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(review['content'] ?? '',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        review['update_at']?.toString().substring(0, 10) ?? '',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
                       ],
                     );
                   },
                 ),
               ],
             ),
-
         ],
       ),
     );
