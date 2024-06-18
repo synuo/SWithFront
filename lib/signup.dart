@@ -132,6 +132,7 @@ class __FormContentState extends State<_FormContent> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xff19A7CE),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4)),
                 ),
@@ -139,7 +140,7 @@ class __FormContentState extends State<_FormContent> {
                   padding: EdgeInsets.all(10.0),
                   child: Text(
                     '이메일 확인하기',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
                 onPressed: () async {
@@ -175,13 +176,14 @@ class __FormContentState extends State<_FormContent> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xff19A7CE),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                   child: const Padding(
                     padding: EdgeInsets.all(10.0),
-                    child: Text('확인', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                    child: Text('확인', style: TextStyle( color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),),
                   ),
                   onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
