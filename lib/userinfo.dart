@@ -84,6 +84,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   @override
   Widget build(BuildContext context) {
     final bool isSmallScreen = MediaQuery.of(context).size.width < 600;
+    bool _isPasswordVisible = false;
     return Container(
       constraints: const BoxConstraints(maxWidth: 300),
       child: Scaffold(
@@ -208,15 +209,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     },
                   ),
                   _gap(),
+                  Text('비밀번호'),
                   // 비밀번호 입력 폼 필드
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: '비밀번호',
-                      hintText: '비밀번호를 입력해주세요.(영문, 숫자 포함 8자 이상)',
-                      border: OutlineInputBorder(),
-                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '비밀번호를 입력해주세요.';
@@ -227,6 +223,22 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       }
                       return null;
                     },
+                    obscureText: !_isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: '비밀번호',
+                      hintText: '비밀번호를 입력해주세요.(영문, 숫자 포함 8자 이상)',
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(_isPasswordVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                    ),
+                    ),
                   ),
                   _gap(),
                   // 비밀번호 재확인 입력 폼 필드
