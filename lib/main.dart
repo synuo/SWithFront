@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {  //앱의 메인페이지 MyApp
             background: Colors.white54,
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity, //플랫폼 간 레이아웃 일관성 유지
-        fontFamily: 'SF Pro Display', // San Francisco 폰트 사용
+        fontFamily: 'Teko', // San Francisco 폰트 사용
       ),
       home: SplashScreen(),  //시작 : 스플래시
     );
