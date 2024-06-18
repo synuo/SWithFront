@@ -27,14 +27,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     final String password = _passwordController.text;
 
     try {
-      final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/user/${widget.email}'));
+      final userInfoResponse = await http.get(Uri.parse('http://localhost:3000/user/:${widget.email}'));
       if (userInfoResponse.statusCode == 200) {
         final userData = jsonDecode(userInfoResponse.body);
         setState(() {
           loggedInUser = User.fromJson(userData);
         });
       } else {
-        throw Exception('Failed to load user data');
+        throw Exception('Failed to load user data of ${widget.email}');
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -61,7 +61,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
     try {
       final response = await http.put(
-        Uri.parse('http://localhost:3000/user/$userId'),
+        Uri.parse('http://localhost:3000/reset-password/$userId'),
         headers: <String, String>{
           'Content-Type': 'application/json',
           'Accept': 'application/json',
