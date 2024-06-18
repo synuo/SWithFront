@@ -6,6 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'common_object.dart';
 import 'mypage.dart';
 import 'post_detail.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;  //주기적인 알림
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationPage extends StatefulWidget {
   @override
@@ -20,11 +23,14 @@ class _NotificationPageState extends State<NotificationPage> {
   bool supportResultNotification = true; // 지원 결과 알림 설정
   bool reviewNotification = true; // 리뷰 알림 설정
 
+  final notificationsPlugin = FlutterLocalNotificationsPlugin();
+
   @override
   void initState() {
     super.initState();
     _loadSettings(); // 알림 설정 로드
     _fetchNotifications(); // 알림 목록 로드
+    _initializeLocalNotifications();
   }
 
   // SharedPreferences에서 알림 설정 로드
@@ -127,6 +133,55 @@ class _NotificationPageState extends State<NotificationPage> {
     }
   }
 
+  Future<void> _initializeLocalNotifications() async {
+    var androidSetting = AndroidInitializationSettings('app_icon');
+    var iosSetting = IOSInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    var initializationSettings = InitializationSettings(
+      android: androidSetting,
+      iOS: iosSetting,
+    );
+
+    await notificationsPlugin.initialize(
+      initializationSettings,
+      onSelectNotification: (payload) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Text('새로운 페이지'),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showNotification(int id, String title, String body) async {
+    var androidDetails = AndroidNotificationDetails(
+      'channelId',
+      'channelName',
+      priority: Priority.high,
+      importance: Importance.max,
+      color: Color.fromARGB(255, 255, 0, 0),
+    );
+
+    var iosDetails = IOSNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    await notificationsPlugin.show(
+      id,
+      title,
+      body,
+      NotificationDetails(android: androidDetails, iOS: iosDetails),
+      payload: '부가정보',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,18 +196,20 @@ class _NotificationPageState extends State<NotificationPage> {
           final notification = notifications[index];
           final userId = notification['user_id'];
           final notiId = notification['noti_id'];
+          final notiType = notification['type'];
+          final message = _generateNotificationMessage(notiType, notification);
 
           // 알림 설정에 따른 필터링
           if (!allowNotifications) {
             return Container();
           }
-          if (notification['type'] == 'qna' && !qnaNotification) {
+          if (notiType == 'qna' && !qnaNotification) {
             return Container();
           }
-          if (notification['type'] == 'support_result' && !supportResultNotification) {
+          if (notiType == 'support_result' && !supportResultNotification) {
             return Container();
           }
-          if (notification['type'] == 'review' && !reviewNotification) {
+          if (notiType == 'review' && !reviewNotification) {
             return Container();
           }
 
@@ -173,6 +230,21 @@ class _NotificationPageState extends State<NotificationPage> {
         },
       ),
     );
+  }
+
+  String _generateNotificationMessage(String type, Map<String, dynamic> notification) {
+    switch (type) {
+      case 'application':
+        return '${notification['username']}님이 ${notification['post_title']} 모집글에 지원했습니다.';
+      case 'acceptance':
+        return '축하합니다 ${notification['username']}님! ${notification['study_title']} 스터디원으로 합격하셨습니다.';
+      case 'review':
+        return '${notification['username']}님에게 새로운 리뷰가 달렸습니다.';
+      case 'qna':
+        return '${notification['username']}님, 새로운 qna 알림이 있습니다.';
+      default:
+        return '새로운 알림이 도착했습니다.';
+    }
   }
 
   // 알림 클릭 시 처리하는 메서드
