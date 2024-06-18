@@ -31,6 +31,8 @@ class _PostDetailScreenState extends State<PostDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabSelection);
+
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       loggedInUser =
           Provider.of<UserProvider>(context, listen: false).loggedInUser;
@@ -39,6 +41,12 @@ class _PostDetailScreenState extends State<PostDetailScreen>
       }
     });
     fetchQuestions();
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      setState(() {});
+    }
   }
 
   Future<Post> fetchPostDetails(int postId) async {
@@ -362,6 +370,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
           final post = snapshot.data!;
           bool isWriter =
               loggedInUser != null && post.writer_id == loggedInUser!.user_id;
+          print(post.writer_image);
 
           return Scaffold(
             appBar: AppBar(
@@ -413,43 +422,6 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                       ),
                     ],
                   ),
-                if (!isWriter)
-                  IconButton(
-                    icon: Icon(
-                      isScrapped ? Icons.bookmark : Icons.bookmark_border,
-                      color: isScrapped ? Colors.orange : Colors.white,
-                    ),
-                    onPressed: () {
-                      if (loggedInUser != null) {
-                        setState(() {
-                          if (isScrapped) {
-                            deleteScrap();
-                          } else {
-                            addScrap();
-                          }
-                          isScrapped = !isScrapped;
-                        });
-                      } else {
-                        print("User is not logged in");
-                      }
-                    },
-                  ),
-                if (!isWriter)
-                  TextButton(
-                    onPressed: () {
-                      if (loggedInUser != null) {
-                        applyForPost();
-                      } else {
-                        print("User is not logged in");
-                      }
-                    },
-                    child: Text(
-                      '지원하기',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
               ],
             ),
             body: Column(
@@ -484,9 +456,8 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                   ),
                 ),
                 Divider(
-                  // 가로로 된 구분선
-                  color: Colors.grey, // 구분선 색상 설정
-                  height: 0, // 구분선의 높이 설정
+                  color: Colors.grey,
+                  height: 0,
                 ),
                 const SizedBox(height: 8),
                 InkWell(
@@ -510,14 +481,25 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey, // 임시로 회색으로 지정
+                      if (post.writer_image != null)
+                        Image.network(
+                          Uri.encodeFull(post.writer_image!),
+                          width: 100,
+                          height: 100,
+                          errorBuilder: (BuildContext context, Object exception,
+                              StackTrace? stackTrace) {
+                            print('Error loading image: $exception');
+                            return Icon(
+                              Icons.account_circle,
+                              size: 100,
+                            );
+                          },
+                        )
+                      else
+                        Icon(
+                          Icons.account_circle,
+                          size: 100,
                         ),
-                      ),
                       SizedBox(width: 20),
                       Expanded(
                         child: Column(
@@ -535,7 +517,6 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                             SizedBox(height: 10),
                             Text(
                               "${post.writer_student_id}학번" ?? '학번 로드 실패',
-                              // 학번 표시
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.black,
@@ -573,9 +554,8 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                 ),
                 const SizedBox(height: 8),
                 Divider(
-                  // 가로로 된 구분선
-                  color: Colors.grey, // 구분선 색상 설정
-                  height: 0, // 구분선의 높이 설정
+                  color: Colors.grey,
+                  height: 0,
                 ),
                 TabBar(
                   controller: _tabController,
@@ -690,34 +670,6 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                                 },
                               ),
                             ),
-                            if (!isWriter)
-                              Divider(
-                                // 질문 추가 란과 Q&A Card 사이의 구분선
-                                color: Colors.grey,
-                                height: 1,
-                              ),
-                            if (!isWriter)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextField(
-                                        onChanged: (text) {
-                                          newQuestion = text;
-                                        },
-                                        decoration: InputDecoration(
-                                          labelText: '궁금한 점을 스터디장에게 물어보세요!',
-                                        ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: addQuestion,
-                                      icon: Icon(Icons.send),
-                                    ),
-                                  ],
-                                ),
-                              ),
                           ],
                         ),
                       ),
@@ -726,6 +678,99 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                 ),
               ],
             ),
+            bottomNavigationBar: _tabController.index == 0 && !isWriter
+                ? BottomAppBar(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            isScrapped ? Icons.bookmark : Icons.bookmark_border,
+                            color: isScrapped
+                                ? Color(0xff19A7CE)
+                                : Color(0xff19A7CE),
+                          ),
+                          iconSize: 32, // 아이콘 크기 조정
+                          onPressed: () {
+                            if (loggedInUser != null) {
+                              setState(() {
+                                if (isScrapped) {
+                                  deleteScrap();
+                                } else {
+                                  addScrap();
+                                }
+                                isScrapped = !isScrapped;
+                              });
+                            } else {
+                              print("User is not logged in");
+                            }
+                          },
+                        ),
+                        SizedBox(
+                            width: 10), // IconButton과 ElevatedButton 사이 간격 조정
+
+                        ElevatedButton(
+                          onPressed: () {
+                            if (loggedInUser != null) {
+                              applyForPost();
+                            } else {
+                              print("User is not logged in");
+                            }
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                Color(0xff19A7CE)), // 버튼 배경색
+                            shape: MaterialStateProperty.all<
+                                RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    10.0), // 버튼 모서리 둥글기 설정
+                              ),
+                            ),
+                          ),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 15.0), // 버튼 내부 패딩
+                            child: Center(
+                              child: Text(
+                                '지원하기',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : _tabController.index == 1 && !isWriter
+                    ? BottomAppBar(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  onChanged: (text) {
+                                    newQuestion = text;
+                                  },
+                                  decoration: InputDecoration(
+                                    labelText: '궁금한 점을 스터디장에게 물어보세요!',
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: addQuestion,
+                                icon: Icon(Icons.send),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : null,
           );
         }
       },
