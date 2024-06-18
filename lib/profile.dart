@@ -297,7 +297,7 @@ class ProfileBody extends StatelessWidget {
             '리뷰',
             style: TextStyle(
               fontSize: 24,
-              color: Color(0xff19A7CE),
+              color: Colors.black,
             ),
           ),
           SizedBox(height: 5),
