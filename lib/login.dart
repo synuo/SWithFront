@@ -255,24 +255,11 @@ class __FormContentState extends State<_FormContent> {
                   )),
             ),
             _gap(),
-            CheckboxListTile(   //자동로그인
-              value: _rememberMe,
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _rememberMe = value;
-                });
-              },
-              title: const Text('자동로그인하기'),
-              controlAffinity: ListTileControlAffinity.leading,
-              dense: true,
-              contentPadding: const EdgeInsets.all(0),
-            ),
-            _gap(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xff19A7CE),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4)),
                 ),
@@ -280,7 +267,7 @@ class __FormContentState extends State<_FormContent> {
                   padding: EdgeInsets.all(10.0),
                   child: Text(
                     '로그인',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(color : Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
                 onPressed: () async {
@@ -294,6 +281,25 @@ class __FormContentState extends State<_FormContent> {
               ),
             ),
             _gap(),
+            CheckboxListTile(   //자동로그인
+              value: _rememberMe,
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() {
+                  _rememberMe = value;
+                });
+              },
+              title: const Text('로그인 상태 유지'),
+              controlAffinity: ListTileControlAffinity.leading,
+              dense: true,
+              contentPadding: const EdgeInsets.all(0),
+            ),
+            _gap(),
+            Text(
+                '-----------------------------  또는  -----------------------------'
+            ),
+
+            _gap(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -305,7 +311,13 @@ class __FormContentState extends State<_FormContent> {
                     );
                     print('화면전환 : login -> findpw');
                   },
-                  child: Text('비밀번호 찾기', style: TextStyle(decoration: TextDecoration.underline),),
+                  child: Text(
+                    '비밀번호 찾기',
+                    style: TextStyle(
+                      //fontWeight: FontWeight.bold,
+                      //color: Colors.black,
+                    ),
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
@@ -315,7 +327,16 @@ class __FormContentState extends State<_FormContent> {
                     );
                     print('화면전환 : login -> signup');
                   },
-                  child: Text('회원가입', style: TextStyle(decoration: TextDecoration.underline),),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 패딩 추가
+                    child: Text(
+                      '회원 가입',
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        //color: Colors.black,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
