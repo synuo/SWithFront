@@ -25,8 +25,15 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(  // Scaffold 위젯 추가
       appBar: AppBar(
-        title: Text('Forgot your password?'),
+        title: Text('비밀번호 찾기'),
         centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(4.0), // 선의 두께를 설정합니다.
+          child: Container(
+            color: Colors.black12, // 선의 색상을 설정합니다.
+            height: 1.0, // 선의 높이를 설정합니다.
+          ),
+        ),
       ),
       body: Center(
         child: Container(
@@ -38,6 +45,11 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Text(
+                  '비밀번호 찾기를 위해 이메일 인증을 진행해주세요.',
+                  style: TextStyle(fontSize: 12.0, color: Colors.black, fontWeight: FontWeight.normal),
+                ),
+                _gap(),
                 TextFormField(
                   controller: _emailController,
                   validator: (value) {
@@ -54,7 +66,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
                     return null;
                   },
                   decoration: const InputDecoration(
-                    labelText: 'Email',
+                    labelText: '이메일',
                     hintText: '숙명 메일을 입력해주세요.',
                     prefixIcon: Icon(Icons.email_outlined),
                     border: OutlineInputBorder(),
@@ -91,13 +103,13 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
                 _gap(),
                 if (_codeSent) ...[
                   Text(
-                    '인증 코드 6자리가 메일로 전송되었습니다.',
+                    '인증 코드 6자리가 메일로 전송되었습니다.\n',
                     style: TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.normal),
                   ),
                   TextFormField(
                     controller: _verificationCodeController,
                     decoration: InputDecoration(
-                      labelText: 'Verification Code',
+                      labelText: '인증 코드',
                       hintText: '인증코드 6자리를 입력해주세요.',
                       prefixIcon: const Icon(Icons.verified_user_outlined),
                       border: const OutlineInputBorder(),
