@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'changepw.dart';
+import 'resetpassword.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
 
@@ -205,10 +205,11 @@ class _SettingPageState extends State<SettingPage> {
               // 비밀번호 변경 페이지로 이동
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                MaterialPageRoute(builder: (context) => ChangePasswordPage(email: loggedInUser?.email ?? '')), // Pass the email parameter here
               );
             },
           ),
+
         ],
       ),
     );

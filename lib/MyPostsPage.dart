@@ -46,7 +46,13 @@ class _MyPostsPageState extends State<MyPostsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 모집 내역'),
+        title: Text(
+          '나의 모집 내역',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -60,7 +66,6 @@ class _MyPostsPageState extends State<MyPostsPage> {
                     text: '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''}',
                     style: TextStyle(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
                       color: Color(0xff19A7CE),
                     ),
                   ),
@@ -68,7 +73,6 @@ class _MyPostsPageState extends State<MyPostsPage> {
                     text: ' 님이 모집한',
                     style: TextStyle(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
@@ -101,7 +105,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                                   userPosts[index].title,
                                   style: TextStyle(
                                     fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff19A7CE)
                                   ),
                                 ),
                                 Text(
@@ -143,15 +147,15 @@ class _MyPostsPageState extends State<MyPostsPage> {
   }
 
   Widget _getCategoryIcon(String category) {
-    const double iconSize = 50.0; // Define the size of the icons
+    const double iconSize = 40.0; // Define the size of the icons
 
     switch (category) {
       case '스터디':
-        return Icon(Icons.book, color: Colors.blue, size: iconSize);
+        return Icon(Icons.book_outlined, color: Colors.blue, size: iconSize);
       case '공모전':
-        return Icon(Icons.emoji_events, color: Colors.orange, size: iconSize);
+        return Icon(Icons.emoji_events_outlined, color: Colors.orange, size: iconSize);
       default:
-        return Icon(Icons.category, color: Colors.grey, size: iconSize);
+        return Icon(Icons.category_outlined, color: Colors.grey, size: iconSize);
     }
   }
 }
