@@ -145,12 +145,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Members',
+                '참여자',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Divider(),
+              // Map members into ListTiles
               ...members.map((member) {
                 bool isMe = member['member_id'] == loggedInUser?.user_id;
+                //bool isHost = loggedInUser?.user_id == isOwner;
+
                 return ListTile(
                   leading: CircleAvatar(
                     child: Icon(Icons.person, size: 32),
@@ -158,16 +161,25 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   ),
                   title: Text(member['nickname']),
                   trailing: isOwner && !isMe
-                      ? IconButton(
-                    icon: Icon(Icons.more_vert),
-                    onPressed: () {
-                      _showKickMemberOptions(member['member_id'], member['nickname']);
+                      ? PopupMenuButton<String>(
+                    itemBuilder: (context) {
+                      return [
+                        PopupMenuItem(
+                          value: 'kick',
+                          child: Text('내보내기'),
+                        ),
+                      ];
+                    },
+                    onSelected: (value) {
+                      if (value == 'kick') {
+                        _showKickMemberConfirmation(member['member_id'], member['nickname']);
+                      }
                     },
                   )
                       : isMe
                       ? CircleAvatar(
                     child: Text('나'),
-                    radius: 16,
+                    radius: 12,
                   )
                       : null,
                   onTap: () {
@@ -190,11 +202,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 );
               }).toList(),
               SizedBox(height: 16.0),
+              // Button to leave the room
               ElevatedButton(
                 onPressed: () => _showLeaveRoomDialog(),
                 child: Text('나가기'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red, // 버튼 색상
+                  backgroundColor: Color(0xff19A7CE),
+                  foregroundColor: Colors.white,
+                  // 버튼 색상
                 ),
               ),
             ],
@@ -203,6 +218,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
+
+
 
   Future<bool> _checkIfOwner() async {
     // 방장 여부를 백엔드에서 확인하는 로직을 구현합니다.
@@ -244,7 +261,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('사용자 내보내기'),
+          backgroundColor: Colors.white, // 배경 색상을 흰색으로 설정
+          //title: Text('사용자 내보내기'),
           content: Text('$nickname 님을 내보내시겠습니까?'),
           actions: [
             TextButton(
@@ -266,6 +284,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
     );
   }
+
 
   Future<void> _kickMember(int memberId) async {
     final response = await http.post(
@@ -416,41 +435,43 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           Column(
                             crossAxisAlignment: isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: isMyMessage ? Colors.blue : Colors.grey[300],
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: isMyMessage ? Radius.circular(8.0) : Radius.zero,
-                                    bottomLeft: Radius.circular(8.0),
-                                    topRight: Radius.circular(8.0),
-                                    bottomRight: isMyMessage ? Radius.zero : Radius.circular(8.0),
-                                  ),
-                                ),
-                                padding: EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: isMyMessage ? CrossAxisAlignment.start : CrossAxisAlignment.start,
+                              if (!isMyMessage)
+                                Row(
                                   children: [
-                                    if (!isMyMessage)
-                                      Text(
-                                        messages[index]['nickname'],
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    if (!isMyMessage)
-                                      SizedBox(height: 4),
                                     Text(
-                                      messages[index]['content'],
+                                      messages[index]['nickname'],
                                       style: TextStyle(
-                                        color: isMyMessage ? Colors.white : Colors.black,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isMyMessage ? Color(0xff19A7CE) : Colors.grey[300],
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: isMyMessage ? Radius.circular(8.0) : Radius.zero,
+                                      bottomLeft: Radius.circular(8.0),
+                                      topRight: Radius.circular(8.0),
+                                      bottomRight: isMyMessage ? Radius.zero : Radius.circular(8.0),
+                                    ),
+                                  ),
+                                  padding: EdgeInsets.all(12.0),
+                                  child: Text(
+                                    messages[index]['content'],
+                                    style: TextStyle(
+                                      color: isMyMessage ? Colors.white : Colors.black,
+                                    ),
+                                  ),
+                                ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(top: 4.0, right: 8.0),
+                                padding: const EdgeInsets.only(top: 4.0),
                                 child: Text(
                                   _formatTimestamp(messages[index]['chat_time']),
                                   style: TextStyle(color: Colors.grey, fontSize: 12),
@@ -474,7 +495,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: 'Type your message...',
+                      hintText: '메시지를 입력하세요',
                     ),
                   ),
                 ),
@@ -489,6 +510,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ),
     );
   }
+
+
 
   @override
   void dispose() {
