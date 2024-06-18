@@ -134,7 +134,6 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
         //centerTitle: true,
         actions: [
           _buildNotificationButton(),
-          _buildMenuButton(),
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(100.0),
@@ -159,9 +158,10 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                 ),
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   SizedBox(height: 16.0),
+                  Spacer(), // 이 부분을 추가하여 왼쪽 간격을 조절
                   CircularButton(
                     text: '스터디',
                     icon: Icons.book_outlined, // 적절한 아이콘 선택
@@ -174,6 +174,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       print("카테고리 : 스터디");
                     },
                   ),
+                  Spacer(),
                   CircularButton(
                     text: '공모전',
                     icon: Icons.emoji_events_outlined,
@@ -186,6 +187,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       print("카테고리 : 공모전");
                     },
                   ),
+                  Spacer(),
                   CircularButton(
                     text: '기타',
                     icon: Icons.category_outlined,
@@ -198,6 +200,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                       print("카테고리 : 기타");
                     },
                   ),
+                  Spacer(),
                 ],
               ),
 
@@ -298,12 +301,4 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     );
   }
 
-  Widget _buildMenuButton() {
-    return IconButton(
-      icon: Icon(Icons.menu),
-      onPressed: () {
-        print('Menu button clicked');
-      },
-    );
-  }
 }
