@@ -69,8 +69,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('프로필 수정'),
-        centerTitle: true,
+        title: Text(
+          '프로필 수정',
+          style: TextStyle(
+              color: Colors.black,
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold),
+        ),
+        //centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
