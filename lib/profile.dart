@@ -158,6 +158,7 @@ class ProfileBody extends StatelessWidget {
   final List<dynamic>? reviews;
   final double? averageRating;
   final int? profileIconCodePoint;
+  final bool isOtherProfile; // Add this boolean
 
   ProfileBody({
     this.nickname,
@@ -170,6 +171,7 @@ class ProfileBody extends StatelessWidget {
     this.reviews,
     this.averageRating,
     this.profileIconCodePoint,
+    this.isOtherProfile = false, // Initialize it with a default value
   });
 
   @override
@@ -213,33 +215,55 @@ class ProfileBody extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 10),
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: name ?? '',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
+                      if (!isOtherProfile && name != null && studentId != null) // Condition to hide " | "
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: name ?? '',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                            TextSpan(
-                              text: ' | ',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
+                              TextSpan(
+                                text: ' | ',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                            TextSpan(
-                              text: studentId != null ? studentId.toString() : '',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
+                              TextSpan(
+                                text: studentId != null ? studentId.toString() : '',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                      if (isOtherProfile || name == null || studentId == null) // Condition to hide " | "
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: name ?? '',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              TextSpan(
+                                text: studentId != null ? ' ${studentId.toString()}' : '',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       SizedBox(height: 10),
                       Row(
                         children: [

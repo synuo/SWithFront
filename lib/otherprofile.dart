@@ -180,13 +180,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 Expanded(
                   child: ProfileBody(
                     nickname: userData['nickname'] ?? '',
-                    studentId: userData['student_id'].substring(0, 2),
                     major: major ?? '',
                     major2: major2 ?? '',
                     major3: major3 ?? '',
                     introduction: userData['introduction'] ?? '',
                     reviews: reviews,
                     averageRating: averageRating,
+                    isOtherProfile: true, // Pass this parameter
                   ),
                 ),
                 Padding(
