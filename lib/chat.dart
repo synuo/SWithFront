@@ -106,51 +106,53 @@ class _ChatScreenState extends State<ChatScreen> {
           final lastMessageTime = chatRooms[index]['last_message_time'] as String?;
           final studyName = chatRooms[index]['study_name'] as String;
           return Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                child: Text(
-                  studyName.isNotEmpty ? studyName[0] : '', // study_name의 첫 글자
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            child: Container(
+              color: Colors.white, // ListTile의 배경을 흰색으로 설정
+              child: ListTile(
+                leading: CircleAvatar(
+                  child: Icon(Icons.group, size: 32, color: Colors.white), // Icons.group 아이콘 추가
+                  backgroundColor: Color(0xff19A7CE), // CircleAvatar 배경색 설정
+                  radius: 20,
                 ),
-                radius: 16,
-              ),
-              title: Text(
-                studyName,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: lastMessage != null && lastMessageTime != null
-                  ? Text(
-                lastMessage,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              )
-                  : null,
-              trailing: lastMessageTime != null
-                  ? Text(
-                formatMessageTimestamp(lastMessageTime),
-                style: TextStyle(color: Colors.grey, fontSize: 10),
-              )
-                  : null,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatRoomScreen(
-                      roomId: chatRooms[index]['room_id'].toString(),
-                      studyName: studyName,
-                      socket: socket,
+                title: Text(
+                  studyName,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: lastMessage != null && lastMessageTime != null
+                    ? Text(
+                  lastMessage,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                )
+                    : null,
+                trailing: lastMessageTime != null
+                    ? Text(
+                  formatMessageTimestamp(lastMessageTime),
+                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                )
+                    : null,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatRoomScreen(
+                        roomId: chatRooms[index]['room_id'].toString(),
+                        studyName: studyName,
+                        socket: socket,
+                      ),
                     ),
-                  ),
-                ).then((_) {
-                  socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()});
-                });
-              },
+                  ).then((_) {
+                    socket.emit('fetchChatRooms', {'userId': loggedInUser?.user_id.toString()});
+                  });
+                },
+              ),
             ),
           );
         },
       ),
     );
   }
+
 
 
   @override
