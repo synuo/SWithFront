@@ -21,6 +21,8 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen>
     with SingleTickerProviderStateMixin {
   bool isScrapped = false;
+  bool isApplied = false;
+  bool isActive = false;
   User? loggedInUser;
   late TabController _tabController;
   List<Map<String, dynamic>> questions = [];
@@ -38,6 +40,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
           Provider.of<UserProvider>(context, listen: false).loggedInUser;
       if (loggedInUser != null) {
         getScrap();
+        checkApplicationStatus();
       }
     });
     fetchQuestions();
@@ -65,7 +68,6 @@ class _PostDetailScreenState extends State<PostDetailScreen>
       if (data == null) {
         throw Exception('Post not found');
       }
-
       return Post.fromJson(data);
     } else {
       throw Exception('Failed to load post detail');
@@ -134,6 +136,30 @@ class _PostDetailScreenState extends State<PostDetailScreen>
       print("Scrap removed successfully");
     } else {
       throw Exception('Failed to delete scrap');
+    }
+  }
+
+  Future<void> checkApplicationStatus() async {
+    final url = Uri.parse('http://localhost:3000/checkApplication');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'user_id': loggedInUser?.user_id,
+        'post_id': widget.post_id,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      setState(() {
+        isApplied = responseData['isApplied'];
+      });
+    } else {
+      // Handle the error
+      setState(() {
+        isApplied = false;
+      });
     }
   }
 
@@ -370,13 +396,12 @@ class _PostDetailScreenState extends State<PostDetailScreen>
           final post = snapshot.data!;
           bool isWriter =
               loggedInUser != null && post.writer_id == loggedInUser!.user_id;
-          print(post.writer_image);
+          if (post.progress == '모집중' || post.progress == '추가 모집') {
+            isActive = true;
+          }
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(post.title),
-              elevation: 0.0,
-              centerTitle: true,
               actions: [
                 if (isWriter)
                   PopupMenuButton<String>(
@@ -428,10 +453,117 @@ class _PostDetailScreenState extends State<PostDetailScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(2.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.7,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xff19A7CE),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(8.0),
+                              bottomLeft: Radius.zero,
+                              topRight: Radius.circular(8.0),
+                              bottomRight: Radius.circular(8.0),
+                            ),
+                          ),
+                          padding: EdgeInsets.all(12.0),
+                          child: Text(
+                            post.title,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () {
+                          if (isWriter) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProfileScreen()), // 본인 프로필 화면으로 이동
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UserProfileScreen(
+                                      senderId:
+                                          post.writer_id)), // 글 작성자 프로필 화면으로 이동
+                            );
+                          }
+                        },
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (post.writer_image != null)
+                              Image.network(
+                                Uri.encodeFull(post.writer_image!),
+                                width: 50,
+                                height: 50,
+                                errorBuilder: (BuildContext context,
+                                    Object exception, StackTrace? stackTrace) {
+                                  print('Error loading image: $exception');
+                                  return Icon(
+                                    Icons.account_circle,
+                                    size: 50,
+                                  );
+                                },
+                              )
+                            else
+                              Icon(
+                                Icons.account_circle,
+                                size: 50,
+                              ),
+                            SizedBox(width: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    post.writer_nickname ?? '닉네임 로드 실패',
+                                    // 닉네임 표시
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "${post.writer_student_id}학번 | " ??
+                                            '학번 로드 실패',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${post.writer_major1}', // 전공1 표시
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         '카테고리: ${post.category}',
@@ -447,112 +579,9 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                         '작성일: ${post.create_at.toString().substring(0, 10)}',
                         textAlign: TextAlign.left,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '모집 현황: ${post.progress}',
-                        textAlign: TextAlign.left,
-                      ),
                     ],
                   ),
                 ),
-                Divider(
-                  color: Colors.grey,
-                  height: 0,
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: () {
-                    if (isWriter) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                ProfileScreen()), // 본인 프로필 화면으로 이동
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => UserProfileScreen(
-                                senderId: post.writer_id)), // 글 작성자 프로필 화면으로 이동
-                      );
-                    }
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (post.writer_image != null)
-                        Image.network(
-                          Uri.encodeFull(post.writer_image!),
-                          width: 100,
-                          height: 100,
-                          errorBuilder: (BuildContext context, Object exception,
-                              StackTrace? stackTrace) {
-                            print('Error loading image: $exception');
-                            return Icon(
-                              Icons.account_circle,
-                              size: 100,
-                            );
-                          },
-                        )
-                      else
-                        Icon(
-                          Icons.account_circle,
-                          size: 100,
-                        ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: 20),
-                            Text(
-                              post.writer_nickname ?? '닉네임 로드 실패', // 닉네임 표시
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "${post.writer_student_id}학번" ?? '학번 로드 실패',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              '전공1: ${post.writer_major1}', // 전공1 표시
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
-                              ),
-                            ),
-                            if (post.writer_major2 != null)
-                              Text(
-                                '전공2: ${post.writer_major2}', // 전공2 표시
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            if (post.writer_major3 != null)
-                              Text(
-                                '전공3: ${post.writer_major3}', // 전공3 표시
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
                 Divider(
                   color: Colors.grey,
                   height: 0,
@@ -622,7 +651,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                                                       },
                                                       decoration:
                                                           InputDecoration(
-                                                        labelText:
+                                                        hintText:
                                                             '답변을 기다리고 있어요!',
                                                       ),
                                                     ),
@@ -711,15 +740,28 @@ class _PostDetailScreenState extends State<PostDetailScreen>
 
                         ElevatedButton(
                           onPressed: () {
-                            if (loggedInUser != null) {
-                              applyForPost();
+                            if (isApplied) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AdvanceAnswersScreen(
+                                    postId: widget.post_id,
+                                    applicantId: loggedInUser!.user_id,
+                                  ),
+                                ),
+                              );
                             } else {
-                              print("User is not logged in");
+                              if (isActive) {
+                                applyForPost();
+                              }
                             }
                           },
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all<Color>(
-                                Color(0xff19A7CE)), // 버튼 배경색
+                              !isActive && !isApplied
+                                  ? Colors.grey
+                                  : Color(0xff19A7CE), // 버튼 배경색
+                            ),
                             shape: MaterialStateProperty.all<
                                 RoundedRectangleBorder>(
                               RoundedRectangleBorder(
@@ -734,11 +776,16 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                                 vertical: 15.0), // 버튼 내부 패딩
                             child: Center(
                               child: Text(
-                                '지원하기',
+                                !isActive && !isApplied
+                                    ? "모집 마감"
+                                    : (isApplied ? "지원 내역 보기" : '지원하기'),
                                 style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold),
+                                  color: !isActive && !isApplied
+                                      ? Colors.black
+                                      : Colors.white,
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -758,7 +805,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                                     newQuestion = text;
                                   },
                                   decoration: InputDecoration(
-                                    labelText: '궁금한 점을 스터디장에게 물어보세요!',
+                                    hintText: '궁금한 점을 스터디장에게 물어보세요!',
                                   ),
                                 ),
                               ),
