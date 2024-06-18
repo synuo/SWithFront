@@ -280,7 +280,6 @@ class ProfileBody extends StatelessWidget {
                 ),
               ],
             ),
-
           ),
           SizedBox(height: 20),
           Text(
@@ -341,6 +340,7 @@ class ProfileBody extends StatelessWidget {
             ),
           SizedBox(height: 20),
           // 리뷰 표시
+          // 리뷰 표시
           if (reviews != null && reviews!.isNotEmpty)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,35 +349,71 @@ class ProfileBody extends StatelessWidget {
                 SizedBox(height: 10),
                 ListView.builder(
                   shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
                   itemCount: reviews!.length,
                   itemBuilder: (context, index) {
                     final review = reviews![index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.grey,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      title: Text(review['reviewer_nickname']?.toString() ?? ''),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: List.generate(5, (i) {
-                              return Icon(
-                                i < review['rating'] ? Icons.star : Icons.star_border,
-                                color: Colors.amber,
-                              );
-                            }),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey, // 임시로 회색으로 지정
+                            ),
+                            child: Icon(
+                              profileIconCodePoint != null
+                                  ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons')
+                                  : Icons.person,
+                              size: 40,
+                              color: Colors.white,
+                            ),
                           ),
-                          SizedBox(height: 5),
-                          Text(review['content'] ?? ''),
-                        ],
-                      ),
+                          title: Text(
+                            review['reviewer_nickname']?.toString() ?? '',
+                            style: TextStyle(
+                              color: Color(0xff19A7CE),
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 10),
+                              Row(
+                                children: List.generate(5, (i) {
+                                  return Icon(
+                                    i < review['rating'] ? Icons.star : Icons.star_border,
+                                    color: Colors.amber,
+                                    size: 16,
+                                  );
+                                }),
+                              ),
+                              SizedBox(height: 5),
+                              Text(review['content'] ?? ''),
+                              Align(
+                                alignment: Alignment.centerRight, // Align text to the right
+                                child: Text(
+                                  review['update_at']?.toString().substring(0, 10) ?? '',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                      ],
                     );
                   },
                 ),
               ],
             ),
+
         ],
       ),
     );
