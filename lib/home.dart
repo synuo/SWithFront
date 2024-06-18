@@ -128,7 +128,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'SWith', style: TextStyle(color: Colors.black, fontSize: 30.0, fontFamily: 'PlaywritePL'),),
+          'SWith', style: TextStyle(color: Colors.black, fontSize: 30.0, fontFamily: 'Teko'),),
         elevation: 0.0,
         backgroundColor: Colors.white,
         //centerTitle: true,
