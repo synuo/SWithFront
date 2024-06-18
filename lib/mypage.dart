@@ -65,7 +65,7 @@ class _MyPageState extends State<MyPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 20),
+                        SizedBox(height: 10),
                         Text(
                           loggedInUser?.nickname ?? '',
                           style: TextStyle(
