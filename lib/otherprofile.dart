@@ -17,11 +17,11 @@ class UserProfileScreen extends StatefulWidget {
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
   late Future<Map<String, dynamic>> _userFuture;
-  String? major;
+  String? major, major2, major3;
   Map<String, dynamic>? userData;
   bool canWriteReview = true;
-  double averageRating = 0.0; // 기본값 설정
-  List<dynamic> reviews = []; // 기본값 설정
+  double averageRating = 0.0; // Default value
+  List<dynamic> reviews = []; // Default value
 
   @override
   void initState() {
@@ -30,30 +30,54 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<Map<String, dynamic>> _fetchUserData() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/user/${widget.senderId}'));
-    if (response.statusCode == 200) {
-      final decodedData = jsonDecode(response.body);
-      userData = Map<String, dynamic>.from(decodedData);
-      await fetchMajorInfo();
-      await checkReviewStatus();
-      await fetchReviews();
-      return userData!;
-    } else {
-      print('Failed to load user data: ${response.statusCode}');
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/user/${widget.senderId}'));
+      if (response.statusCode == 200) {
+        final decodedData = jsonDecode(response.body);
+        userData = Map<String, dynamic>.from(decodedData);
+        await fetchMajorInfo();
+        await checkReviewStatus();
+        await fetchReviews();
+        return userData!;
+      } else {
+        throw Exception('Failed to load user data: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching user data: $error');
       return {};
     }
   }
 
   Future<void> fetchMajorInfo() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/majorDetail/${userData!['major1']}'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      final response1 = await http.get(Uri.parse('http://localhost:3000/majorDetail/${userData!['major1']}'));
+      if (response1.statusCode == 200) {
+        final data = json.decode(response1.body);
         setState(() {
           major = data['major_name'];
         });
       } else {
-        throw Exception('Failed to load major information');
+        throw Exception('Failed to load major1 information');
+      }
+
+      final response2 = await http.get(Uri.parse('http://localhost:3000/majorDetail/${userData!['major2']}'));
+      if (response2.statusCode == 200) {
+        final data = json.decode(response2.body);
+        setState(() {
+          major2 = data['major_name'];
+        });
+      } else {
+        throw Exception('Failed to load major2 information');
+      }
+
+      final response3 = await http.get(Uri.parse('http://localhost:3000/majorDetail/${userData!['major3']}'));
+      if (response3.statusCode == 200) {
+        final data = json.decode(response3.body);
+        setState(() {
+          major3 = data['major_name'];
+        });
+      } else {
+        throw Exception('Failed to load major3 information');
       }
     } catch (error) {
       print('Error fetching major information: $error');
@@ -79,7 +103,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         final data = json.decode(response.body);
         setState(() {
           canWriteReview = data.isEmpty;
-          print(canWriteReview);
         });
       } else {
         throw Exception('Failed to check review status');
@@ -93,14 +116,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/user/$reviewerId'));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body); // JSON 데이터를 파싱
-        return data['nickname']; // 닉네임 반환
+        final data = json.decode(response.body);
+        return data['nickname'];
       } else {
         throw Exception('Failed to load user information');
       }
     } catch (error) {
       print('Error fetching user information: $error');
-      return 'Unknown'; // 에러 발생 시 기본 닉네임
+      return 'Unknown';
     }
   }
 
@@ -134,7 +157,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Profile'),
+        title: Text(
+          '프로필',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: false,
       ),
       body: FutureBuilder(
         future: _userFuture,
@@ -151,9 +180,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 Expanded(
                   child: ProfileBody(
                     nickname: userData['nickname'] ?? '',
-                    name: userData['name'] ?? '',
-                    studentId: userData['student_id'] ?? 0,
+                    studentId: userData['student_id'].substring(0, 2),
                     major: major ?? '',
+                    major2: major2 ?? '',
+                    major3: major3 ?? '',
                     introduction: userData['introduction'] ?? '',
                     reviews: reviews,
                     averageRating: averageRating,
@@ -164,7 +194,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 15.0),
-                      minimumSize: Size(200, 10),
+                      minimumSize: Size(200, 50),
                     ),
                     onPressed: canWriteReview
                         ? () {
