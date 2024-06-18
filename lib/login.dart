@@ -107,12 +107,6 @@ class _LoginPageState extends State<LogInPage> {
         print('Failed to fetch user information');
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('로그인 성공'),
-          backgroundColor: Colors.green,
-        ),
-      );
       print('화면전환 : login -> homepage ');
       Navigator.pushReplacement(
         context,
