@@ -16,8 +16,9 @@ class BoardScreen extends StatefulWidget {
 
 class _BoardScreenState extends State<BoardScreen> {
   late List<Post> posts = []; // 게시물 목록 데이터
-  String? searchQuery;  // 검색
+  String? searchQuery; // 검색
   String selectedFilter = '모집중';
+  bool isLoading = true; // 데이터를 불러오는 중인지 여부
 
   @override
   void initState() {
@@ -26,6 +27,10 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   Future<void> fetchPosts() async {
+    setState(() {
+      isLoading = true; // 데이터를 불러오기 시작
+    });
+
     final url = Uri.parse('http://localhost:3000/getposts');
     final response = await http.get(
       url,
@@ -34,6 +39,7 @@ class _BoardScreenState extends State<BoardScreen> {
         'Accept': 'application/json',
       },
     );
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = jsonDecode(response.body);
       final List<Post> fetchedPosts = jsonData.map((data) {
@@ -55,11 +61,17 @@ class _BoardScreenState extends State<BoardScreen> {
               post.study_name.contains(searchQuery!)
           ).toList();
         }
+
+        isLoading = false; // 데이터를 불러오기 완료
       });
     } else {
+      setState(() {
+        isLoading = false; // 데이터를 불러오기 실패
+      });
       throw Exception('Failed to load posts');
     }
   }
+
 
   void handleSearch(String query) {
     setState(() {
@@ -111,10 +123,7 @@ class _BoardScreenState extends State<BoardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          '게시판',
-          style: TextStyle(color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold),
-        ),
+        title: SearchBar(onSearch: handleSearch),
         actions: [
           IconButton(
             icon: Icon(Icons.filter_list), // 필터 버튼 아이콘
@@ -139,13 +148,16 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
       body: Column(
         children: [
-          Search(onSearch: handleSearch),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => fetchPosts(),
-              child: posts.isEmpty
+              child: isLoading
                   ? const Center(
                 child: CircularProgressIndicator(),
+              )
+                  : posts.isEmpty
+                  ? const Center(
+                child: Text('적합한 게시글이 존재하지 않습니다.'),
               )
                   : ListView.builder(
                 itemCount: getFilteredPosts().length,
@@ -250,6 +262,70 @@ class _BoardScreenState extends State<BoardScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class SearchBar extends StatefulWidget {
+  final ValueChanged<String> onSearch;
+
+  const SearchBar({Key? key, required this.onSearch}) : super(key: key);
+
+  @override
+  State<SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<SearchBar> with SingleTickerProviderStateMixin {
+  bool _isActive = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (!_isActive)
+          Text("게시판",
+              style: TextStyle(color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold)),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              child: _isActive
+                  ? Container(
+                width: double.infinity,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.0)),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                      hintText: '글 제목, 내용, 해시태그 등으로 검색해보세요.',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _isActive = false;
+                            });
+                            widget.onSearch('');
+                            _searchController.clear();
+                          },
+                          icon: const Icon(Icons.close))),
+                  onSubmitted: widget.onSearch,
+                ),
+              )
+                  : IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isActive = true;
+                    });
+                  },
+                  icon: const Icon(Icons.search)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
