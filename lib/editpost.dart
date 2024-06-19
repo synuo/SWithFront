@@ -271,9 +271,24 @@ class _EditPostScreenState extends State<EditPostScreen> {
     }
   }
 
+
   Widget _buildTagItem(String tag) {
     return Chip(
-      label: Text(tag),
+      label: Text(
+        tag,
+        style: TextStyle(color: Colors.black), // Label text color
+      ),
+      backgroundColor: Colors.white, // Background color
+      shape: StadiumBorder(
+        side: BorderSide(
+          color: Colors.grey, // Border color
+          width: 1.0, // Border width
+        ),
+      ),
+      deleteIcon: Icon(
+        Icons.close,
+        color: Colors.blueGrey, // Delete icon color
+      ),
       onDeleted: () {
         setState(() {
           _tags.remove(tag);

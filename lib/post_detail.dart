@@ -28,6 +28,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
   List<Map<String, dynamic>> questions = [];
   String newQuestion = '';
   Map<int, String> newAnswers = {};
+  late Post post;
 
   @override
   void initState() {
@@ -262,33 +263,36 @@ class _PostDetailScreenState extends State<PostDetailScreen>
   }
 
   void _showProgressDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('모집 상태 변경'),
-          content: Column(
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 title: Text('모집 종료'),
                 onTap: () {
                   Navigator.pop(context);
-                  _confirmProgressChange('모집 종료');
+                  _confirmProgressChangeModal('모집 종료');
                 },
               ),
               ListTile(
                 title: Text('추가 모집'),
                 onTap: () {
                   Navigator.pop(context);
-                  _confirmProgressChange('추가 모집');
+                  _confirmProgressChangeModal('추가 모집');
                 },
               ),
               ListTile(
                 title: Text('스터디 종료'),
                 onTap: () {
                   Navigator.pop(context);
-                  _confirmProgressChange('스터디 종료');
+                  _confirmProgressChangeModal('스터디 종료');
                 },
               ),
             ],
@@ -298,32 +302,50 @@ class _PostDetailScreenState extends State<PostDetailScreen>
     );
   }
 
-  void _confirmProgressChange(String progress) {
-    showDialog(
+
+  void _confirmProgressChangeModal(String progress) {
+    showModalBottomSheet(
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('정말 $progress 하시겠습니까?'),
-          actions: [
-            TextButton(
-              child: Text('아니오'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('예'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                patchProgress(progress);
-                createChatRoom();
-              },
-            ),
-          ],
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '정말 $progress 하시겠습니까?',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    child: Text('취소'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  TextButton(
+                    child: Text('변경'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      patchProgress(progress);
+                      createChatRoom();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
   }
+
 
   Future<void> fetchQuestions() async {
     final response = await http
@@ -372,6 +394,59 @@ class _PostDetailScreenState extends State<PostDetailScreen>
     }
   }
 
+  void _showOptionsModal() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text('게시글 수정'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditPostScreen(post: post),
+                    ),
+                  ).then((_) {
+                    fetchPostDetails(widget.post_id);
+                    fetchQuestions();
+                  });
+                },
+              ),
+              ListTile(
+                title: Text('모집 상태 변경'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showProgressDialog();
+                },
+              ),
+              ListTile(
+                title: Text('지원자 확인'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ApplicantsScreen(post_id: widget.post_id),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Post>(
@@ -393,7 +468,7 @@ class _PostDetailScreenState extends State<PostDetailScreen>
             body: Center(child: Text('Error: ${snapshot.error}')),
           );
         } else {
-          final post = snapshot.data!;
+          post = snapshot.data!;
           bool isWriter =
               loggedInUser != null && post.writer_id == loggedInUser!.user_id;
           if (post.progress == '모집중' || post.progress == '추가 모집') {
@@ -404,48 +479,11 @@ class _PostDetailScreenState extends State<PostDetailScreen>
             appBar: AppBar(
               actions: [
                 if (isWriter)
-                  PopupMenuButton<String>(
-                    onSelected: (String result) {
-                      switch (result) {
-                        case 'update':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    EditPostScreen(post: post)),
-                          ).then((_) {
-                            fetchPostDetails(widget.post_id);
-                            fetchQuestions();
-                          });
-                          break;
-                        case 'change_progress':
-                          _showProgressDialog();
-                          break;
-                        case 'check_applicants':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ApplicantsScreen(post_id: widget.post_id)),
-                          );
-                          break;
-                      }
+                  IconButton(
+                    icon: Icon(Icons.more_vert),
+                    onPressed: () {
+                      _showOptionsModal();
                     },
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                      const PopupMenuItem<String>(
-                        value: 'update',
-                        child: Text('게시글 수정'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'change_progress',
-                        child: Text('모집 상태 변경'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'check_applicants',
-                        child: Text('지원자 확인'),
-                      ),
-                    ],
                   ),
               ],
             ),
@@ -861,3 +899,4 @@ class _PostDetailScreenState extends State<PostDetailScreen>
     );
   }
 }
+

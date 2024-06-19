@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'common_object.dart';
 import 'home.dart';
 
@@ -25,14 +24,16 @@ class _AddAQScreenState extends State<AddAQScreen> {
 
     return Scaffold(
       appBar: AppBar(
-          title: Text(
-            '사전 질문 작성',
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold),
+        title: Text(
+          '사전 질문 작성',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 22.0,
+            fontWeight: FontWeight.bold,
           ),
-          automaticallyImplyLeading: false),
+        ),
+        automaticallyImplyLeading: false,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -44,23 +45,34 @@ class _AddAQScreenState extends State<AddAQScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextField(
+                    _buildTextField(
+                      title: '사전질문 ${index + 1}',
                       controller: controller,
-                      decoration: InputDecoration(
-                        labelText: '사전질문 ${index + 1}',
-                      ),
                     ),
                     SizedBox(height: 12),
                   ],
                 );
               }).toList(),
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () {
                   setState(() {
                     _controllers.add(TextEditingController());
                   });
                 },
-                child: Text('사전질문 추가'),
+                icon: Icon(Icons.add, color: Colors.white),
+                label: Text('사전질문 추가', style: TextStyle(color: Colors.white)),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Color(0xff4CAF50)), // 초록색 배경
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0), // 둥근 모서리
+                    ),
+                  ),
+                  padding: MaterialStateProperty.all<EdgeInsets>(
+                    EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0), // 버튼 내부 패딩
+                  ),
+                  elevation: MaterialStateProperty.all<double>(5.0), // 버튼 그림자
+                ),
               ),
               SizedBox(height: 24),
             ],
@@ -75,20 +87,7 @@ class _AddAQScreenState extends State<AddAQScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  if (_controllers != null) {
-                    addAdvanceQ();
-                  }
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => HomePage(user_id: user_id!)));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('게시글 등록 완료'),
-                    ),
-                  );
-                },
+                onPressed: () => _showConfirmationDialog(user_id),
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all<Color>(
                       Color(0xff19A7CE)), // 버튼 배경색
@@ -146,5 +145,116 @@ class _AddAQScreenState extends State<AddAQScreen> {
     } else {
       throw Exception('사전질문 등록 실패');
     }
+  }
+
+  void _showConfirmationDialog(int? user_id) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '사전질문은 추후 수정할 수 없습니다.\n다시 한 번 내용을 검토하고 등록해주세요.',
+              style:
+              TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    child: Text(
+                      '취소',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold,color: Colors.grey),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  TextButton(
+                    child: Text(
+                      '등록',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold,color: Colors.grey),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      addAdvanceQ();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(user_id: user_id!),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField({
+    required String title,
+    String? hintText,
+    required TextEditingController controller,
+    bool isMultiline = false,
+    String? description,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4.0),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+        if (description != null) // Render description if provided
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              description,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(
+              color: Colors.grey,
+              width: 1.0,
+            ),
+          ),
+          child: TextFormField(
+            controller: controller,
+            maxLines: isMultiline ? null : 1,
+            minLines: isMultiline ? 5 : 1,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: hintText,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

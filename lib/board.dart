@@ -284,7 +284,7 @@ class _SearchBarState extends State<SearchBar> with SingleTickerProviderStateMix
     return Row(
       children: [
         if (!_isActive)
-          Text("게시판",
+          Text("전체 게시글",
               style: TextStyle(color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold)),
         Expanded(
           child: Align(
