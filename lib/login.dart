@@ -402,13 +402,7 @@ class __FormContentState extends State<_FormContent> {
         // 사용자 정보를 가져오는 데 실패한 경우
         print('Failed to fetch user information');
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('로그인 성공'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      
       print('화면전환 : login -> homepage ');
       Navigator.pushReplacement(
         context,
