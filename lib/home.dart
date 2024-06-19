@@ -127,12 +127,15 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'SWith',
-          style: TextStyle(
-              color: Colors.black,
-              fontSize: 45.0,
-              fontFamily: 'Teko'
+        title: Padding(
+          padding: const EdgeInsets.only(top: 16.0),
+          child: Text(
+            'SWith',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 40.0,
+                fontFamily: 'Teko'
+            ),
           ),
         ),
         elevation: 0.0,
@@ -231,7 +234,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
-              SizedBox(height: 12.0),
+              SizedBox(height: 5.0),
               Expanded(
                 child: topPosts.isEmpty ? Center(child: CircularProgressIndicator()) : ListView.builder(
                   itemCount: topPosts.length,
@@ -266,16 +269,49 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Row(
+                                    children: [
+                                      if (post.category == "스터디") ...[
+                                        Icon(Icons.book, size: 20.0, color: Color(0xff19A7CE)),
+                                      ] else if (post.category == "공모전") ...[
+                                        Icon(Icons.emoji_events, size: 20.0, color: Color(0xff19A7CE)),
+                                      ] else if (post.category == "기타") ...[
+                                        Icon(Icons.category, size: 20.0, color: Color(0xff19A7CE),),
+                                      ],
+                                      const SizedBox(width: 8), // 아이콘과 제목 사이의 간격
+                                      Expanded(
+                                        child: Text(
+                                          post.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15.0,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  /*
                                   Text(
                                     post.title,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15.0,
+                                    ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
+
+                                   */
                                   const SizedBox(height: 8),
                                   Text(
                                     "${post.category} · ${post.progress} · ${post.view_count} views",
                                     //style: Theme.of(context).textTheme.caption,
+                                    style: const TextStyle(
+                                      //fontWeight: FontWeight.bold,
+                                      fontSize: 15.0,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Wrap(
@@ -286,7 +322,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                                       '#$tag',
                                       style: TextStyle(
                                           color: Colors.blue,
-                                          fontSize: 12.0),
+                                          fontSize: 13.0),
                                     ))
                                         .toList(),
                                   ),
