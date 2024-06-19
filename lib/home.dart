@@ -156,14 +156,26 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '  카테고리별 게시판 바로가기',  //조회수가 높은 게시물 5개
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 12.0),
+              /*
               SizedBox(height: 16.0,),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 48.0),
                 child: Text(
-                  '> 카테고리별 게시판으로 이동하기\n',
+                  '카테고리별 게시판 바로가기',
                   style: TextStyle(color: Colors.black45, fontSize: 15.0, fontWeight: FontWeight.bold),
                 ),
               ),
+
+               */
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -243,7 +255,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         height: 100,
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                          border: Border.all(color: const Color(0xff19A7CE)),
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         padding: const EdgeInsets.all(8),
@@ -264,6 +276,19 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                                   Text(
                                     "${post.category} · ${post.progress} · ${post.view_count} views",
                                     //style: Theme.of(context).textTheme.caption,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Wrap(
+                                    spacing: 4.0,
+                                    runSpacing: 2.0,
+                                    children: post.tags
+                                        .map((tag) => Text(
+                                      '#$tag',
+                                      style: TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: 12.0),
+                                    ))
+                                        .toList(),
                                   ),
                                 ],
                               ),
