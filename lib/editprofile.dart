@@ -32,6 +32,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _selectedMajor2;
   String? _selectedMajor3;
   IconData _selectedProfileIcon = Icons.person; // 기본 프로필 아이콘
+  bool _isProfileIconEditing = false; // 프로필 아이콘 수정 모드
 
   @override
   void initState() {
@@ -70,15 +71,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('프로필 수정'),
-        centerTitle: true,
+        title: Text(
+          '프로필 수정',
+          style: TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        //centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              /*
               CircleAvatar(
                 radius: 50,
                 child: Icon(
@@ -87,16 +96,75 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 backgroundColor: Colors.grey,
               ),
-              SizedBox(height: 16),
-              _buildProfileIconRow(),
+
+               */
+              Padding(
+                padding: const EdgeInsets.only(left: 80.0), // 원하는 오른쪽 이동 거리 설정
+                child: Center(
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<IconData>(
+                      value: _selectedProfileIcon,
+                      items: [
+                        DropdownMenuItem(
+                          value: Icons.person,
+                          child: CircleAvatar(
+                            radius: 150,
+                            backgroundColor: Colors.white, // 배경색 설정
+                            child: Icon(Icons.person, size: 50, color: Color(0xff19A7CE)),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: Icons.cookie,
+                          child: CircleAvatar(
+                            radius: 150,
+                            backgroundColor: Colors.white, // 배경색 설정
+                            child: Icon(Icons.cookie, size: 50, color: Color(0xff19A7CE)),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: Icons.ac_unit,
+                          child: CircleAvatar(
+                            radius: 150,
+                            backgroundColor: Colors.white, // 배경색 설정
+                            child: Icon(Icons.ac_unit, size: 50, color: Color(0xff19A7CE)),
+                          ),
+                        ),
+                      ],
+                      onChanged: (IconData? newIcon) {
+                        setState(() {
+                          _selectedProfileIcon = newIcon!;
+                        });
+                      },
+                      icon: Container(), // 아이콘 비워두기
+                      isExpanded: true,
+                      alignment: Alignment.center, // 아이템 텍스트 정렬 설정
+                      //alignment: Alignment(0.5, 0.0),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 40),
+              //_buildProfileIconRow(),
               _buildInfoRow('이메일', user.email),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
+              SizedBox(height: 5),
               _buildInfoRow('이름', user.name),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
+              SizedBox(height: 5),
               _buildInfoRow('학번', user.student_id.toString()),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
+              SizedBox(height: 5),
               _buildEditableRow('닉네임', user.nickname, _nicknameController, _isNicknameEditing, () {
                 setState(() {
                   _isNicknameEditing = !_isNicknameEditing;
                 });
               }),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
+              SizedBox(height: 5),
               _buildDropdownRow('전공1', _selectedMajor1, _isMajor1Editing, (String? value) {
                 setState(() {
                   if(_selectedMajor1 == value){
@@ -106,23 +174,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   print('전공1 선택: $_selectedMajor1'); // 전공1 선택 시 출력
                 });
               }),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
+              SizedBox(height: 5),
               _buildDropdownRow('전공2', _selectedMajor2, _isMajor2Editing, (String? value) {
                 setState(() {
                   _selectedMajor2 = value;
                   print('전공2 선택: $_selectedMajor2'); // 전공2 선택 시 출력
                 });
               }),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
+              SizedBox(height: 5),
               _buildDropdownRow('전공3', _selectedMajor3, _isMajor3Editing, (String? value) {
                 setState(() {
                   _selectedMajor3 = value;
                   print('전공3 선택: $_selectedMajor3'); // 전공3 선택 시 출력
                 });
               }),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
+              SizedBox(height: 5),
               _buildEditableRow('자기소개', user.introduction ?? '', _introductionController, _isIntroductionEditing, () {
                 setState(() {
                   _isIntroductionEditing = !_isIntroductionEditing;
                 });
               }, maxLines: 5),
+              SizedBox(height: 20),
+              SizedBox(height: 20),
+              Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
@@ -202,12 +282,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+          Text(value, style: TextStyle(fontSize: 15.0)),
         ],
       ),
     );
@@ -215,18 +295,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildEditableRow(String label, String value, TextEditingController controller, bool isEditing, VoidCallback onEditPressed, {int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
           Expanded(
-            child: isEditing
-                ? TextField(
-              controller: controller..text = value,
-              maxLines: maxLines,
-            )
-                : Text(value),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: isEditing
+                  ? TextField(
+                controller: controller..text = value,
+                maxLines: maxLines,
+              )
+                  : Text(value, style: TextStyle(fontSize: 15.0)),
+            ),
           ),
           IconButton(
             icon: Icon(isEditing ? Icons.check : Icons.edit),
@@ -237,61 +320,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  /*
   Widget _buildDropdownRow(String label, String? value, bool isEditing, ValueChanged<String?> onChanged) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-          Expanded(
-            child: isEditing
-                ? DropdownButtonFormField<String>(
-              value: value,
-              onChanged: onChanged,
-              items: _majors.map((String major) {
-                return DropdownMenuItem<String>(
-                  value: major,
-                  child: Text(major),
-                );
-              }).toList(),
-            )
-                : DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: value != null ? value : (_majors.isNotEmpty ? _majors.first : null), // 기존 전공 이름이 선택되도록 설정
-                onChanged: (newValue) {
-                  if(label == '전공1') {
-                    _selectedMajor1 = newValue;
-                  } else if(label == '전공2') {
-                    _selectedMajor2 = newValue;
-                  } else if(label == '전공3') {
-                    _selectedMajor3 = newValue;
-                  }
-                  onChanged(newValue);
-                },
-                items: _majors.map((String major) {
-                  return DropdownMenuItem<String>(
-                    value: major,
-                    child: Text(major),
-                  );
-                }).toList(),
-              ),
-            ),),
-        ],
-      ),
-    );
-  }
-
-
-   */
-  Widget _buildDropdownRow(String label, String? value, bool isEditing, ValueChanged<String?> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
           Expanded(
             child: isEditing
                 ? DropdownSearch<String>(
@@ -333,20 +368,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildProfileIconRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: profileIcons.map((icon) {
-          return IconButton(
-            icon: Icon(icon, size: 30),
-            color: _selectedProfileIcon == icon ? Colors.blue : Colors.white,
-            onPressed: () {
+      child: Center(
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<IconData>(
+            value: _selectedProfileIcon,
+            items: [
+              DropdownMenuItem(
+                value: Icons.person,
+                child: CircleAvatar(
+                  backgroundColor: Colors.grey[200],
+                  child: Icon(Icons.person, size: 50, color : Color(0xff19A7CE)),
+                ),
+              ),
+              DropdownMenuItem(
+                value: Icons.cookie,
+                child: CircleAvatar(
+                  backgroundColor: Colors.grey[200],
+                  child: Icon(Icons.cookie, size: 50, color : Color(0xff19A7CE)),
+                ),
+              ),
+              DropdownMenuItem(
+                value: Icons.ac_unit,
+                child: CircleAvatar(
+                  backgroundColor: Colors.grey[200],
+                  child: Icon(Icons.ac_unit, size: 50, color : Color(0xff19A7CE)),
+                ),
+              ),
+            ],
+            onChanged: (IconData? newIcon) {
               setState(() {
-                _selectedProfileIcon = icon;
+                _selectedProfileIcon = newIcon!;
               });
-
             },
-          );
-        }).toList(),
+            icon: Container(), // 아이콘 비워두기
+            isExpanded: true,
+            alignment: Alignment.center, // 아이템 텍스트 정렬 설정
+          ),
+        ),
       ),
     );
   }
