@@ -145,61 +145,85 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               SizedBox(height: 40),
               //_buildProfileIconRow(),
-              _buildInfoRow('이메일', user.email),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildInfoRow('이메일', user.email),
+              ),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 5),
-              _buildInfoRow('이름', user.name),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildInfoRow('이름', user.name),
+              ),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 5),
-              _buildInfoRow('학번', user.student_id.toString()),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildInfoRow('학번', user.student_id.toString()),
+              ),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 5),
-              _buildEditableRow('닉네임', user.nickname, _nicknameController, _isNicknameEditing, () {
-                setState(() {
-                  _isNicknameEditing = !_isNicknameEditing;
-                });
-              }),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildEditableRow('닉네임', user.nickname, _nicknameController, _isNicknameEditing, () {
+                  setState(() {
+                    _isNicknameEditing = !_isNicknameEditing;
+                  });
+                }),
+              ),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 5),
-              _buildDropdownRow('전공1', _selectedMajor1, _isMajor1Editing, (String? value) {
-                setState(() {
-                  if(_selectedMajor1 == value){
-                    _isMajor1Editing = true;
-                  }
-                  _selectedMajor1 = value;
-                  print('전공1 선택: $_selectedMajor1'); // 전공1 선택 시 출력
-                });
-              }),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildDropdownRow('전공1', _selectedMajor1, _isMajor1Editing, (String? value) {
+                  setState(() {
+                    if(_selectedMajor1 == value){
+                      _isMajor1Editing = true;
+                    }
+                    _selectedMajor1 = value;
+                    print('전공1 선택: $_selectedMajor1'); // 전공1 선택 시 출력
+                  });
+                }),
+              ),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 5),
-              _buildDropdownRow('전공2', _selectedMajor2, _isMajor2Editing, (String? value) {
-                setState(() {
-                  _selectedMajor2 = value;
-                  print('전공2 선택: $_selectedMajor2'); // 전공2 선택 시 출력
-                });
-              }),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildDropdownRow('전공2', _selectedMajor2, _isMajor2Editing, (String? value) {
+                  setState(() {
+                    _selectedMajor2 = value;
+                    print('전공2 선택: $_selectedMajor2'); // 전공2 선택 시 출력
+                  });
+                }),
+              ),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 5),
-              _buildDropdownRow('전공3', _selectedMajor3, _isMajor3Editing, (String? value) {
-                setState(() {
-                  _selectedMajor3 = value;
-                  print('전공3 선택: $_selectedMajor3'); // 전공3 선택 시 출력
-                });
-              }),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildDropdownRow('전공3', _selectedMajor3, _isMajor3Editing, (String? value) {
+                  setState(() {
+                    _selectedMajor3 = value;
+                    print('전공3 선택: $_selectedMajor3'); // 전공3 선택 시 출력
+                  });
+                }),
+              ),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
               SizedBox(height: 5),
-              _buildEditableRow('자기소개', user.introduction ?? '', _introductionController, _isIntroductionEditing, () {
-                setState(() {
-                  _isIntroductionEditing = !_isIntroductionEditing;
-                });
-              }, maxLines: 5),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildEditableRow('자기소개', user.introduction ?? '', _introductionController, _isIntroductionEditing, () {
+                  setState(() {
+                    _isIntroductionEditing = !_isIntroductionEditing;
+                  });
+                }, maxLines: 5),
+              ),
               SizedBox(height: 20),
               SizedBox(height: 20),
               Divider(height: 1, color: Color(0xff19A7CE)),
@@ -327,6 +351,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+          SizedBox(width: 10), // Label과 Dropdown 간의 간격 조절
           Expanded(
             child: isEditing
                 ? DropdownSearch<String>(
