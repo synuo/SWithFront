@@ -179,42 +179,51 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               scrollDirection: Axis.vertical,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: Column(
-                  children: [
-                    ProfileBody(
-                      nickname: userData['nickname'] ?? '',
-                      major: major ?? '',
-                      major2: major2 ?? '',
-                      major3: major3 ?? '',
-                      introduction: userData['introduction'] ?? '',
-                      reviews: reviews,
-                      averageRating: averageRating,
-                      isOtherProfile: true, // Pass this parameter
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(30.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 15.0),
-                          minimumSize: Size(200, 50),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: MediaQuery.of(context).size.width,
+                    minHeight: MediaQuery.of(context).size.height,
+                  ),
+                  child: IntrinsicWidth(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ProfileBody(
+                          nickname: userData['nickname'] ?? '',
+                          major: major ?? '',
+                          major2: major2 ?? '',
+                          major3: major3 ?? '',
+                          introduction: userData['introduction'] ?? '',
+                          reviews: reviews,
+                          averageRating: averageRating,
+                          isOtherProfile: true, // Pass this parameter
                         ),
-                        onPressed: canWriteReview
-                            ? () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WriteReviewScreen(userId: widget.senderId),
+                        Padding(
+                          padding: const EdgeInsets.all(30.0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 15.0),
+                              minimumSize: Size(200, 50),
                             ),
-                          );
-                        }
-                            : null,
-                        child: Text(
-                          '리뷰 작성',
-                          style: TextStyle(fontSize: 22),
+                            onPressed: canWriteReview
+                                ? () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WriteReviewScreen(userId: widget.senderId),
+                                ),
+                              );
+                            }
+                                : null,
+                            child: Text(
+                              '리뷰 작성',
+                              style: TextStyle(fontSize: 22),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );
