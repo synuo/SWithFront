@@ -56,11 +56,10 @@ class _StudyMembersScreenState extends State<StudyMembersScreen> {
         title: Text(
           '스터디 멤버',
           style: TextStyle(
-              color: Colors.black,
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: false,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(4.0), // 선의 두께를 설정합니다.
           child: Container(
