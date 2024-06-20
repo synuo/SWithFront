@@ -176,17 +176,6 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                 ),
               ),
               SizedBox(height: 12.0),
-              /*
-              SizedBox(height: 16.0,),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                child: Text(
-                  '카테고리별 게시판 바로가기',
-                  style: TextStyle(color: Colors.black45, fontSize: 15.0, fontWeight: FontWeight.bold),
-                ),
-              ),
-
-               */
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [

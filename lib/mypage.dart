@@ -52,12 +52,12 @@ class _MyPageState extends State<MyPage> {
                     height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.grey,
+                      color: Colors.grey[200],
                     ),
                     child: Icon(
                       IconData(loggedInUser?.user_image ?? Icons.person.codePoint, fontFamily: 'MaterialIcons'),
                       size: 60,
-                      color: Colors.white,
+                      color: Color(0xff19A7CE),
                     ),
                   ),
                   SizedBox(width: 20),

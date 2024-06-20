@@ -46,7 +46,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 지원 내역'),
+        title: Text('나의 지원 내역', style: TextStyle(fontWeight: FontWeight.bold),),
         centerTitle: false,
       ),
       body: Padding(
