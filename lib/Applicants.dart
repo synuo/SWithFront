@@ -187,10 +187,33 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                                 onPressed: applicant['status'] == null
                                     ? null
                                     : () {
-                                        _showStatusChangeModal(
-                                            context,
-                                            applicant['applicant_id'],
-                                            updateApplicationStatus);
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: Text('상태 변경'),
+                                            content: Text('지원자의 상태를 변경하시겠습니까?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  updateApplicationStatus(
+                                                      applicant['applicant_id'],
+                                                      '수락');
+                                                },
+                                                child: Text('수락'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  updateApplicationStatus(
+                                                      applicant['applicant_id'],
+                                                      '거절');
+                                                },
+                                                child: Text('거절'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
                                       },
                                 child: Text(applicant['status'] ??
                                     ''), // Null check added here
@@ -313,50 +336,4 @@ class AdvanceAnswersScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-void _showStatusChangeModal(
-    BuildContext context, int applicantId, Function updateApplicationStatus) {
-  showModalBottomSheet(
-    context: context,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-    ),
-    builder: (BuildContext context) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '상태 변경',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Text('지원자의 상태를 변경하시겠습니까?'),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    updateApplicationStatus(applicantId, '수락');
-                  },
-                  child: Text('수락'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    updateApplicationStatus(applicantId, '거절');
-                  },
-                  child: Text('거절'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
 }
