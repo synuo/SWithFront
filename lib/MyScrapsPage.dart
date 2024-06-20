@@ -55,7 +55,7 @@ class _MyScrapsPageState extends State<MyScrapsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 스크랩 내역'),
+        title: Text('나의 스크랩 내역', style: TextStyle(fontWeight: FontWeight.bold),),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
