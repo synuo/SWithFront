@@ -175,11 +175,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           } else {
             final userData = snapshot.data!;
 
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ProfileBody(
+            return Column(
+              children: [
+                Expanded(
+                  child: ProfileBody(
                     nickname: userData['nickname'] ?? '',
                     major: major ?? '',
                     major2: major2 ?? '',
@@ -189,31 +188,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     averageRating: averageRating,
                     isOtherProfile: true, // Pass this parameter
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 15.0),
-                        minimumSize: Size(200, 50),
-                      ),
-                      onPressed: canWriteReview
-                          ? () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => WriteReviewScreen(userId: widget.senderId),
-                          ),
-                        );
-                      }
-                          : null,
-                      child: Text(
-                        '리뷰 작성',
-                        style: TextStyle(fontSize: 22),
-                      ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(30.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 15.0),
+                      minimumSize: Size(200, 50),
+                    ),
+                    onPressed: canWriteReview
+                        ? () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WriteReviewScreen(userId: widget.senderId),
+                        ),
+                      );
+                    }
+                        : null,
+                    child: Text(
+                      '리뷰 작성',
+                      style: TextStyle(fontSize: 22),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           }
         },

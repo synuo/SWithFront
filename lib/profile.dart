@@ -131,17 +131,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         centerTitle: false,
       ),
-      body: ProfileBody(
-        nickname: loggedInUser?.nickname,
-        name: loggedInUser?.name,
-        studentId: loggedInUser?.student_id,
-        major: major,
-        major2: major2,
-        major3: major3,
-        introduction: loggedInUser?.introduction ?? '',
-        reviews: reviews,
-        averageRating: averageRating,
-        profileIconCodePoint: loggedInUser?.user_image,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: ProfileBody(
+            nickname: loggedInUser?.nickname,
+            name: loggedInUser?.name,
+            studentId: loggedInUser?.student_id,
+            major: major,
+            major2: major2,
+            major3: major3,
+            introduction: loggedInUser?.introduction ?? '',
+            reviews: reviews,
+            averageRating: averageRating,
+            profileIconCodePoint: loggedInUser?.user_image,
+          ),
+        ),
       ),
     );
   }
@@ -176,274 +181,298 @@ class ProfileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: () {},
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey,
-                  ),
-                  child: Icon(
-                    profileIconCodePoint != null
-                        ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons')
-                        : Icons.person,
-                    size: 80,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(width: 40),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 10),
-                      Text(
-                        nickname ?? '',
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Color(0xff19A7CE),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      if (!isOtherProfile && name != null && studentId != null) // Condition to hide " | "
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: name ?? '',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              TextSpan(
-                                text: ' | ',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              TextSpan(
-                                text: studentId != null ? studentId.toString() : '',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (isOtherProfile || name == null || studentId == null) // Condition to hide " | "
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: name ?? '',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              TextSpan(
-                                text: studentId != null ? ' ${studentId.toString()}' : '',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Text(
-                            major ?? '',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                            ),
-                          ),
-                          if (major2 != null && major2!.isNotEmpty) ...[
-                            Text(
-                              ' | $major2',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                          if (major3 != null && major3!.isNotEmpty) ...[
-                            Text(
-                              ' | $major3',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            '   $introduction',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 30),
-          Divider(height: 1, color: Color(0xff19A7CE)),
-          SizedBox(height: 10),
-          Text(
-            '리뷰',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 10),
-          Divider(height: 1, color: Color(0xff19A7CE)),
-          SizedBox(height: 20),
-          if (reviews != null && reviews!.isNotEmpty)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                for (int i = 1; i < 6; i++)
-                  Icon(
-                    i <= averageRating! ? Icons.star : (i == averageRating! + 0.5 ? Icons.star_half : Icons.star_border),
-                    size: 50,
-                    color: Colors.amber,
-                  ),
-                SizedBox(width: 5),
-                if (averageRating != null)
-                  Text(
-                    averageRating!.toStringAsFixed(1),
-                    style: TextStyle(fontSize: 30),
-                  ),
-                if (reviews != null)
-                  Text(
-                    '   (${reviews!.length})',
-                    style: TextStyle(fontSize: 20),
-                  )
-              ],
-            ),
-          if (reviews == null || reviews!.isEmpty)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () {},
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 40),
-                  Text(
-                    '등록된 리뷰가 없습니다',
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey,
+                    ),
+                    child: Icon(
+                      profileIconCodePoint != null
+                          ? IconData(profileIconCodePoint!, fontFamily: 'MaterialIcons')
+                          : Icons.person,
+                      size: 80,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 20), // Adjusted width for spacing
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 10),
+                        Text(
+                          nickname ?? '',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Color(0xff19A7CE),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        if (!isOtherProfile && name != null && studentId != null) // Condition to hide " | "
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: name ?? '',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' | ',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: studentId != null ? studentId.toString() : '',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (isOtherProfile || name == null || studentId == null) // Condition to hide " | "
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: name ?? '',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: studentId != null ? ' ${studentId.toString()}' : '',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        SizedBox(height: 10),
+                        Wrap(
+                          direction: Axis.horizontal,
+                          spacing: 10, // Adjust spacing between majors
+                          children: [
+                            if (major != null && major!.isNotEmpty) ...[
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.3), // Adjust maxWidth based on available space
+                                child: Text(
+                                  major!,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (major2 != null && major2!.isNotEmpty) ...[
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.3), // Adjust maxWidth based on available space
+                                child: Text(
+                                  '|  $major2',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (major3 != null && major3!.isNotEmpty) ...[
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.3), // Adjust maxWidth based on available space
+                                child: Text(
+                                  '|  $major3',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          SizedBox(height: 20),
-          if (reviews != null && reviews!.isNotEmpty)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Divider(height: 1, color: Color(0xff19A7CE)),
-                SizedBox(height: 10),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: reviews!.length,
-                  itemBuilder: (context, index) {
-                    final review = reviews![index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            SizedBox(height: 20), // Adjusted height for spacing
+            Text(
+              introduction ?? '',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 30), // Adjusted height for spacing
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 10),
+            Text(
+              '리뷰',
+              style: TextStyle(
+                fontSize: 24,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 10),
+            Divider(height: 1, color: Color(0xff19A7CE)),
+            SizedBox(height: 20),
+            if (reviews != null && reviews!.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded( // Ensures the stars and average text fit within the available space
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey,
+                        for (int i = 1; i < 6; i++)
+                          Icon(
+                            i <= averageRating! ? Icons.star : (i == averageRating! + 0.5 ? Icons.star_half : Icons.star_border),
+                            size: 50,
+                            color: Colors.amber,
+                          ),
+                        SizedBox(width: 5),
+                        if (averageRating != null)
+                          Text(
+                            averageRating!.toStringAsFixed(1),
+                            style: TextStyle(fontSize: 30),
+                          ),
+                        if (reviews != null)
+                          Text(
+                            '   (${reviews!.length})',
+                            style: TextStyle(fontSize: 20),
+                          )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            if (reviews == null || reviews!.isEmpty)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 40),
+                    Text(
+                      '등록된 리뷰가 없습니다',
+                      style: TextStyle(fontSize: 18, color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ),
+            SizedBox(height: 20),
+            if (reviews != null && reviews!.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(height: 1, color: Color(0xff19A7CE)),
+                  SizedBox(height: 10),
+                  ListView.separated( // Use ListView.separated for better handling of list items
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: reviews!.length,
+                    separatorBuilder: (context, index) => SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final review = reviews![index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey,
+                                  ),
+                                  child: Icon(
+                                    review['reviewer_icon_code_point'] != null
+                                        ? IconData(review['reviewer_icon_code_point'], fontFamily: 'MaterialIcons')
+                                        : Icons.person,
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                                child: Icon(
-                                  review['reviewer_icon_code_point'] != null
-                                      ? IconData(review['reviewer_icon_code_point'], fontFamily: 'MaterialIcons')
-                                      : Icons.person,
-                                  size: 40,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      review['reviewer_nickname']?.toString() ?? '',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Color(0xff19A7CE),
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Row(
-                                      children: List.generate(5, (i) {
-                                        return Icon(
-                                          i < review['rating'] ? Icons.star : Icons.star_border,
-                                          color: Colors.amber,
-                                          size: 18,
-                                        );
-                                      }),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(review['content'] ?? '',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        review['update_at']?.toString().substring(0, 10) ?? '',
+                                SizedBox(width: 20), // Adjusted width for spacing
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        review['reviewer_nickname']?.toString() ?? '',
                                         style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
+                                          fontSize: 18,
+                                          color: Color(0xff19A7CE),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(height: 10),
+                                      Row(
+                                        children: List.generate(5, (i) {
+                                          return Icon(
+                                            i < review['rating'] ? Icons.star : Icons.star_border,
+                                            color: Colors.amber,
+                                            size: 18,
+                                          );
+                                        }),
+                                      ),
+                                      SizedBox(height: 5),
+                                      Text(
+                                        review['content'] ?? '',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          review['update_at']?.toString().substring(0, 10) ?? '',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-        ],
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
