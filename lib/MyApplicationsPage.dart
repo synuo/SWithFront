@@ -54,27 +54,6 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''}',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Color(0xff19A7CE),
-                    ),
-                  ),
-                  TextSpan(
-                    text: ' 님이 지원한',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: userApplications.length,
