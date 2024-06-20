@@ -192,9 +192,6 @@ class _PostDetailScreenState extends State<PostDetailScreen>
         });
       } else {
         addApplication();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('지원 완료')),
-        );
       }
     } else {
       throw Exception('Failed to check advance_q status');
@@ -216,6 +213,9 @@ class _PostDetailScreenState extends State<PostDetailScreen>
     );
     if (response.statusCode == 201) {
       print("Application added successfully");
+      setState(() {
+        isApplied = true;
+      });
     } else {
       throw Exception('Failed to add application');
     }

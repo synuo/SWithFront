@@ -142,7 +142,7 @@ class _SearchState extends State<Search> {
                 child: TextField(
                   controller: _controller,
                   decoration: InputDecoration(
-                    hintText: '글 제목, 내용, 해시태그 등을 입력해보세요.',
+                    hintText: '글 제목, 내용, 해시태그 등으로 검색해보세요.',
                     suffixIcon: IconButton(
                       icon: Icon(Icons.search_outlined),
                       onPressed: () {

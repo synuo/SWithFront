@@ -190,19 +190,46 @@ class _BoardScreenState extends State<BoardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            post.title,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              if (post.category == "스터디") ...[
+                                Icon(Icons.book,
+                                    size: 20.0,
+                                    color: Color(0xff19A7CE)),
+                              ] else if (post.category ==
+                                  "공모전") ...[
+                                Icon(Icons.emoji_events,
+                                    size: 20.0,
+                                    color: Color(0xff19A7CE)),
+                              ] else if (post.category ==
+                                  "기타") ...[
+                                Icon(
+                                  Icons.category,
+                                  size: 20.0,
+                                  color: Color(0xff19A7CE),
+                                ),
+                              ],
+                              const SizedBox(width: 8),
+                              // 아이콘과 제목 사이의 간격
+                              Expanded(
+                                child: Text(
+                                  post.title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15.0,
+                                  ),
+                                  maxLines: 2,
+                                  overflow:
+                                  TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "${post.category} · ${post.progress} · ${post.view_count}",
+                            "${post.category} · ${post.progress} · ${post.view_count} views",
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
+                              fontSize: 15,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -214,7 +241,7 @@ class _BoardScreenState extends State<BoardScreen> {
                               '#$tag',
                               style: TextStyle(
                                   color: Colors.blue,
-                                  fontSize: 12.0),
+                                  fontSize: 13.0),
                             ))
                                 .toList(),
                           ),
