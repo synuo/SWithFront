@@ -120,6 +120,11 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 itemCount: applicants.length,
                 itemBuilder: (context, index) {
                   final applicant = applicants[index];
+
+                  final String? profileIconString = applicant['user_image'];
+                  final int? profileIconCodePoint = profileIconString != null && profileIconString.isNotEmpty
+                      ? int.tryParse(profileIconString)
+                      : null;
                   return GestureDetector(
                     onTap: () {
                       navigateToProfile(applicant['applicant_id']);
@@ -138,15 +143,14 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundImage:
-                                    applicant['user_image'] != null &&
-                                            applicant['user_image'].isNotEmpty
-                                        ? NetworkImage(applicant['user_image'])
-                                        : null,
-                                child: applicant['user_image'] == null ||
-                                        applicant['user_image'].isEmpty
-                                    ? Icon(Icons.person, size: 30)
-                                    : null,
+                                backgroundColor: Colors.grey[200],
+                                child: profileIconCodePoint != null
+                                    ? Icon(
+                                  IconData(profileIconCodePoint, fontFamily: 'MaterialIcons'),
+                                  size: 30,
+                                  color: Color(0xff19A7CE),
+                                )
+                                    : Icon(Icons.person, size: 30,color: Color(0xff19A7CE)),
                               ),
                               SizedBox(width: 15),
                               Column(

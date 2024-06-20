@@ -474,6 +474,10 @@ class _PostDetailScreenState extends State<PostDetailScreen>
           if (post.progress == '모집중' || post.progress == '추가 모집') {
             isActive = true;
           }
+          final String? profileIconString = post.writer_image;
+          final int? profileIconCodePoint = profileIconString != null && profileIconString.isNotEmpty
+              ? int.tryParse(profileIconString)
+              : null;
 
           return Scaffold(
             appBar: AppBar(
@@ -543,25 +547,17 @@ class _PostDetailScreenState extends State<PostDetailScreen>
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (post.writer_image != null)
-                              Image.network(
-                                Uri.encodeFull(post.writer_image!),
-                                width: 50,
-                                height: 50,
-                                errorBuilder: (BuildContext context,
-                                    Object exception, StackTrace? stackTrace) {
-                                  print('Error loading image: $exception');
-                                  return Icon(
-                                    Icons.account_circle,
-                                    size: 50,
-                                  );
-                                },
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: Colors.grey[200],
+                              child: profileIconCodePoint != null
+                                  ? Icon(
+                                IconData(profileIconCodePoint, fontFamily: 'MaterialIcons'),
+                                size: 30,
+                                color: Color(0xff19A7CE),
                               )
-                            else
-                              Icon(
-                                Icons.account_circle,
-                                size: 50,
-                              ),
+                                  : Icon(Icons.person, size: 30,color: Color(0xff19A7CE)),
+                            ),
                             SizedBox(width: 20),
                             Expanded(
                               child: Column(
