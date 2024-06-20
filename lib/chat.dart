@@ -116,13 +116,13 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 title: Text(
                   studyName,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 subtitle: lastMessage != null && lastMessageTime != null
                     ? Text(
                   lastMessage,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
                 )
                     : null,
                 trailing: lastMessageTime != null
