@@ -25,7 +25,14 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(  // Scaffold 위젯 추가
       appBar: AppBar(
-        title: Text('비밀번호 찾기'),
+        title: Text(
+          '비밀번호 찾기',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(4.0), // 선의 두께를 설정합니다.

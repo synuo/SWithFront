@@ -164,9 +164,25 @@ class _Logo extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FlutterLogo(size: isSmallScreen ? 100 : 200),
+        //FlutterLogo(size: isSmallScreen ? 100 : 200),
+        Text(
+          'SWith',
+          style: TextStyle(
+            fontSize: isSmallScreen ? 80 : 120,
+            //fontWeight: FontWeight.bold,
+            fontFamily: 'Teko',
+            color : Color(0xff19A7CE),
+            shadows: [
+              Shadow(
+                offset: Offset(2.0,2.0),
+                blurRadius: 5.0,
+                color: Color.fromARGB(50, 0, 0, 0),
+              )
+            ]
+          ),
+        ),
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
         )
       ],
     );
@@ -402,13 +418,7 @@ class __FormContentState extends State<_FormContent> {
         // 사용자 정보를 가져오는 데 실패한 경우
         print('Failed to fetch user information');
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('로그인 성공'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      
       print('화면전환 : login -> homepage ');
       Navigator.pushReplacement(
         context,

@@ -56,11 +56,10 @@ class _StudyMembersScreenState extends State<StudyMembersScreen> {
         title: Text(
           '스터디 멤버',
           style: TextStyle(
-              color: Colors.black,
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: false,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(4.0), // 선의 두께를 설정합니다.
           child: Container(
@@ -79,7 +78,11 @@ class _StudyMembersScreenState extends State<StudyMembersScreen> {
                   itemCount: members.length,
                   itemBuilder: (context, index) {
                     final member = members[index];
-                    return GestureDetector( // 추가된 부분
+                    final String? profileIconString = member['user_image'];
+                    final int? profileIconCodePoint = profileIconString != null && profileIconString.isNotEmpty
+                        ? int.tryParse(profileIconString)
+                        : null;
+                    return GestureDetector(
                       onTap: () {
                         navigateToProfile(member['user_id']);
                       },
@@ -87,7 +90,7 @@ class _StudyMembersScreenState extends State<StudyMembersScreen> {
                         padding: EdgeInsets.all(10),
                         margin: EdgeInsets.symmetric(vertical: 5),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: const Color(0xff19A7CE)),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Column(
@@ -95,6 +98,7 @@ class _StudyMembersScreenState extends State<StudyMembersScreen> {
                           children: [
                             Row(
                               children: [
+                                /*
                                 CircleAvatar(
                                   radius: 30,
                                   backgroundImage:
@@ -106,6 +110,19 @@ class _StudyMembersScreenState extends State<StudyMembersScreen> {
                                       member['user_image'].isEmpty
                                       ? Icon(Icons.person, size: 30)
                                       : null,
+                                ),
+
+                                 */
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: Colors.grey[200],
+                                  child: profileIconCodePoint != null
+                                      ? Icon(
+                                    IconData(profileIconCodePoint, fontFamily: 'MaterialIcons'),
+                                    size: 30,
+                                    color: Color(0xff19A7CE),
+                                  )
+                                      : Icon(Icons.person, size: 30,color: Color(0xff19A7CE)),
                                 ),
                                 SizedBox(width: 15),
                                 Column(

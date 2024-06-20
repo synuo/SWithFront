@@ -82,7 +82,13 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('리뷰 작성'),
+        title: Text(
+          '리뷰 작성',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
       ),
       body: FutureBuilder(
         future: _userFuture,
@@ -97,7 +103,27 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Text('${userData['nickname']} 님은'),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '${userData['nickname']}',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Color(0xff19A7CE),
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' 님에 대한 리뷰를 남겨주세요.',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20,),
                   Row(
                     children: [
                       RatingBar.builder(
@@ -119,23 +145,67 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
                       ),
                     ],
                   ),
-                  TextField(
-                    controller: _reviewController,
-                    decoration: InputDecoration(
-                      labelText: '리뷰',
+                  SizedBox(height: 20,),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(
+                        color: Colors.grey,
+                        width: 1.0,
+                      ),
                     ),
-                    maxLines: 5,
-                  ),
-                  SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: _submitReview,
-                    child: Text('작성 완료'),
+                    child: TextFormField(
+                      controller: _reviewController,
+                      maxLines: null,
+                      minLines: 10,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                      ),
+                    ),
                   ),
                 ],
               ),
             );
           }
         },
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: _submitReview,
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Color(0xff19A7CE)), // 버튼 배경색
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius:
+                      BorderRadius.circular(10.0), // 버튼 모서리 둥글기 설정
+                    ),
+                  ),
+                ),
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.75,
+                  padding: EdgeInsets.symmetric(vertical: 15.0), // 버튼 내부 패딩
+                  child: Center(
+                    child: Text(
+                      '작성 완료',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

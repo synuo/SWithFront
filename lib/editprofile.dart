@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'mypage.dart';
 import 'common_object.dart'; // User 클래스가 정의된 파일을 임포트
 import 'package:http/http.dart' as http;
+import 'package:dropdown_search/dropdown_search.dart';
 
 class EditProfileScreen extends StatefulWidget {
   @override
@@ -236,6 +237,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  /*
   Widget _buildDropdownRow(String label, String? value, bool isEditing, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -281,6 +283,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+
+   */
+  Widget _buildDropdownRow(String label, String? value, bool isEditing, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(
+            child: isEditing
+                ? DropdownSearch<String>(
+              items: _majors,
+              selectedItem: value,
+              onChanged: onChanged,
+              dropdownBuilder: (context, selectedItem) => Text(selectedItem ?? ''),
+              popupProps: PopupProps.menu(
+                showSearchBox: true,
+                constraints: BoxConstraints(maxHeight: 200), // 드롭다운 높이 제한
+              ),
+            )
+                : DropdownSearch<String>(
+              items: _majors,
+              selectedItem: value != null ? value : (_majors.isNotEmpty ? _majors.first : null),
+              onChanged: (newValue) {
+                if (label == '전공1') {
+                  _selectedMajor1 = newValue!;
+                } else if (label == '전공2') {
+                  _selectedMajor2 = newValue!;
+                } else if (label == '전공3') {
+                  _selectedMajor3 = newValue!;
+                }
+                onChanged(newValue);
+              },
+              dropdownBuilder: (context, selectedItem) => Text(selectedItem ?? ''),
+              popupProps: PopupProps.menu(
+                showSearchBox: true,
+                constraints: BoxConstraints(maxHeight: 200), // 드롭다운 높이 제한
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 프로필 아이콘 선택을 위한 Row 빌더
   Widget _buildProfileIconRow() {
     return Padding(
@@ -290,11 +338,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         children: profileIcons.map((icon) {
           return IconButton(
             icon: Icon(icon, size: 30),
-            color: _selectedProfileIcon == icon ? Colors.blue : Colors.grey,
+            color: _selectedProfileIcon == icon ? Colors.blue : Colors.white,
             onPressed: () {
               setState(() {
                 _selectedProfileIcon = icon;
               });
+
             },
           );
         }).toList(),

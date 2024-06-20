@@ -23,9 +23,8 @@ class _MyScrapsPageState extends State<MyScrapsPage> {
   Future<void> fetchUserScraps() async {
     User? loggedInUser = Provider.of<UserProvider>(context, listen: false).loggedInUser;
     final userId = loggedInUser?.user_id;
-    final url =
-    Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
-      'user_id': loggedInUser?.user_id.toString(),
+    final url = Uri.parse('http://localhost:3000/getscrap').replace(queryParameters: {
+      'user_id': userId.toString(),
     });
 
     try {
@@ -55,22 +54,19 @@ class _MyScrapsPageState extends State<MyScrapsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 스크랩 내역'),
+        title: Text(
+          '나의 스크랩 내역',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${Provider.of<UserProvider>(context).loggedInUser?.nickname ?? ''} 님의 스크랩 내역',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: userScraps.length,
@@ -86,7 +82,7 @@ class _MyScrapsPageState extends State<MyScrapsPage> {
                       title: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(_getCategoryIcon(userScraps[index].category)),
+                          _getCategoryIcon(userScraps[index].category),
                           SizedBox(width: 20),
                           Expanded(
                             child: Column(
@@ -95,8 +91,8 @@ class _MyScrapsPageState extends State<MyScrapsPage> {
                                 Text(
                                   userScraps[index].title,
                                   style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      color: Color(0xff19A7CE)
                                   ),
                                 ),
                                 Text(
@@ -137,14 +133,16 @@ class _MyScrapsPageState extends State<MyScrapsPage> {
     );
   }
 
-  IconData _getCategoryIcon(String category) {
+  Widget _getCategoryIcon(String category) {
+    const double iconSize = 40.0; // Define the size of the icons
+
     switch (category) {
       case '스터디':
-        return Icons.book;
+        return Icon(Icons.book_outlined, color: Colors.blue, size: iconSize);
       case '공모전':
-        return Icons.emoji_events;
+        return Icon(Icons.emoji_events_outlined, color: Colors.orange, size: iconSize);
       default:
-        return Icons.category;
+        return Icon(Icons.category_outlined, color: Colors.grey, size: iconSize);
     }
   }
 }

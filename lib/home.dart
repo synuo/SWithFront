@@ -127,12 +127,23 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'SWith',
-          style: TextStyle(
-              color: Colors.black,
-              fontSize: 45.0,
-              fontFamily: 'Teko'
+        title: Padding(
+          padding: const EdgeInsets.only(top: 16.0),
+          child: Text(
+            'SWith',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 40.0,
+                fontFamily: 'Teko',
+                shadows: [
+                  Shadow(
+                    offset: Offset(2.0,2.0),
+                    blurRadius: 5.0,
+                    color: Color.fromARGB(50, 0, 0, 0),
+                  )
+                ]
+            ),
+
           ),
         ),
         elevation: 0.0,
@@ -156,14 +167,15 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 16.0,),
+              SizedBox(height: 16.0),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '> 카테고리별 게시판으로 이동하기\n',
-                  style: TextStyle(color: Colors.black45, fontSize: 15.0, fontWeight: FontWeight.bold),
+                  '  카테고리별 게시판 바로가기',  //조회수가 높은 게시물 5개
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
+              SizedBox(height: 12.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -219,7 +231,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
-              SizedBox(height: 12.0),
+              SizedBox(height: 5.0),
               Expanded(
                 child: topPosts.isEmpty ? Center(child: CircularProgressIndicator()) : ListView.builder(
                   itemCount: topPosts.length,
@@ -243,7 +255,7 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                         height: 100,
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                          border: Border.all(color: const Color(0xff19A7CE)),
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         padding: const EdgeInsets.all(8),
@@ -254,16 +266,62 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Row(
+                                    children: [
+                                      if (post.category == "스터디") ...[
+                                        Icon(Icons.book, size: 20.0, color: Color(0xff19A7CE)),
+                                      ] else if (post.category == "공모전") ...[
+                                        Icon(Icons.emoji_events, size: 20.0, color: Color(0xff19A7CE)),
+                                      ] else if (post.category == "기타") ...[
+                                        Icon(Icons.category, size: 20.0, color: Color(0xff19A7CE),),
+                                      ],
+                                      const SizedBox(width: 8), // 아이콘과 제목 사이의 간격
+                                      Expanded(
+                                        child: Text(
+                                          post.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15.0,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  /*
                                   Text(
                                     post.title,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15.0,
+                                    ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
+
+                                   */
                                   const SizedBox(height: 8),
                                   Text(
                                     "${post.category} · ${post.progress} · ${post.view_count} views",
                                     //style: Theme.of(context).textTheme.caption,
+                                    style: const TextStyle(
+                                      //fontWeight: FontWeight.bold,
+                                      fontSize: 15.0,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Wrap(
+                                    spacing: 4.0,
+                                    runSpacing: 2.0,
+                                    children: post.tags
+                                        .map((tag) => Text(
+                                      '#$tag',
+                                      style: TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: 13.0),
+                                    ))
+                                        .toList(),
                                   ),
                                 ],
                               ),
