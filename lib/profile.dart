@@ -410,14 +410,14 @@ class ProfileBody extends StatelessWidget {
                                   height: 60,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.grey,
+                                    color: Colors.grey[200],
                                   ),
                                   child: Icon(
                                     review['reviewer_icon_code_point'] != null
                                         ? IconData(review['reviewer_icon_code_point'], fontFamily: 'MaterialIcons')
                                         : Icons.person,
                                     size: 40,
-                                    color: Colors.white,
+                                    color: Color(0xff19A7CE),
                                   ),
                                 ),
                                 SizedBox(width: 20), // Adjusted width for spacing
