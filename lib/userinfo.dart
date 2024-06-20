@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:practice/login.dart';
 import 'common_widgets.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 // 사용자 기본 정보 입력 (이름, 학번, 닉네임, 전공, 비번)
 // 전공1, 전공2, 프로필이미지, 자기소개는 선택사항
@@ -90,70 +91,78 @@ class _UserInfoPageState extends State<UserInfoPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'User Information', style: TextStyle(color: Color(0xff19A7CE), fontSize: 20.0, fontWeight: FontWeight.bold),),
+            '회원 정보', style: TextStyle(color: Colors.black, fontSize: 20.0, fontWeight: FontWeight.bold),),
           elevation: 0.0,
           backgroundColor: Colors.white30,
           centerTitle: true,
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(4.0), // 선의 두께를 설정합니다.
+            child: Container(
+              color: Colors.black12, // 선의 색상을 설정합니다.
+              height: 1.0, // 선의 높이를 설정합니다.
+            ),
+          ),
         ),
         body: Center(
           child: Form(
             key: _formKey,
             child: Padding(
-              padding: EdgeInsets.all(80.0),
+              padding: EdgeInsets.only(top: 30.0, left: 80.0, right: 80.0, bottom: 80.0),
               child: ListView(
                 children: <Widget>[
-                  // TODO : 프로필 이미지
                   // 프로필 아이콘 선택 부분
-                  Center(
-                    child: DropdownButton<IconData>(
-                      value: _pickedProfileIcon,
-                      items: [
-                        DropdownMenuItem(
-                          value: Icons.person,
-                          child: Icon(Icons.person, size: 50),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0), // 원하는 오른쪽 이동 거리 설정
+                    child: Center(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<IconData>(
+                          value: _pickedProfileIcon,
+                          items: [
+                            DropdownMenuItem(
+                              value: Icons.person,
+                              child: CircleAvatar(
+                                radius: 150,
+                                backgroundColor: Colors.white, // 배경색 설정
+                                child: Icon(Icons.person, size: 50, color: Color(0xff19A7CE)),
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: Icons.cookie,
+                              child: CircleAvatar(
+                                radius: 150,
+                                backgroundColor: Colors.white, // 배경색 설정
+                                child: Icon(Icons.cookie, size: 50, color: Color(0xff19A7CE)),
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: Icons.ac_unit,
+                              child: CircleAvatar(
+                                radius: 150,
+                                backgroundColor: Colors.white, // 배경색 설정
+                                child: Icon(Icons.ac_unit, size: 50, color: Color(0xff19A7CE)),
+                              ),
+                            ),
+                          ],
+                          onChanged: (IconData? newIcon) {
+                            setState(() {
+                              _pickedProfileIcon = newIcon!;
+                            });
+                          },
+                          icon: Container(), // 아이콘 비워두기
+                          isExpanded: true,
+                          alignment: Alignment.center, // 아이템 텍스트 정렬 설정
+                          //alignment: Alignment(0.5, 0.0),
                         ),
-                        DropdownMenuItem(
-                          value: Icons.cookie,
-                          child: Icon(Icons.cookie, size: 50),
-                        ),
-                        DropdownMenuItem(
-                          value: Icons.ac_unit,
-                          child: Icon(Icons.ac_unit, size: 50),
-                        ),
-                      ],
-                      onChanged: (IconData? newIcon) {
-                        setState(() {
-                          _pickedProfileIcon = newIcon!;
-                        });
-                      },
-                      iconSize: 50,
+                      ),
                     ),
                   ),
-                  // 프로필 이미지 업로드 부분 수정
-                  /*
-                  GestureDetector(
-                    onTap: () async {
-                      final pickedImage = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => UploadImage()),
-                      );
-                      if (pickedImage != null && pickedImage is String) {
-                        setState(() {
-                          _pickedProfileImage = pickedImage;
-                        });
-                      }
-                    },
-                    child: _pickedProfileImage != null
-                        ? Image.file(File(_pickedProfileImage!), width: 100, height: 100, fit: BoxFit.cover)
-                        : CircleAvatar(radius: 50, child: Icon(Icons.ac_unit, size: 50),),
-                  ),
-                   */
                   // 이름 입력 폼 필드
+                  Text('이름'),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      labelText: '이름',
                       hintText: '이름(성이름)을 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 14.0),
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -165,12 +174,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 학번 입력 폼 필드
+                  Text('학번'),
                   TextFormField(
                     controller: _studentnumController,
                     keyboardType: TextInputType.number, // 숫자 입력 타입 지정
                     decoration: InputDecoration(
-                      labelText: '학번',
-                      hintText: '학번을 입력해주세요.(7자리)',
+                      hintText: '학번 7자리를 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 14.0),
                       border: OutlineInputBorder(),
                       //errorText: _isStudentIdAvailable == null || _isStudentIdAvailable! ? null : '이미 사용 중인 학번입니다.',
                       errorText: _isStudentIdAvailable == false ? '이미 사용 중인 학번입니다.' : null,
@@ -188,11 +198,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 닉네임 입력 폼 필드
+                  Text('닉네임'),
                   TextFormField(
                     controller: _nicknameController,
                     decoration: InputDecoration(
-                      labelText: '닉네임',
                       hintText: '닉네임을 입력해주세요.(10자 이하)',
+                      hintStyle: TextStyle(fontSize: 14.0),
                       border: OutlineInputBorder(),
                       errorText: _isNicknameAvailable == false ? '이미 사용 중인 닉네임입니다.' : null,
                         //errorText: _isNicknameAvailable == null || _isNicknameAvailable! ? null : '이미 사용 중인 닉네임입니다.'
@@ -225,8 +236,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     },
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
-                      labelText: '비밀번호',
                       hintText: '비밀번호를 입력해주세요.(영문, 숫자 포함 8자 이상)',
+                      hintStyle: TextStyle(fontSize: 14.0),
                       border: OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(_isPasswordVisible
@@ -242,12 +253,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 비밀번호 재확인 입력 폼 필드
+                  Text('비밀번호 확인'),
                   TextFormField(
                     controller: _confirmPasswordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: '비밀번호 확인',
                       hintText: '비밀번호를 다시 입력해주세요.',
+                      hintStyle: TextStyle(fontSize: 14.0),
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -262,6 +274,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ),
                   _gap(),
                   // 전공 선택 필드
+                  Text('전공 1'),
+                  /*
                   DropdownButtonFormField<String>(
                     value: _selectedMajor1.isNotEmpty
                         ? _selectedMajor1
@@ -275,7 +289,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       print('전공1id : ${findMajorId(_selectedMajor1)}');
                     },
                     decoration: InputDecoration(
-                      labelText: '전공',
                       border: OutlineInputBorder(),
                     ),
                     items: _majors.map<DropdownMenuItem<String>>((String value) {
@@ -291,7 +304,32 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       return null;
                     },
                   ),
+
+                   */
+                  DropdownSearch<String>(
+                    items: _majors,
+                    selectedItem: _selectedMajor1,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedMajor1 = newValue!;
+                      });
+                      print('전공1id : ${findMajorId(_selectedMajor1)}');
+                    },
+                    dropdownBuilder: (context, selectedItem) => Text(selectedItem ?? ''),
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                      constraints: BoxConstraints(maxHeight: 200), // 드롭다운 높이 제한
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '전공을 선택해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
                   _gap(),
+                  Text('전공 2 (선택)'),
+                  /*
                   DropdownButtonFormField<String>(
                     value: _selectedMajor2,
                     onChanged: (String? newValue) {
@@ -300,7 +338,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       });
                     },
                     decoration: InputDecoration(
-                      labelText: '전공 2 (선택)',
                       border: OutlineInputBorder(),
                     ),
                     items: _majors.map<DropdownMenuItem<String>>((String value) {
@@ -310,7 +347,25 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       );
                     }).toList(),
                   ),
+
+                   */
+                  DropdownSearch<String>(
+                    items: _majors,
+                    selectedItem: _selectedMajor2,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedMajor2 = newValue!;
+                      });
+                    },
+                    dropdownBuilder: (context, selectedItem) => Text(selectedItem ?? ''),
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                      constraints: BoxConstraints(maxHeight: 200), // 드롭다운 높이 제한
+                    ),
+                  ),
                   _gap(),
+                  Text('전공 3 (선택)'),
+                  /*
                   DropdownButtonFormField<String>(
                     value: _selectedMajor3,
                     onChanged: (String? newValue) {
@@ -319,7 +374,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       });
                     },
                     decoration: InputDecoration(
-                      labelText: '전공 3 (선택)',
                       border: OutlineInputBorder(),
                     ),
                     items: _majors.map<DropdownMenuItem<String>>((String value) {
@@ -329,12 +383,29 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       );
                     }).toList(),
                   ),
+
+                   */
+                  DropdownSearch<String>(
+                    items: _majors,
+                    selectedItem: _selectedMajor3,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedMajor3 = newValue!;
+                      });
+                    },
+                    dropdownBuilder: (context, selectedItem) => Text(selectedItem ?? ''),
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                      constraints: BoxConstraints(maxHeight: 200), // 드롭다운 높이 제한
+                    ),
+                  ),
                   _gap(),
                   // 자기소개 입력 폼 필드
+                  Text('자기소개'),
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: '자기소개 (선택)',
                       hintText: '본인에 대해 간단히 소개해주세요. (300자 이하) ',
+                      hintStyle: TextStyle(fontSize: 14.0),
                       border: OutlineInputBorder(),
                     ),
                     maxLength: 300, // 최대 300자
