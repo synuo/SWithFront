@@ -503,6 +503,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: Text('알림'),
             content: Text('회원 가입이 완료되었습니다! 다시 로그인을 진행해주세요.'),
             actions: [
@@ -530,6 +531,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: Text('오류'),
             content: Text(errorMessage),
             actions: [

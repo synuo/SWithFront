@@ -305,6 +305,7 @@ class __FormContentState extends State<_FormContent> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
+              backgroundColor: Colors.white,
               title: Text('이미 존재하는 이메일입니다.'),
               content: Text('중복된 메일입니다. 다른 메일로 회원가입을 진행하세요.'),
               actions: <Widget>[

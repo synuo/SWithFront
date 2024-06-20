@@ -242,6 +242,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
+              backgroundColor: Colors.white,
               title: Text('존재하지 않는 이메일 정보.'),
               content: Text('존재하지 않는 이메일 정보입니다. 회원가입을 진행하세요.'),
               actions: <Widget>[
