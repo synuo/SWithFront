@@ -17,7 +17,8 @@ class BoardScreen extends StatefulWidget {
 class _BoardScreenState extends State<BoardScreen> {
   late List<Post> posts = []; // 게시물 목록 데이터
   String? searchQuery; // 검색
-  String selectedFilter = '모집중';
+  Set<String> selectedProgressFilters = {'모집중'};
+  Set<String> selectedCategoryFilters = {'스터디','공모전','기타'};
   bool isLoading = true; // 데이터를 불러오는 중인지 여부
 
   @override
@@ -51,15 +52,17 @@ class _BoardScreenState extends State<BoardScreen> {
 
         // 카테고리가 '전체'가 아닌 경우 해당 카테고리의 게시물만 필터링
         if (widget.category != '전체') {
-          fetchedPosts.retainWhere((post) => post.category == widget.category);
+          posts.retainWhere((post) => post.category == widget.category);
         }
+
         // 검색어가 있는 경우 검색어가 포함된 게시물만 필터링
         if (searchQuery != null && searchQuery!.isNotEmpty) {
-          posts = posts.where((post) =>
+          posts = posts
+              .where((post) =>
           post.title.contains(searchQuery!) ||
               post.content.contains(searchQuery!) ||
-              post.study_name.contains(searchQuery!)
-          ).toList();
+              post.study_name.contains(searchQuery!))
+              .toList();
         }
 
         isLoading = false; // 데이터를 불러오기 완료
@@ -80,19 +83,47 @@ class _BoardScreenState extends State<BoardScreen> {
     });
   }
 
-  void applyFilter(String filter) {
+
+  void toggleProgressFilter(String filter) {
     setState(() {
-      selectedFilter = filter;
+      if (selectedProgressFilters.contains(filter)) {
+        selectedProgressFilters.remove(filter);
+      } else {
+        selectedProgressFilters.add(filter);
+      }
     });
-    fetchPosts(); // 서버에서 데이터를 다시 가져와 필터링을 적용
+    fetchPosts();
+  }
+
+  void toggleCategoryFilter(String filter) {
+    setState(() {
+      if (selectedCategoryFilters.contains(filter)) {
+        selectedCategoryFilters.remove(filter);
+      } else {
+        selectedCategoryFilters.add(filter);
+      }
+    });
+    fetchPosts();
   }
 
   List<Post> getFilteredPosts() {
-    if (selectedFilter == '전체') {
-      return posts;
-    } else {
-      return posts.where((post) => post.progress == selectedFilter).toList();
+    List<Post> filteredPosts = posts;
+
+    // Progress 필터 적용
+    if (selectedProgressFilters.isNotEmpty) {
+      filteredPosts = filteredPosts
+          .where((post) => selectedProgressFilters.contains(post.progress))
+          .toList();
     }
+
+    // Category 필터 적용
+    if (selectedCategoryFilters.isNotEmpty) {
+      filteredPosts = filteredPosts
+          .where((post) => selectedCategoryFilters.contains(post.category))
+          .toList();
+    }
+
+    return filteredPosts;
   }
 
   Future<void> increaseViewCount(int post_id) async {
@@ -126,12 +157,6 @@ class _BoardScreenState extends State<BoardScreen> {
         title: SearchBar(onSearch: handleSearch),
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list), // 필터 버튼 아이콘
-            onPressed: () {
-              _showFilterDialog();
-            },
-          ),
-          IconButton(
             icon: Icon(Icons.edit), // 포스트 쓰기 아이콘
             onPressed: () {
               Navigator.push(
@@ -148,6 +173,28 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              height: 45, // 적절한 높이를 설정하여 버튼이 잘리지 않도록 합니다
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
+                  children: [
+                    _buildCategoryFilterButton('스터디'),
+                    _buildCategoryFilterButton('공모전'),
+                    _buildCategoryFilterButton('기타'),
+                    _buildProgressFilterButton('모집중'),
+                    _buildProgressFilterButton('모집 종료'),
+                    _buildProgressFilterButton('추가 모집'),
+                    _buildProgressFilterButton('스터디 종료'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => fetchPosts(),
@@ -183,7 +230,8 @@ class _BoardScreenState extends State<BoardScreen> {
                       margin: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8.0),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xff19A7CE)),
+                        border: Border.all(
+                            color: const Color(0xff19A7CE)),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       padding: const EdgeInsets.all(8),
@@ -196,19 +244,17 @@ class _BoardScreenState extends State<BoardScreen> {
                                 Icon(Icons.book,
                                     size: 20.0,
                                     color: Color(0xff19A7CE)),
-                              ] else if (post.category ==
-                                  "공모전") ...[
-                                Icon(Icons.emoji_events,
-                                    size: 20.0,
-                                    color: Color(0xff19A7CE)),
-                              ] else if (post.category ==
-                                  "기타") ...[
-                                Icon(
-                                  Icons.category,
-                                  size: 20.0,
-                                  color: Color(0xff19A7CE),
-                                ),
-                              ],
+                              ] else
+                                if (post.category == "공모전") ...[
+                                  Icon(Icons.emoji_events,
+                                      size: 20.0,
+                                      color: Color(0xff19A7CE)),
+                                ] else
+                                  if (post.category == "기타") ...[
+                                    Icon(Icons.category,
+                                        size: 20.0,
+                                        color: Color(0xff19A7CE)),
+                                  ],
                               const SizedBox(width: 8),
                               // 아이콘과 제목 사이의 간격
                               Expanded(
@@ -219,15 +265,15 @@ class _BoardScreenState extends State<BoardScreen> {
                                     fontSize: 15.0,
                                   ),
                                   maxLines: 2,
-                                  overflow:
-                                  TextOverflow.ellipsis,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "${post.category} · ${post.progress} · ${post.view_count} views",
+                            "${post.category} · ${post.progress} · ${post
+                                .view_count} views",
                             style: TextStyle(
                               fontSize: 15,
                             ),
@@ -237,12 +283,13 @@ class _BoardScreenState extends State<BoardScreen> {
                             spacing: 4.0,
                             runSpacing: 2.0,
                             children: post.tags
-                                .map((tag) => Text(
-                              '#$tag',
-                              style: TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 13.0),
-                            ))
+                                .map((tag) =>
+                                Text(
+                                  '#$tag',
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: 13.0),
+                                ))
                                 .toList(),
                           ),
                         ],
@@ -258,42 +305,62 @@ class _BoardScreenState extends State<BoardScreen> {
     );
   }
 
-  void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('필터 선택'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <String>[
-              '전체',
-              '모집중',
-              '모집 종료',
-              '추가 모집',
-              '스터디 종료'
-            ].map((filter) {
-              return RadioListTile(
-                title: Text(filter),
-                value: filter,
-                groupValue: selectedFilter,
-                onChanged: (value) {
-                  setState(() {
-                    selectedFilter = value!;
-                  });
-                  Navigator.of(context).pop();
-                  applyFilter(selectedFilter);
-                },
-              );
-            }).toList(),
+  Widget _buildProgressFilterButton(String progress) {
+    final isSelected = selectedProgressFilters.contains(progress);
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.0), // 버튼 간의 간격 설정
+      child: ElevatedButton(
+        onPressed: () {
+          toggleProgressFilter(progress);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? Color(0xff19A7CE) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5.0),
           ),
-        );
-      },
+          minimumSize: Size(80, 40), // 버튼의 가로 길이를 100으로 설정
+        ),
+        child: Text(
+          progress,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.blueGrey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilterButton(String category) {
+    final isSelected = selectedCategoryFilters.contains(category);
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.0), // 버튼 간의 간격 설정
+      child: ElevatedButton(
+        onPressed: () {
+          toggleCategoryFilter(category);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? Color(0xff19A7CE) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5.0),
+          ),
+          minimumSize: Size(80, 40), // 버튼의 가로 길이를 100으로 설정
+        ),
+        child: Text(
+          category,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.blueGrey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }
 
-class SearchBar extends StatefulWidget {
+  class SearchBar extends StatefulWidget {
   final ValueChanged<String> onSearch;
 
   const SearchBar({Key? key, required this.onSearch}) : super(key: key);
@@ -302,7 +369,8 @@ class SearchBar extends StatefulWidget {
   State<SearchBar> createState() => _SearchBarState();
 }
 
-class _SearchBarState extends State<SearchBar> with SingleTickerProviderStateMixin {
+class _SearchBarState extends State<SearchBar>
+    with SingleTickerProviderStateMixin {
   bool _isActive = false;
   final TextEditingController _searchController = TextEditingController();
 
@@ -311,8 +379,11 @@ class _SearchBarState extends State<SearchBar> with SingleTickerProviderStateMix
     return Row(
       children: [
         if (!_isActive)
-          Text("게시판",
-              style: TextStyle(color: Colors.black, fontSize: 22.0, fontWeight: FontWeight.bold)),
+          Text("전체 게시글",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 22.0,
+                  fontWeight: FontWeight.bold)),
         Expanded(
           child: Align(
             alignment: Alignment.centerRight,
@@ -320,35 +391,35 @@ class _SearchBarState extends State<SearchBar> with SingleTickerProviderStateMix
               duration: const Duration(milliseconds: 250),
               child: _isActive
                   ? Container(
-                width: double.infinity,
-                height: 40,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4.0)),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                      hintText: '글 제목, 내용, 해시태그 등으로 검색해보세요.',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isActive = false;
-                            });
-                            widget.onSearch('');
-                            _searchController.clear();
-                          },
-                          icon: const Icon(Icons.close))),
-                  onSubmitted: widget.onSearch,
-                ),
-              )
+                      width: double.infinity,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4.0)),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                            hintText: '글 제목, 내용, 해시태그 등으로 검색해보세요.',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isActive = false;
+                                  });
+                                  widget.onSearch('');
+                                  _searchController.clear();
+                                },
+                                icon: const Icon(Icons.close))),
+                        onSubmitted: widget.onSearch,
+                      ),
+                    )
                   : IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isActive = true;
-                    });
-                  },
-                  icon: const Icon(Icons.search)),
+                      onPressed: () {
+                        setState(() {
+                          _isActive = true;
+                        });
+                      },
+                      icon: const Icon(Icons.search)),
             ),
           ),
         ),
