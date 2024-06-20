@@ -107,7 +107,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               fontWeight: FontWeight.bold,
           ),
         ),
-
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(4.0), // 선의 두께를 설정합니다.
+          child: Container(
+            color: Colors.black12, // 선의 색상을 설정합니다.
+            height: 1.0, // 선의 높이를 설정합니다.
+          ),
+        ),
       ),
       body: Center(
         child: Container(

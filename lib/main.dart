@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 import 'package:provider/provider.dart';
 import 'common_object.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 //05.20 수정본 수정본
 void main() {
@@ -79,14 +80,22 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.cookie),  //TODO : Image.asset('assets/image/potato.png') 해결
-            SizedBox(height: 20), // 아이콘과 텍스트 사이의 간격 조정
+            //SizedBox(height: 20), // 아이콘과 텍스트 사이의 간격 조정
             Text(
               'SWith',
               style: TextStyle(
-                fontSize: 60, fontFamily: 'Teko',
+                fontSize: 70, fontFamily: 'Teko',
                 color: Theme.of(context).colorScheme.primary, // MyApp의 테마 색상 사용
-              ),),],
+                  shadows: [
+                    Shadow(
+                      offset: Offset(1.0,1.0),
+                      blurRadius: 5.0,
+                      color: Color.fromARGB(80, 0, 0, 0),
+                    )
+                  ],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -52,16 +52,32 @@ class _Logo extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FlutterLogo(size: isSmallScreen ? 100 : 200),
+        Text(
+          'SWith',
+          style: TextStyle(
+              fontSize: isSmallScreen ? 80 : 120,
+              //fontWeight: FontWeight.bold,
+              fontFamily: 'Teko',
+              color : Color(0xff19A7CE),
+              shadows: [
+                Shadow(
+                  offset: Offset(2.0,2.0),
+                  blurRadius: 5.0,
+                  color: Color.fromARGB(50, 0, 0, 0),
+                )
+              ]
+          ),
+        ),
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Text(
             "SWith에 오신 것을 환영합니다!",
+            style: TextStyle(
+              color : Color(0xff19A7CE),
+              fontSize: 20.0,
+              fontFamily: 'Teko',
+            ),
             textAlign: TextAlign.center,
-            style: isSmallScreen
-                ? Theme.of(context).textTheme.headlineSmall
-                : Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(color: Colors.black),
           ),
         )
       ],

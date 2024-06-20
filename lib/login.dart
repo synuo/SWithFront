@@ -164,9 +164,25 @@ class _Logo extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FlutterLogo(size: isSmallScreen ? 100 : 200),
+        //FlutterLogo(size: isSmallScreen ? 100 : 200),
+        Text(
+          'SWith',
+          style: TextStyle(
+            fontSize: isSmallScreen ? 80 : 120,
+            //fontWeight: FontWeight.bold,
+            fontFamily: 'Teko',
+            color : Color(0xff19A7CE),
+            shadows: [
+              Shadow(
+                offset: Offset(2.0,2.0),
+                blurRadius: 5.0,
+                color: Color.fromARGB(50, 0, 0, 0),
+              )
+            ]
+          ),
+        ),
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
         )
       ],
     );

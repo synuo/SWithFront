@@ -134,8 +134,16 @@ class _MainhomeScreenState extends State<MainhomeScreen> {
             style: TextStyle(
                 color: Colors.black,
                 fontSize: 40.0,
-                fontFamily: 'Teko'
+                fontFamily: 'Teko',
+                shadows: [
+                  Shadow(
+                    offset: Offset(2.0,2.0),
+                    blurRadius: 5.0,
+                    color: Color.fromARGB(50, 0, 0, 0),
+                  )
+                ]
             ),
+
           ),
         ),
         elevation: 0.0,
