@@ -3,6 +3,7 @@
 SWith는 **교내 학생들을 위한 스터디 그룹 매칭 플랫폼**입니다.  
 효율적인 스터디 그룹 형성부터 원활한 소통까지, 학업을 함께할 최고의 팀원을 찾아볼 수 있습니다. 
 
+
 ## 🚀 주요 기능  
 
 ✅ **스터디 그룹 매칭**  
@@ -21,8 +22,9 @@ SWith는 **교내 학생들을 위한 스터디 그룹 매칭 플랫폼**입니�
 ## 🔒 차별점: 보안과 신뢰성  
 **SWith는 교내 학생들만 가입 가능!**  
 - 회원가입 시 **학교 이메일 인증을 필수로 요구**하여 신뢰성을 보장  
-- 외부 사용자의 접근을 제한하여 **안전한 학습 환경 조성**  
+- 외부 사용자의 접근을 제한하여 **안전한 학습 환경 조성**
 
-## 📥 다운로드 및 시작하기  
+https://www.canva.com/design/DAGIj0hmyB4/xSrwbq4W6xXGlkv2gIsZZg/view?utm_content=DAGIj0hmyB4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h57e7079f43
+
 
 📌 **SWith와 함께 더 나은 학습 환경을 만들어보세요!**  
